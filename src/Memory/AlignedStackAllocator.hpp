@@ -23,7 +23,7 @@
 
 namespace Epic
 {
-	template<size_t Bytes, size_t Alignment = detail::DefaultAlignment>
+	template<size_t Bytes, size_t DefaultAlignment = detail::DefaultAlignment>
 	class AlignedStackAllocator;
 }
 
@@ -42,7 +42,7 @@ public:
 	static constexpr size_t MaxAllocSize = S;
 	static constexpr size_t MemorySize = S;
 
-	static_assert(detail::IsGoodAlignment(Alignment), "Error: Invalid Alignment");
+	static_assert(detail::IsGoodAlignment(Alignment), "Error: Invalid default alignment");
 
 public:
 	constexpr AlignedStackAllocator() noexcept
@@ -83,7 +83,7 @@ public:
 
 	/* Returns a block of uninitialized memory (aligned to alignment).
 	   If sz is zero, the returned block's pointer is null. */
-	Blk AllocateAligned(size_t sz, size_t alignment) noexcept
+	Blk AllocateAligned(size_t sz, size_t alignment = Alignment) noexcept
 	{
 		// Verify that the alignment is acceptable
 		if (!detail::IsGoodAlignment(alignment))
@@ -118,7 +118,7 @@ public:
 	/* Returns a block of uninitialized memory.
 	   alignment must be a non-zero power of two.
 	   Its size is all of the remaining memory and it will be aligned to alignment. */
-	Blk AllocateAllAligned(size_t alignment) noexcept
+	Blk AllocateAllAligned(size_t alignment = Alignment) noexcept
 	{
 		// Verify that the alignment is acceptable
 		if (!detail::IsGoodAlignment(alignment))

@@ -76,6 +76,15 @@
     <ClInclude Include="src\Memory\AlignedNedAllocator.hpp">
       <Filter>Memory</Filter>
     </ClInclude>
+    <ClInclude Include="src\Memory\AlignmentAllocator.hpp">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Memory\SegregatorAllocator.hpp">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Memory\FallbackAllocator.hpp">
+      <Filter>Memory</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Memory\AlignedMallocator.cpp">

@@ -17,6 +17,8 @@
 #include <Epic/Memory/AllocatorTraits.hpp>
 #include <cstdint>
 #include <cstddef>
+#include <cstring>
+#include <algorithm>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -26,8 +28,17 @@ namespace Epic
 	{
 		static constexpr size_t DefaultAlignment = alignof(std::max_align_t);
 
+		
 		constexpr bool IsGoodAlignment(const size_t alignment) noexcept;
 		constexpr size_t RoundToAligned(size_t sz, size_t alignment) noexcept;
+
+
+		template<class T>
+		struct Reallocator;
+
+		template<class T>
+		struct AlignedReallocator;
+
 
 		template<class T, bool Enabled = Epic::detail::CanAllocate<T>::value>
 		struct AllocateIf;
@@ -74,10 +85,88 @@ constexpr size_t Epic::detail::RoundToAligned(size_t sz, size_t alignment) noexc
 
 //////////////////////////////////////////////////////////////////////////////
 
+template<class T>
+struct Epic::detail::Reallocator
+{
+	static_assert(Epic::detail::CanAllocate<T>::value, "Reallocator requires that the allocator can perform unaligned allocations.");
+
+	static inline bool apply(T& alloc, Blk& blk, size_t sz)
+	{
+		auto newblk = alloc.Allocate(sz);
+		if (!newblk) return false;
+
+		if (blk)
+		{
+			std::memcpy(newblk.Ptr, blk.Ptr, std::min(sz, blk.Size));
+			detail::DeallocateIf<T>::apply(alloc, blk);
+		}
+
+		blk = newblk;
+	
+		return true;
+	}
+
+	static inline bool apply(const T& alloc, Blk& blk, size_t sz)
+	{
+		auto newblk = alloc.Allocate(sz);
+		if (!newblk) return false;
+
+		if (blk)
+		{
+			std::memcpy(newblk.Ptr, blk.Ptr, std::min(sz, blk.Size));
+			detail::DeallocateIf<T>::apply(alloc, blk);
+		}
+
+		blk = newblk;
+
+		return true;
+	}
+};
+
+template<class T>
+struct Epic::detail::AlignedReallocator
+{
+	static_assert(Epic::detail::CanAllocateAligned<T>::value, "AlignedReallocator requires that the allocator can perform aligned allocations.");
+
+	static inline bool apply(T& alloc, Blk& blk, size_t sz, size_t alignment)
+	{
+		auto newblk = alloc.AllocateAligned(sz, alignment);
+		if (!newblk) return false;
+
+		if (blk)
+		{
+			std::memcpy(newblk.Ptr, blk.Ptr, std::min(sz, blk.Size));
+			detail::DeallocateAlignedIf<T>::apply(alloc, blk);
+		}
+
+		blk = newblk;
+
+		return true;
+	}
+
+	static inline bool apply(const T& alloc, Blk& blk, size_t sz, size_t alignment)
+	{
+		auto newblk = alloc.AllocateAligned(sz, alignment);
+		if (!newblk) return false;
+
+		if (blk)
+		{
+			std::memcpy(newblk.Ptr, blk.Ptr, std::min(sz, blk.Size));
+			detail::DeallocateAlignedIf<T>::apply(alloc, blk);
+		}
+
+		blk = newblk;
+
+		return true;
+	}
+};
+
+//////////////////////////////////////////////////////////////////////////////
+
 template<class T, bool Enabled>
 struct Epic::detail::AllocateIf
 {
-	static inline Blk apply(T&, size_t sz) noexcept 
+	static inline Blk apply(const T&, size_t sz) noexcept 
 	{ 
 		return{ nullptr, 0 }; 
 	}
@@ -90,12 +179,17 @@ struct Epic::detail::AllocateIf<T, true>
 	{
 		return alloc.Allocate(sz);
 	}
+
+	static inline Blk apply(const T& alloc, size_t sz) noexcept
+	{
+		return alloc.Allocate(sz);
+	}
 };
 
 template<class T, bool Enabled>
 struct Epic::detail::AllocateAlignedIf
 {
-	static inline Blk apply(T&, size_t sz, size_t alignment) noexcept
+	static inline Blk apply(const T&, size_t sz, size_t alignment) noexcept
 	{
 		return{ nullptr, 0 };
 	}
@@ -108,12 +202,17 @@ struct Epic::detail::AllocateAlignedIf<T, true>
 	{
 		return alloc.AllocateAligned(sz, alignment);
 	}
+
+	static inline Blk apply(const T& alloc, size_t sz, size_t alignment) noexcept
+	{
+		return alloc.AllocateAligned(sz, alignment);
+	}
 };
 
 template<class T, bool Enabled>
 struct Epic::detail::ReallocateIf
 {
-	static inline bool apply(T&, Blk&, size_t)
+	static inline bool apply(const T&, Blk&, size_t)
 	{ 
 		return false; 
 	}
@@ -122,34 +221,44 @@ struct Epic::detail::ReallocateIf
 template<class T>
 struct Epic::detail::ReallocateIf<T, true>
 {
-	static inline bool apply(T& alloc, Blk& blk, size_t sz) 
+	static inline bool apply(T& alloc, Blk& blk, size_t sz)
 	{
-		return alloc.Reallocate(blk, sz); 
+		return alloc.Reallocate(blk, sz);
+	}
+
+	static inline bool apply(const T& alloc, Blk& blk, size_t sz)
+	{
+		return alloc.Reallocate(blk, sz);
 	}
 };
 
 template<class T, bool Enabled>
 struct Epic::detail::ReallocateAlignedIf
 {
-	static inline bool apply(T&, Blk&, size_t, size_t) 
-	{ 
-		return false; 
+	static inline bool apply(const T&, Blk&, size_t, size_t)
+	{
+		return false;
 	}
 };
 
 template<class T>
 struct Epic::detail::ReallocateAlignedIf<T, true>
 {
-	static inline bool apply(T& alloc, Blk& blk, size_t sz, size_t alignment) 
-	{ 
-		return alloc.ReallocateAligned(blk, sz, alignment); 
+	static inline bool apply(T& alloc, Blk& blk, size_t sz, size_t alignment)
+	{
+		return alloc.ReallocateAligned(blk, sz, alignment);
+	}
+
+	static inline bool apply(const T& alloc, Blk& blk, size_t sz, size_t alignment)
+	{
+		return alloc.ReallocateAligned(blk, sz, alignment);
 	}
 };
 
 template<class T, bool Enabled>
 struct Epic::detail::AllocateAllIf
 {
-	static inline Blk apply(T&) noexcept
+	static inline Blk apply(const T&) noexcept
 	{
 		return{ nullptr, 0 };
 	}
@@ -162,12 +271,17 @@ struct Epic::detail::AllocateAllIf<T, true>
 	{
 		return alloc.Allocate();
 	}
+
+	static inline Blk apply(const T& alloc) noexcept
+	{
+		return alloc.Allocate();
+	}
 };
 
 template<class T, bool Enabled>
 struct Epic::detail::AllocateAllAlignedIf
 {
-	static inline Blk apply(T&, size_t alignment) noexcept
+	static inline Blk apply(const T&, size_t alignment) noexcept
 	{
 		return{ nullptr, 0 };
 	}
@@ -180,58 +294,78 @@ struct Epic::detail::AllocateAllAlignedIf<T, true>
 	{
 		return alloc.AllocateAllAligned(alignment);
 	}
+
+	static inline Blk apply(const T& alloc, size_t alignment) noexcept
+	{
+		return alloc.AllocateAllAligned(alignment);
+	}
 };
 
 template<class T, bool Enabled>
 struct Epic::detail::DeallocateIf
 {
-	static inline bool apply(T&, Blk&) 
+	static inline void apply(const T&, const Blk&) 
 	{ 
-		return false; 
+
 	}
 };
 
 template<class T>
 struct Epic::detail::DeallocateIf<T, true>
 {
-	static inline bool apply(T& alloc, Blk& blk) 
+	static inline void apply(T& alloc, const Blk& blk) 
 	{ 
-		return alloc.Deallocate(blk); 
+		alloc.Deallocate(blk); 
+	}
+
+	static inline void apply(const T& alloc, const Blk& blk)
+	{
+		alloc.Deallocate(blk);
 	}
 };
 
 template<class T, bool Enabled>
 struct Epic::detail::DeallocateAlignedIf
 {
-	static inline bool apply(T&, Blk&)
+	static inline void apply(const T&, const Blk&)
 	{
-		return false;
+
 	}
 };
 
 template<class T>
 struct Epic::detail::DeallocateAlignedIf<T, true>
 {
-	static inline bool apply(T& alloc, Blk& blk)
+	static inline void apply(T& alloc, const Blk& blk)
 	{
-		return alloc.DeallocateAligned(blk);
+		alloc.DeallocateAligned(blk);
+	}
+
+	static inline void apply(const T& alloc, const Blk& blk)
+	{
+		alloc.DeallocateAligned(blk);
 	}
 };
 
 template<class T, bool Enabled>
 struct Epic::detail::DeallocateAllIf
 {
-	static inline bool apply(T&) noexcept
+	static inline void apply(const T&) noexcept
 	{
-		return false;
+
 	}
 };
 
 template<class T>
 struct Epic::detail::DeallocateAllIf<T, true>
 {
-	static inline bool apply(T& alloc) noexcept
+	static inline void apply(T& alloc) noexcept
 	{
-		return alloc.DeallocateAll();
+		alloc.DeallocateAll();
+	}
+
+	static inline void apply(const T& alloc) noexcept
+	{
+		alloc.DeallocateAll();
 	}
 };

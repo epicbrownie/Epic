@@ -61,7 +61,7 @@ bool NedAllocator::Reallocate(Blk& blk, size_t sz) const
 	return true;
 }
 
-void NedAllocator::Deallocate(const Blk& blk)
+void NedAllocator::Deallocate(const Blk& blk) const
 {
 	assert(Owns(blk) && "NedAllocator::Deallocate - Attempted to free a block that was not allocated by this allocator");
 	nedalloc::nedfree(blk.Ptr);

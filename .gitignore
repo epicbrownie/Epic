@@ -231,3 +231,5 @@ ModelManifest.xml
 /src/Memory/_FallbackAllocator.hpp
 /src/Memory/_AlignmentAllocator.hpp
 /src/_Dev
+/headers/Epic/Memory/NedMalloc
+/headers/Epic/_Dev

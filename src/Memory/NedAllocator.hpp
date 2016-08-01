@@ -55,18 +55,17 @@ public:
 	}
 
 public:
-	/* Returns a block of uninitialized memory (using std::malloc).
-	If sz is zero, the returned block's pointer is null. */
+	/* Returns a block of uninitialized memory.
+	   If sz is zero, the returned block's pointer is null. */
 	Blk Allocate(size_t sz) const noexcept;
 
-	/* Attempts to reallocate the memory of blk to the new size sz (using std::realloc)
-	If the block's pointer is null, this is equivalent to calling (std::malloc(sz))
-	If sz is zero, the returned block's pointer is malloc-implementation-specific. */
+	/* Attempts to reallocate the memory of blk to the new size sz.
+	   If the block's pointer is null, this is equivalent to calling Allocate(sz). */
 	bool Reallocate(Blk& blk, size_t sz) const;
 
 public:
 	/* Frees the memory for blk (using std::free). */
-	void Deallocate(const Blk& blk);
+	void Deallocate(const Blk& blk) const;
 
 private:
 	void* operator new (size_t) noexcept = delete;

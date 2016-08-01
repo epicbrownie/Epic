@@ -51,12 +51,22 @@ Blk AlignedNedAllocator::AllocateAligned(size_t sz, size_t alignment) const noex
 	return{ p, sz };
 }
 
-void AlignedNedAllocator::Deallocate(const Blk& blk)
+bool AlignedNedAllocator::Reallocate(Blk& blk, size_t sz) const
+{
+	return ReallocateAligned(blk, sz, Alignment);
+}
+
+bool AlignedNedAllocator::ReallocateAligned(Blk& blk, size_t sz, size_t alignment) const
+{
+	return detail::AlignedReallocator<AlignedNedAllocator>::apply(*this, blk, sz, alignment);
+}
+
+void AlignedNedAllocator::Deallocate(const Blk& blk) const
 {
 	DeallocateAligned(blk);
 }
 
-void AlignedNedAllocator::DeallocateAligned(const Blk& blk)
+void AlignedNedAllocator::DeallocateAligned(const Blk& blk) const
 {
 	assert(Owns(blk) && "AlignedNedAllocator::DeallocateAligned - Attempted to free a block that was not allocated by this allocator");
 	nedalloc::nedfree(blk.Ptr);
