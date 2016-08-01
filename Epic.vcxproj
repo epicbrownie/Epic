@@ -21,9 +21,6 @@
   <ItemGroup>
     <ClInclude Include="src\Singleton.hpp" />
   </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Test.cpp" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{809D2707-DFB7-4E11-9CF6-FBBC1BD99797}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
