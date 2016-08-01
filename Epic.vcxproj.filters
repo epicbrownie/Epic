@@ -5,9 +5,33 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
+    <Filter Include="Utility\Ext">
+      <UniqueIdentifier>{47262769-ec3f-4ed9-94fe-df50e4f44dd9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\TMP">
+      <UniqueIdentifier>{6eecafbc-75b0-49f6-a10b-275f6ed11691}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Singleton.hpp">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Ext\Erase.hpp">
+      <Filter>Utility\Ext</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TMP\PowerOf2.hpp">
+      <Filter>Utility\TMP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TMP\VariadicContains.hpp">
+      <Filter>Utility\TMP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StringHash.hpp">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StringHashAlgorithm.hpp">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NullMutex.hpp">
       <Filter>Utility</Filter>
     </ClInclude>
   </ItemGroup>

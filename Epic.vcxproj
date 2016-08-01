@@ -19,7 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Ext\Erase.hpp" />
+    <ClInclude Include="src\NullMutex.hpp" />
     <ClInclude Include="src\Singleton.hpp" />
+    <ClInclude Include="src\StringHash.hpp" />
+    <ClInclude Include="src\StringHashAlgorithm.hpp" />
+    <ClInclude Include="src\TMP\PowerOf2.hpp" />
+    <ClInclude Include="src\TMP\VariadicContains.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{809D2707-DFB7-4E11-9CF6-FBBC1BD99797}</ProjectGuid>

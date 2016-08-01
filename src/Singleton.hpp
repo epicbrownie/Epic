@@ -1,3 +1,16 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+//            Copyright (c) 2016 Ronnie Brohn (EpicBrownie)      
+//
+//                Distributed under The MIT License (MIT).
+//             (See accompanying file License.txt or copy at 
+//                 https://opensource.org/licenses/MIT)
+//
+//           Please report any bugs, typos, or suggestions to
+//              https://github.com/epicbrownie/Epic/issues
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include <type_traits>
@@ -23,14 +36,14 @@ public:
 	static_assert(std::is_default_constructible<singleton_type>::value, "Singleton type must be default constructible.");
 
 private:
+	Singleton(void) = delete;
+
+private:
 	struct _Creator
 	{
 		_Creator() noexcept { Singleton<T>::Instance(); }
 		inline void DoNothing() const noexcept { }
 	};
-
-private:
-	Singleton() noexcept = default;
 
 public:
 	static singleton_type& Instance() noexcept
@@ -48,7 +61,7 @@ public:
 
 private:
 	// When s_Creator is initialized, it will
-	// try to call Instance (implicitly instantiating it)
+	// try to call Instance (forcibly instantiating it)
 	static _Creator s_Creator;
 };
 

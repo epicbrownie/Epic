@@ -210,3 +210,19 @@ FakesAssemblies/
 GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
+
+# Visual Studio DB file?
+*.VC.opendb
+*.VC.db
+/headers/Epic/AppLock.h
+/headers/Epic/ATONTypes.h
+/headers/Epic/ATONGrammar.hpp
+/headers/Epic/ATONDataBin.h
+/headers/Epic/AutoList.hpp
+/headers/Epic/stringhashalgorithm.hpp
+/src/AppLock.cpp
+/src/AppLock.h
+/src/ATONTypes.h
+/src/ATONGrammar.hpp
+/src/ATONDataBin.h
+/src/ATONDataBin.cpp
