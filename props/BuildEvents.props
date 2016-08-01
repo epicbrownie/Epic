@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros">
+    <HeadersDir>$(SolutionDir)headers\</HeadersDir>
+  </PropertyGroup>
+  <PropertyGroup>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <PostBuildEvent>
+      <Message>
+      </Message>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>
+      </Message>
+    </CustomBuildStep>
+    <PreBuildEvent>
+      <Command>xcopy "$(ProjectDir)src\*.hpp" "$(HeadersDir)Epic\" /s /y /d
+xcopy "$(ProjectDir)src\*.h" "$(HeadersDir)Epic\" /s /y /d
+</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Copies header files (*.hpp; *.h) to $(HeadersDir)</Message>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <BuildMacro Include="HeadersDir">
+      <Value>$(HeadersDir)</Value>
+    </BuildMacro>
+  </ItemGroup>
+</Project>
