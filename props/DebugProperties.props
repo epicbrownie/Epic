@@ -6,8 +6,10 @@
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(SolutionDir)temp\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)d</TargetName>
-    <IncludePath>$(HeadersDir);M:\boost\boost_1_56_0;$(IncludePath)</IncludePath>
-    <LibraryPath>M:\boost\boost_1_56_0\lib32-msvc-12.0;$(LibraryPath)</LibraryPath>
+    <IncludePath>
+    </IncludePath>
+    <LibraryPath>
+    </LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
