@@ -5,11 +5,7 @@
   <PropertyGroup>
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(SolutionDir)temp\$(Configuration)\</IntDir>
-    <IncludePath>
-    </IncludePath>
     <TargetName>$(ProjectName)64</TargetName>
-    <LibraryPath>
-    </LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>

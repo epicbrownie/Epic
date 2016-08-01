@@ -6,10 +6,6 @@
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(SolutionDir)temp\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)d</TargetName>
-    <IncludePath>
-    </IncludePath>
-    <LibraryPath>
-    </LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
