@@ -57,6 +57,8 @@ bool Mallocator::Reallocate(Blk& blk, size_t sz) const
 
 void Mallocator::Deallocate(const Blk& blk)
 {
+	if (!blk) return;
+
 	assert(Owns(blk) && "Mallocator::Deallocate - Attempted to free a block that was not allocated by this allocator");
 	std::free(blk.Ptr);
 }

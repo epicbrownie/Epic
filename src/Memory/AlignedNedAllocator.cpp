@@ -68,6 +68,8 @@ void AlignedNedAllocator::Deallocate(const Blk& blk) const
 
 void AlignedNedAllocator::DeallocateAligned(const Blk& blk) const
 {
+	if (!blk) return;
+
 	assert(Owns(blk) && "AlignedNedAllocator::DeallocateAligned - Attempted to free a block that was not allocated by this allocator");
 	nedalloc::nedfree(blk.Ptr);
 }

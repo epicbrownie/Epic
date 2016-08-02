@@ -24,6 +24,7 @@
     <ClInclude Include="src\Memory\AlignedStackAllocator.hpp" />
     <ClInclude Include="src\Memory\AllocatorHelpers.hpp" />
     <ClInclude Include="src\Memory\AllocatorTraits.hpp" />
+    <ClInclude Include="src\Memory\FreelistAllocator.hpp" />
     <ClInclude Include="src\Memory\Mallocator.hpp" />
     <ClInclude Include="src\Memory\MemoryBlock.hpp" />
     <ClInclude Include="src\Memory\NedMalloc\malloc.c.h" />

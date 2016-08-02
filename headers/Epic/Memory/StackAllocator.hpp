@@ -69,8 +69,7 @@ public:
 	/* Returns whether or not this allocator is responsible for the block Blk. */
 	constexpr bool Owns(const Blk& blk) const noexcept
 	{
-		return (blk.Ptr == nullptr) ||
-			   (blk.Ptr >= _Memory && blk.Ptr < _End());
+		return (blk.Ptr >= _Memory && blk.Ptr < _End());
 	}
 
 public:
@@ -119,6 +118,8 @@ public:
 	   Otherwise, no memory will be reclaimed. */
 	void Deallocate(const Blk& blk)
 	{
+		if (!blk) return;
+
 		assert(Owns(blk) && "StackAllocator::Deallocate - Attempted to free a block that was not allocated by this allocator");
 		
 		// Calculate the actual size of the block

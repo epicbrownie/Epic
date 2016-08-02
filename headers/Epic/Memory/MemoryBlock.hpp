@@ -60,7 +60,10 @@ struct Epic::MemoryBlock
 	}
 
 	// Bool conversion
-	explicit constexpr operator bool() const { return (Ptr != nullptr); }
+	explicit constexpr operator bool() const 
+	{ 
+		return (Ptr != nullptr) && (Size != 0); 
+	}
 
 	// Comparison Ops
 	constexpr bool operator == (const MemoryBlock& o) const noexcept 

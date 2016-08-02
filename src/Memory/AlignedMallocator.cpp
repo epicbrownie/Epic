@@ -79,6 +79,8 @@ void AlignedMallocator::Deallocate(const Blk& blk)
 
 void AlignedMallocator::DeallocateAligned(const Blk& blk)
 {
+	if (!blk) return;
+
 	assert(Owns(blk) && "AlignedMallocator::DeallocateAligned - Attempted to free a block that was not allocated by this allocator");
 	::_aligned_free(blk.Ptr);
 }
