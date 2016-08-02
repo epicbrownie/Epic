@@ -260,7 +260,6 @@ public:
 		size_t space = result.Size;
 		void* cursor = result.Ptr;
 
-		// If space was available, update the result and cursor
 		if (std::align(alignment, sz, cursor, space))
 		{
 			// Alignment succeeded
