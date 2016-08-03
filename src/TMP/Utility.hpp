@@ -13,29 +13,34 @@
 
 #pragma once
 
-#include <type_traits>
+#include <Epic/TMP/List.hpp>
 
 //////////////////////////////////////////////////////////////////////////////
 
-namespace Epic::TMP::detail
+namespace Epic::TMP
 {
-	template<class, class...>
-	struct VariadicContainsImpl;
-
-	template<class T>
-	struct VariadicContainsImpl<T> : std::false_type { };
-
-	template<class T, class V, class... Vs>
-	struct VariadicContainsImpl<T, V, Vs...> : VariadicContainsImpl<T, Vs...> { };
-
-	template<class T, class... Vs>
-	struct VariadicContainsImpl<T, T, Vs...> : std::true_type { };
+	template<size_t I> struct GenIndexSequence;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
 namespace Epic::TMP
 {
-	template<class SearchType, class... VariadicTypes>
-	using VariadicContains = detail::VariadicContainsImpl<SearchType, VariadicTypes...>;
+	/// GenIndexSequence<I> - Generates a List<> containing std::integral_constant<size_t> types from 0..I.
+	template<size_t I>
+	struct GenIndexSequence
+	{
+		using type = typename Concat<typename GenIndexSequence<I - 1>::type, List<std::integral_constant<size_t, I>>>::type;
+	};
+
+	template<> 
+	struct GenIndexSequence<0>
+	{
+		using type = List<std::integral_constant<size_t, 0>>;
+	};
+	
+
+	/// IndexSequenceFor<Ts...> - Invokes GenIndexSequence on the size of Ts
+	template<typename... Ts>
+	using IndexSequenceFor = typename GenIndexSequence<sizeof...(Ts) - 1>::type;
 }

@@ -33,7 +33,6 @@ namespace Epic
 /// AlignmentAllocator<A, U>
 template<class A, class U>
 class Epic::AlignmentAllocator
-	: private A, private U
 {
 	static_assert(std::is_default_constructible<A>::value, "The aligned allocator must be default-constructible.");
 	static_assert(std::is_default_constructible<U>::value, "The unaligned allocator must be default-constructible.");
@@ -44,11 +43,15 @@ public:
 	using type = Epic::AlignmentAllocator<A, U>;
 	using AlignedAllocatorType = A;
 	using UnalignedAllocatorType = U;
-	
+
 public:
 	static constexpr size_t Alignment{ std::min(A::Alignment, U::Alignment) };
 	static constexpr size_t MinAllocSize = std::min(A::MinAllocSize, U::MinAllocSize);
 	static constexpr size_t MaxAllocSize = std::max(A::MaxAllocSize, U::MaxAllocSize);
+
+private:
+	AlignedAllocatorType m_AAllocator;
+	UnalignedAllocatorType m_UAllocator;
 
 public:
 	constexpr AlignmentAllocator()
@@ -57,22 +60,25 @@ public:
 	template<typename = std::enable_if_t<std::is_copy_constructible<A>::value && std::is_copy_constructible<U>::value>>
 	constexpr AlignmentAllocator(const AlignmentAllocator<A, U>& obj)
 		noexcept(std::is_nothrow_copy_constructible<A>::value && std::is_nothrow_copy_constructible<U>::value)
-		: A{ obj }, U{ obj }
+		: m_AAllocator{ obj.m_AAllocator }, m_UAllocator{ obj.m_UAllocator }
 	{ }
 
 	template<typename = std::enable_if_t<std::is_move_constructible<A>::value && std::is_move_constructible<U>::value>>
 	constexpr AlignmentAllocator(AlignmentAllocator<A, U>&& obj)
 		noexcept(std::is_nothrow_move_constructible<A>::value && std::is_nothrow_move_constructible<U>::value)
-		: A{ std::move(obj) }, U{ std::move(obj) }
-	{ }
+		: m_AAllocator{ }, m_UAllocator{ }
+	{
+		std::swap(m_AAllocator, obj.m_AAllocator);
+		std::swap(m_UAllocator, obj.m_UAllocator);
+	}
 
 	template<typename = std::enable_if_t<std::is_copy_assignable<A>::value && std::is_copy_assignable<U>::value>>
 	AlignmentAllocator& operator = (const AlignmentAllocator<A, U>& obj)
 		noexcept(std::is_nothrow_copy_assignable<A>::value && std::is_nothrow_copy_assignable<U>::value)
 	{
-		A::operator = (obj);
-		U::operator = (obj);
-
+		m_AAllocator = obj.m_AAllocator;
+		m_UAllocator = obj.m_UAllocator;
+		
 		return *this;
 	}
 
@@ -80,8 +86,8 @@ public:
 	AlignmentAllocator& operator = (AlignmentAllocator<A, U>&& obj)
 		noexcept(std::is_nothrow_move_assignable<A>::value && std::is_nothrow_move_assignable<U>::value)
 	{
-		A::operator = (std::move(obj));
-		U::operator = (std::move(obj));
+		m_AAllocator = std::move(obj.m_AAllocator);
+		m_UAllocator = std::move(obj.m_UAllocator);
 
 		return *this;
 	}
@@ -90,7 +96,7 @@ public:
 	/* Returns whether or not this allocator is responsible for the block Blk. */
 	inline bool Owns(const Blk& blk) const noexcept
 	{
-		return A::Owns(blk) || U::Owns(blk);
+		return m_AAllocator.Owns(blk) || m_UAllocator.Owns(blk);
 	}
 
 public:
@@ -98,14 +104,14 @@ public:
 	   Uses the unaligned allocator. */
 	Blk Allocate(size_t sz) noexcept
 	{
-		return U::Allocate(sz);
+		return m_UAllocator.Allocate(sz);
 	}
 
 	/* Returns a block of uninitialized memory (aligned to alignment).
 	   Uses the aligned allocator. */
 	Blk AllocateAligned(size_t sz, size_t alignment = A::Alignment) noexcept
 	{
-		return A::AllocateAligned(sz, alignment);
+		return m_AAllocator.AllocateAligned(sz, alignment);
 	}
 
 	/* Attempts to reallocate the memory of blk to the new size sz.
@@ -113,7 +119,7 @@ public:
 	template<typename = std::enable_if_t<detail::CanReallocate<U>::value>>
 	bool Reallocate(Blk& blk, size_t sz)
 	{
-		return U::Reallocate(blk, sz);
+		return m_UAllocator.Reallocate(blk, sz);
 	}
 
 	/* Attempts to reallocate the memory of blk (aligned to alignment) to the new size sz.
@@ -121,7 +127,7 @@ public:
 	template<typename = std::enable_if_t<detail::CanReallocateAligned<A>::value>>
 	bool ReallocateAligned(Blk& blk, size_t sz, size_t alignment = A::Alignment)
 	{
-		return A::ReallocateAligned(blk, sz, alignment);
+		return m_AAllocator.ReallocateAligned(blk, sz, alignment);
 	}
 
 	/* Returns a block of uninitialized memory.
@@ -129,7 +135,7 @@ public:
 	template<typename = std::enable_if_t<detail::CanAllocateAll<U>::value>>
 	Blk AllocateAll() noexcept
 	{
-		return U::AllocateAll();
+		return m_UAllocator.AllocateAll();
 	}
 
 	/* Returns a block of uninitialized memory.
@@ -137,7 +143,7 @@ public:
 	template<typename = std::enable_if_t<detail::CanAllocateAll<A>::value>>
 	Blk AllocateAllAligned(size_t alignment = A::Alignment) noexcept
 	{
-		return A::AllocateAllAligned(alignment);
+		return m_AAllocator.AllocateAllAligned(alignment);
 	}
 
 public:
@@ -145,22 +151,22 @@ public:
 	template<typename = std::enable_if_t<detail::CanDeallocate<U>::value>>
 	void Deallocate(const Blk& blk)
 	{
-		U::Deallocate(blk);
+		m_UAllocator.Deallocate(blk);
 	}
 
 	/* Frees the memory for blk.  Uses the aligned allocator. */
 	template<typename = std::enable_if_t<detail::CanDeallocateAligned<A>::value>>
 	void DeallocateAligned(const Blk& blk)
 	{
-		A::DeallocateAligned(blk);
+		m_AAllocator.DeallocateAligned(blk);
 	}
 
 	/* Frees all of the memory of both allocators. */
 	template<typename = std::enable_if_t<detail::CanDeallocateAll<U>::value && detail::CanDeallocateAll<A>::value>>
 	void DeallocateAll()
 	{
-		A::DeallocateAll();
-		U::DeallocateAll();
+		m_AAllocator.DeallocateAll();
+		m_UAllocator.DeallocateAll();
 	}
 
 public:
@@ -168,14 +174,14 @@ public:
 	template<typename = std::enable_if_t<detail::CanDeallocateAll<A>::value>>
 	void DeallocateAllAligned()
 	{
-		A::DeallocateAll();
+		m_AAllocator.DeallocateAll();
 	}
 
 	/* Frees all of the memory of the unaligned allocator. */
 	template<typename = std::enable_if_t<detail::CanDeallocateAll<U>::value>>
 	void DeallocateAllUnaligned()
 	{
-		U::DeallocateAll();
+		m_UAllocator.DeallocateAll();
 	}
 
 private:

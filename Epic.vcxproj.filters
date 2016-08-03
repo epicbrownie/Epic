@@ -17,6 +17,15 @@
     <Filter Include="Memory\NedMalloc">
       <UniqueIdentifier>{6306cdd5-4af1-4c61-b1fc-c18fb3e1148b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Memory\Allocators - Simple">
+      <UniqueIdentifier>{f5dfb3aa-ab7a-4b41-be00-8583ad369fa9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Memory\Allocators - Behavioral">
+      <UniqueIdentifier>{75099f91-059e-4bc3-8289-e189273d4586}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Memory\Allocators - Complex">
+      <UniqueIdentifier>{525ed8c4-61c2-4e34-a536-04b37e5021af}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Singleton.hpp">
@@ -40,12 +49,6 @@
     <ClInclude Include="src\NullMutex.hpp">
       <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="src\Memory\Mallocator.hpp">
-      <Filter>Memory</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Memory\AlignedMallocator.hpp">
-      <Filter>Memory</Filter>
-    </ClInclude>
     <ClInclude Include="src\Memory\MemoryBlock.hpp">
       <Filter>Memory</Filter>
     </ClInclude>
@@ -61,52 +64,73 @@
     <ClInclude Include="src\Memory\AllocatorTraits.hpp">
       <Filter>Memory</Filter>
     </ClInclude>
-    <ClInclude Include="src\Memory\AlignedStackAllocator.hpp">
-      <Filter>Memory</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Memory\StackAllocator.hpp">
-      <Filter>Memory</Filter>
+    <ClInclude Include="src\Memory\NedAllocator.hpp">
+      <Filter>Memory\Allocators - Simple</Filter>
     </ClInclude>
     <ClInclude Include="src\Memory\NullAllocator.hpp">
-      <Filter>Memory</Filter>
+      <Filter>Memory\Allocators - Simple</Filter>
     </ClInclude>
-    <ClInclude Include="src\Memory\NedAllocator.hpp">
-      <Filter>Memory</Filter>
+    <ClInclude Include="src\Memory\Mallocator.hpp">
+      <Filter>Memory\Allocators - Simple</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Memory\StackAllocator.hpp">
+      <Filter>Memory\Allocators - Simple</Filter>
     </ClInclude>
     <ClInclude Include="src\Memory\AlignedNedAllocator.hpp">
-      <Filter>Memory</Filter>
+      <Filter>Memory\Allocators - Simple</Filter>
     </ClInclude>
-    <ClInclude Include="src\Memory\AlignmentAllocator.hpp">
-      <Filter>Memory</Filter>
+    <ClInclude Include="src\Memory\AlignedMallocator.hpp">
+      <Filter>Memory\Allocators - Simple</Filter>
     </ClInclude>
-    <ClInclude Include="src\Memory\SegregatorAllocator.hpp">
-      <Filter>Memory</Filter>
+    <ClInclude Include="src\Memory\AlignedStackAllocator.hpp">
+      <Filter>Memory\Allocators - Simple</Filter>
     </ClInclude>
     <ClInclude Include="src\Memory\FallbackAllocator.hpp">
-      <Filter>Memory</Filter>
+      <Filter>Memory\Allocators - Behavioral</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Memory\AlignmentAllocator.hpp">
+      <Filter>Memory\Allocators - Behavioral</Filter>
     </ClInclude>
     <ClInclude Include="src\Memory\FreelistAllocator.hpp">
+      <Filter>Memory\Allocators - Complex</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Memory\SegregatorAllocator.hpp">
+      <Filter>Memory\Allocators - Behavioral</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Memory\LinearSegregatorAllocator.hpp">
+      <Filter>Memory\Allocators - Behavioral</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Memory\SegregatorBucket.hpp">
       <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TMP\List.hpp">
+      <Filter>Utility\TMP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TMP\Utility.hpp">
+      <Filter>Utility\TMP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Memory\BinarySegregatorAllocator.hpp">
+      <Filter>Memory\Allocators - Behavioral</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Memory\AlignedMallocator.cpp">
-      <Filter>Memory</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Memory\Mallocator.cpp">
-      <Filter>Memory</Filter>
-    </ClCompile>
     <ClCompile Include="src\Memory\NedMalloc\nedmalloc.c">
       <Filter>Memory\NedMalloc</Filter>
     </ClCompile>
-    <ClCompile Include="src\Memory\NullAllocator.cpp">
-      <Filter>Memory</Filter>
-    </ClCompile>
     <ClCompile Include="src\Memory\NedAllocator.cpp">
-      <Filter>Memory</Filter>
+      <Filter>Memory\Allocators - Simple</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Memory\NullAllocator.cpp">
+      <Filter>Memory\Allocators - Simple</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Memory\Mallocator.cpp">
+      <Filter>Memory\Allocators - Simple</Filter>
     </ClCompile>
     <ClCompile Include="src\Memory\AlignedNedAllocator.cpp">
-      <Filter>Memory</Filter>
+      <Filter>Memory\Allocators - Simple</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Memory\AlignedMallocator.cpp">
+      <Filter>Memory\Allocators - Simple</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -24,11 +24,14 @@
     <ClInclude Include="src\Memory\AlignedStackAllocator.hpp" />
     <ClInclude Include="src\Memory\AllocatorHelpers.hpp" />
     <ClInclude Include="src\Memory\AllocatorTraits.hpp" />
+    <ClInclude Include="src\Memory\BinarySegregatorAllocator.hpp" />
     <ClInclude Include="src\Memory\FreelistAllocator.hpp" />
+    <ClInclude Include="src\Memory\LinearSegregatorAllocator.hpp" />
     <ClInclude Include="src\Memory\Mallocator.hpp" />
     <ClInclude Include="src\Memory\MemoryBlock.hpp" />
     <ClInclude Include="src\Memory\NedMalloc\malloc.c.h" />
     <ClInclude Include="src\Memory\NedMalloc\nedmalloc.h" />
+    <ClInclude Include="src\Memory\SegregatorBucket.hpp" />
     <ClInclude Include="src\Memory\StackAllocator.hpp" />
     <ClInclude Include="src\Memory\NullAllocator.hpp" />
     <ClInclude Include="src\Memory\NedAllocator.hpp" />
@@ -40,7 +43,9 @@
     <ClInclude Include="src\Singleton.hpp" />
     <ClInclude Include="src\StringHash.hpp" />
     <ClInclude Include="src\StringHashAlgorithm.hpp" />
+    <ClInclude Include="src\TMP\List.hpp" />
     <ClInclude Include="src\TMP\PowerOf2.hpp" />
+    <ClInclude Include="src\TMP\Utility.hpp" />
     <ClInclude Include="src\TMP\VariadicContains.hpp" />
   </ItemGroup>
   <ItemGroup>

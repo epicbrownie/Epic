@@ -47,7 +47,6 @@ struct Epic::detail::FreelistBlock
 /// FreelistAllocatorImpl<A, ChunkSize, ChunkLimit, Max, Min, PreAlloc, DefAlign>
 template<class A, size_t ChunkSize, size_t ChunkLimit, size_t Max, size_t Min, size_t PreAlloc, size_t DefAlign>
 class Epic::detail::FreelistAllocatorImpl
-	: private A
 {
 	static_assert(std::is_default_constructible<A>::value, "The freelist backing allocator must be default-constructible.");
 	static_assert(detail::CanAllocate<A>::value, "The freelist backing allocator must be able to perform unaligned allocations.");
@@ -71,7 +70,7 @@ public:
 
 public:
 	FreelistAllocatorImpl() noexcept(std::is_nothrow_default_constructible<A>::value)
-		: m_pChunks{ nullptr }, m_pFreeList{ nullptr }, m_ChunkCount{ 0 }
+		: m_Allocator{ }, m_pChunks{ nullptr }, m_pFreeList{ nullptr }, m_ChunkCount{ 0 }
 	{
 		if (PreAlloc > 0)
 			AllocateChunks(PreAlloc);
@@ -81,7 +80,8 @@ public:
 	
 	template<typename = std::enable_if_t<std::is_move_constructible<A>::value>>
 	FreelistAllocatorImpl(type&& obj) noexcept(std::is_nothrow_move_constructible<A>::value)
-		: A{ std::move(obj) }, m_pChunks{ nullptr }, m_pFreeList{ nullptr }, m_ChunkCount{ 0 }
+		: m_Allocator{ std::move(obj) }, 
+		  m_pChunks{ nullptr }, m_pFreeList{ nullptr }, m_ChunkCount{ 0 }
 	{
 		std::swap(m_pChunks, obj.m_pChunks);
 		std::swap(m_pFreeList, obj.m_pFreeList);
@@ -95,8 +95,8 @@ public:
 	{
 		FreeChunks();
 
-		A::operator = (std::move(obj));
-		
+		m_Allocator = std::move(obj.m_Allocator);
+
 		std::swap(m_pChunks, obj.m_pChunks);
 		std::swap(m_pFreeList, obj.m_pFreeList);
 		std::swap(m_ChunkCount, obj.m_ChunkCount);
@@ -120,8 +120,8 @@ private:
 		size_t freeSize = ChunkSize * MaxAllocSize;
 		size_t chunkSize = freeSize + sizeof(PoolChunk) + Alignment;
 
-		Blk chunk = A::Allocate(chunkSize);
-		if (!chunk)
+		Blk chunk = m_Allocator.Allocate(chunkSize);
+		if (!chunk) 
 			return false;
 
 		// Embed management info into the chunk
@@ -166,7 +166,7 @@ private:
 		if (detail::CanDeallocateAll<A>::value)
 		{
 			// Static-If: Deallocate all chunks at once
-			detail::DeallocateAllIf<A>::apply(*this);
+			detail::DeallocateAllIf<A>::apply(m_Allocator);
 			m_pChunks = nullptr;
 		}
 		else
@@ -175,7 +175,7 @@ private:
 			while (m_pChunks)
 			{
 				auto pNext = m_pChunks->pNext;
-				detail::DeallocateIf<A>::apply(*this, m_pChunks->Mem);
+				detail::DeallocateIf<A>::apply(m_Allocator, m_pChunks->Mem);
 				m_pChunks = pNext;
 			}
 		}
@@ -215,7 +215,7 @@ public:
 	{
 		// Since we have exclusive access to the backing allocator,
 		// the check can be delegated.
-		return A::Owns(blk);
+		return m_Allocator.Owns(blk);
 	}
 
 public:
@@ -260,7 +260,6 @@ public:
 		size_t space = result.Size;
 		void* cursor = result.Ptr;
 
-		// If space was available, update the result and cursor
 		if (std::align(alignment, sz, cursor, space))
 		{
 			// Alignment succeeded
@@ -305,6 +304,7 @@ private:
 	void operator delete[](void*) noexcept = delete;
 
 private:
+	AllocatorType m_Allocator;
 	PoolChunk* m_pChunks;
 	FreelistBlock* m_pFreeList;
 	size_t m_ChunkCount;
