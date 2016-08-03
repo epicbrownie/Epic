@@ -12,14 +12,14 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include "AlignedNedAllocator.hpp"
-#include "AllocatorHelpers.hpp"
+#include "detail/AllocatorHelpers.hpp"
 #include <cassert>
 
 #ifdef REPLACE_SYSTEM_ALLOCATOR
 	#undef REPLACE_SYSTEM_ALLOCATOR
 #endif
 
-#include "NedMalloc/nedmalloc.h"
+#include "detail/NedMalloc/nedmalloc.h"
 
 //////////////////////////////////////////////////////////////////////////////
 

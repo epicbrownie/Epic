@@ -19,7 +19,7 @@
 	#undef REPLACE_SYSTEM_ALLOCATOR
 #endif
 
-#include "NedMalloc/nedmalloc.h"
+#include "detail/NedMalloc/nedmalloc.h"
 
 //////////////////////////////////////////////////////////////////////////////
 

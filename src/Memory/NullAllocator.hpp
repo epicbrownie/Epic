@@ -13,7 +13,7 @@
 
 #pragma once
 
-#include <Epic/Memory/AllocatorHelpers.hpp>
+#include <Epic/Memory/detail/AllocatorHelpers.hpp>
 #include <Epic/Memory/MemoryBlock.hpp>
 #include <cstdint>
 #include <cassert>

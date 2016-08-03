@@ -233,3 +233,4 @@ ModelManifest.xml
 /src/_Dev
 /headers/Epic/Memory/NedMalloc
 /headers/Epic/_Dev
+/src/Memory/AffixAllocator.hpp

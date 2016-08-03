@@ -14,7 +14,7 @@
 #pragma once
 
 #include <Epic/Memory/MemoryBlock.hpp>
-#include <Epic/Memory/AllocatorTraits.hpp>
+#include <Epic/Memory/detail/AllocatorTraits.hpp>
 #include <cstdint>
 #include <cstddef>
 #include <cstring>
