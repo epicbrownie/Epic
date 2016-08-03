@@ -5,10 +5,6 @@
   <PropertyGroup>
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(SolutionDir)temp\$(Configuration)\</IntDir>
-    <IncludePath>
-    </IncludePath>
-    <LibraryPath>
-    </LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -33,6 +29,7 @@
       <StringPooling>true</StringPooling>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup />

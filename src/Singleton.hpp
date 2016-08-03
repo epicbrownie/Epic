@@ -36,7 +36,7 @@ public:
 	static_assert(std::is_default_constructible<singleton_type>::value, "Singleton type must be default constructible.");
 
 private:
-	Singleton(void) = delete;
+	Singleton() = delete;
 
 private:
 	struct _Creator

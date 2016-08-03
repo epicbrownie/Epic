@@ -20,18 +20,50 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Ext\Erase.hpp" />
+    <ClInclude Include="src\Memory\AffixAllocator.hpp" />
+    <ClInclude Include="src\Memory\AlignedMallocator.hpp" />
+    <ClInclude Include="src\Memory\AlignedStackAllocator.hpp" />
+    <ClInclude Include="src\Memory\BinarySegregatorAllocator.hpp" />
+    <ClInclude Include="src\Memory\CorruptionGuardedAllocator.hpp" />
+    <ClInclude Include="src\Memory\detail\AllocatorHelpers.hpp" />
+    <ClInclude Include="src\Memory\detail\AllocatorTraits.hpp" />
+    <ClInclude Include="src\Memory\detail\NedMalloc\malloc.c.h" />
+    <ClInclude Include="src\Memory\detail\NedMalloc\nedmalloc.h" />
+    <ClInclude Include="src\Memory\FreelistAllocator.hpp" />
+    <ClInclude Include="src\Memory\LinearSegregatorAllocator.hpp" />
+    <ClInclude Include="src\Memory\Mallocator.hpp" />
+    <ClInclude Include="src\Memory\MemoryBlock.hpp" />
+    <ClInclude Include="src\Memory\PatternGuard.hpp" />
+    <ClInclude Include="src\Memory\SegregatorBucket.hpp" />
+    <ClInclude Include="src\Memory\StackAllocator.hpp" />
+    <ClInclude Include="src\Memory\NullAllocator.hpp" />
+    <ClInclude Include="src\Memory\NedAllocator.hpp" />
+    <ClInclude Include="src\Memory\AlignedNedAllocator.hpp" />
+    <ClInclude Include="src\Memory\AlignmentAllocator.hpp" />
+    <ClInclude Include="src\Memory\SegregatorAllocator.hpp" />
+    <ClInclude Include="src\Memory\FallbackAllocator.hpp" />
     <ClInclude Include="src\NullMutex.hpp" />
     <ClInclude Include="src\Singleton.hpp" />
     <ClInclude Include="src\StringHash.hpp" />
     <ClInclude Include="src\StringHashAlgorithm.hpp" />
+    <ClInclude Include="src\TMP\List.hpp" />
     <ClInclude Include="src\TMP\PowerOf2.hpp" />
+    <ClInclude Include="src\TMP\Utility.hpp" />
     <ClInclude Include="src\TMP\VariadicContains.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Memory\AlignedMallocator.cpp" />
+    <ClCompile Include="src\Memory\AlignedNedAllocator.cpp" />
+    <ClCompile Include="src\Memory\detail\NedMalloc\nedmalloc.c" />
+    <ClCompile Include="src\Memory\Mallocator.cpp" />
+    <ClCompile Include="src\Memory\NedAllocator.cpp" />
+    <ClCompile Include="src\Memory\NullAllocator.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{809D2707-DFB7-4E11-9CF6-FBBC1BD99797}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Epic</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.10240.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

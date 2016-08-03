@@ -17,27 +17,25 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-namespace Epic
+namespace Epic::TMP::detail
 {
-	namespace TMP
-	{
-		template<class SearchType, class... VariadicTypes>
-		struct VariadicContains;
-	}
+	template<class, class...>
+	struct VariadicContainsImpl;
+
+	template<class T>
+	struct VariadicContainsImpl<T> : std::false_type { };
+
+	template<class T, class V, class... Vs>
+	struct VariadicContainsImpl<T, V, Vs...> : VariadicContainsImpl<T, Vs...> { };
+
+	template<class T, class... Vs>
+	struct VariadicContainsImpl<T, T, Vs...> : std::true_type { };
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// VariadicContains<T> : End of variadic list
-template<class T>
-struct Epic::TMP::VariadicContains<T> : std::false_type { };
-
-/// VariadicContains<T, V, ...> : Variadic list head is not same as T
-template<class T, class V, class... Vs>
-struct Epic::TMP::VariadicContains<T, V, Vs...>
-	: Epic::TMP::VariadicContains<T, Vs...> { };
-
-/// VariadicContains<T, T, ...> : Variadic list head is same as T
-template<class T, class... Vs>
-struct Epic::TMP::VariadicContains<T, T, Vs...>
-	: std::true_type { };
+namespace Epic::TMP
+{
+	template<class SearchType, class... VariadicTypes>
+	using VariadicContains = detail::VariadicContainsImpl<SearchType, VariadicTypes...>;
+}

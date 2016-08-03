@@ -6,10 +6,6 @@
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(SolutionDir)temp\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)d</TargetName>
-    <IncludePath>
-    </IncludePath>
-    <LibraryPath>
-    </LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -23,6 +19,7 @@
       <WarningLevel>Level3</WarningLevel>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <PostBuildEvent>
       <Command>
