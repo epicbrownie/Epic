@@ -24,6 +24,7 @@
     <ClInclude Include="src\Memory\AlignedMallocator.hpp" />
     <ClInclude Include="src\Memory\AlignedStackAllocator.hpp" />
     <ClInclude Include="src\Memory\BinarySegregatorAllocator.hpp" />
+    <ClInclude Include="src\Memory\CorruptionGuardedAllocator.hpp" />
     <ClInclude Include="src\Memory\detail\AllocatorHelpers.hpp" />
     <ClInclude Include="src\Memory\detail\AllocatorTraits.hpp" />
     <ClInclude Include="src\Memory\detail\NedMalloc\malloc.c.h" />
@@ -32,6 +33,7 @@
     <ClInclude Include="src\Memory\LinearSegregatorAllocator.hpp" />
     <ClInclude Include="src\Memory\Mallocator.hpp" />
     <ClInclude Include="src\Memory\MemoryBlock.hpp" />
+    <ClInclude Include="src\Memory\PatternGuard.hpp" />
     <ClInclude Include="src\Memory\SegregatorBucket.hpp" />
     <ClInclude Include="src\Memory\StackAllocator.hpp" />
     <ClInclude Include="src\Memory\NullAllocator.hpp" />

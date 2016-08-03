@@ -66,11 +66,8 @@ public:
 	template<typename = std::enable_if_t<std::is_move_constructible<A>::value && std::is_move_constructible<U>::value>>
 	constexpr AlignmentAllocator(AlignmentAllocator<A, U>&& obj)
 		noexcept(std::is_nothrow_move_constructible<A>::value && std::is_nothrow_move_constructible<U>::value)
-		: m_AAllocator{ }, m_UAllocator{ }
-	{
-		std::swap(m_AAllocator, obj.m_AAllocator);
-		std::swap(m_UAllocator, obj.m_UAllocator);
-	}
+		: m_AAllocator{ std::move(obj.m_AAllocator) }, m_UAllocator{ std::move(obj.m_UAllocator) }
+	{ }
 
 	template<typename = std::enable_if_t<std::is_copy_assignable<A>::value && std::is_copy_assignable<U>::value>>
 	AlignmentAllocator& operator = (const AlignmentAllocator<A, U>& obj)

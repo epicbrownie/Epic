@@ -118,6 +118,12 @@
     <ClInclude Include="src\Memory\detail\NedMalloc\nedmalloc.h">
       <Filter>Memory\detail\NedMalloc</Filter>
     </ClInclude>
+    <ClInclude Include="src\Memory\PatternGuard.hpp">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Memory\CorruptionGuardedAllocator.hpp">
+      <Filter>Memory\Allocators - Complex</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Memory\NedAllocator.cpp">

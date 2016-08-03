@@ -33,7 +33,7 @@ public:
 	using type = Epic::NedAllocator;
 
 public:
-	static constexpr size_t Alignment = 0;
+	static constexpr size_t Alignment = alignof(std::max_align_t);
 	static constexpr size_t MinAllocSize = 0;
 	static constexpr size_t MaxAllocSize = SIZE_MAX;
 

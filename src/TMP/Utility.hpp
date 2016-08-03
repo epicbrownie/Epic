@@ -19,7 +19,11 @@
 
 namespace Epic::TMP
 {
-	template<size_t I> struct GenIndexSequence;
+	template<size_t I> 
+	struct GenIndexSequence;
+
+	template<class DebugType, class ReleaseType> 
+	struct DebugSwitch;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -43,4 +47,21 @@ namespace Epic::TMP
 	/// IndexSequenceFor<Ts...> - Invokes GenIndexSequence on the size of Ts
 	template<typename... Ts>
 	using IndexSequenceFor = typename GenIndexSequence<sizeof...(Ts) - 1>::type;
+}
+
+namespace Epic::TMP
+{
+#ifdef NDEBUG
+	template<class, class R>
+	struct DebugSwitch
+	{
+		using type = R;
+	};
+#else
+	template<class D, class> 
+	struct DebugSwitch
+	{
+		using type = D;
+	};
+#endif
 }
