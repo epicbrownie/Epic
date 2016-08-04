@@ -160,7 +160,7 @@ public:
 
 	/* Frees all of the memory of both allocators. */
 	template<typename = std::enable_if_t<detail::CanDeallocateAll<U>::value && detail::CanDeallocateAll<A>::value>>
-	void DeallocateAll()
+	void DeallocateAll() noexcept
 	{
 		m_AAllocator.DeallocateAll();
 		m_UAllocator.DeallocateAll();
@@ -169,21 +169,15 @@ public:
 public:
 	/* Frees all of the memory of the aligned allocator. */
 	template<typename = std::enable_if_t<detail::CanDeallocateAll<A>::value>>
-	void DeallocateAllAligned()
+	void DeallocateAllAligned() noexcept
 	{
 		m_AAllocator.DeallocateAll();
 	}
 
 	/* Frees all of the memory of the unaligned allocator. */
 	template<typename = std::enable_if_t<detail::CanDeallocateAll<U>::value>>
-	void DeallocateAllUnaligned()
+	void DeallocateAllUnaligned() noexcept
 	{
 		m_UAllocator.DeallocateAll();
 	}
-
-private:
-	void* operator new (size_t) noexcept = delete;
-	void* operator new[] (size_t) noexcept = delete;
-	void operator delete (void*) noexcept = delete;
-	void operator delete[] (void*) noexcept = delete;
 };

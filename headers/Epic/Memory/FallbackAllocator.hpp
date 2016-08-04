@@ -178,21 +178,15 @@ public:
 public:
 	/* Frees all of the memory in the primary allocator. */
 	template<typename = std::enable_if_t<detail::CanDeallocateAll<P>::value>>
-	void DeallocateAllPrimary()
+	void DeallocateAllPrimary() noexcept
 	{
 		m_PAllocator.DeallocateAll();
 	}
 
 	/* Frees all of the memory in the fallback allocator. */
 	template<typename = std::enable_if_t<detail::CanDeallocateAll<F>::value>>
-	void DeallocateAllFallback()
+	void DeallocateAllFallback() noexcept
 	{
 		m_FAllocator.DeallocateAll();
 	}
-
-private:
-	void* operator new (size_t) noexcept = delete;
-	void* operator new[] (size_t) noexcept = delete;
-	void operator delete (void*) noexcept = delete;
-	void operator delete[] (void*) noexcept = delete;
 };

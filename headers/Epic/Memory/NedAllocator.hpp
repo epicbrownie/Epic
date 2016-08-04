@@ -66,10 +66,4 @@ public:
 public:
 	/* Frees the memory for blk (using std::free). */
 	void Deallocate(const Blk& blk) const;
-
-private:
-	void* operator new (size_t) noexcept = delete;
-	void* operator new[](size_t) noexcept = delete;
-	void operator delete (void*) noexcept = delete;
-	void operator delete[](void*) noexcept = delete;
 };

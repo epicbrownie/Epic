@@ -249,7 +249,7 @@ public:
 
 	/* Frees all of the memory of both allocators. */
 	template<typename = std::enable_if_t<detail::CanDeallocateAll<S>::value && detail::CanDeallocateAll<L>::value>>
-	void DeallocateAll()
+	void DeallocateAll() noexcept
 	{
 		m_SAllocator.DeallocateAll();
 		m_LAllocator.DeallocateAll();
@@ -258,21 +258,15 @@ public:
 public:
 	/* Frees all of the memory in the small allocator. */
 	template<typename = std::enable_if_t<detail::CanDeallocateAll<S>::value>>
-	void DeallocateAllSmall()
+	void DeallocateAllSmall() noexcept
 	{
 		m_SAllocator.DeallocateAll();
 	}
 
 	/* Frees all of the memory in the large allocator. */
 	template<typename = std::enable_if_t<detail::CanDeallocateAll<L>::value>>
-	void DeallocateAllLarge()
+	void DeallocateAllLarge() noexcept
 	{
 		m_LAllocator.DeallocateAll();
 	}
-
-private:
-	void* operator new (size_t) noexcept = delete;
-	void* operator new[] (size_t) noexcept = delete;
-	void operator delete (void*) noexcept = delete;
-	void operator delete[] (void*) noexcept = delete;
 };

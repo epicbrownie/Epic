@@ -476,7 +476,7 @@ public:
 	/* Returns whether or not this allocator is responsible for the block Blk. */
 	inline bool Owns(const Blk& blk) const noexcept
 	{
-		return blk && FindOwner(blk);
+		return blk && (FindOwner(blk) != nullptr);
 	}
 
 public:

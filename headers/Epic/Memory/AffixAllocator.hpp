@@ -243,10 +243,4 @@ public:
 	{
 		return HasSuffix ? reinterpret_cast<Suffix*>(ClientToSuffixPtr(blk)) : nullptr;
 	}
-
-private:
-	void* operator new (size_t) noexcept = delete;
-	void* operator new[] (size_t) noexcept = delete;
-	void operator delete (void*) noexcept = delete;
-	void operator delete[] (void*) noexcept = delete;
 };

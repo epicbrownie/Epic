@@ -127,6 +127,12 @@
     <ClInclude Include="src\Memory\CascadingAllocator.hpp">
       <Filter>Memory\Allocators - Complex</Filter>
     </ClInclude>
+    <ClInclude Include="src\Memory\GlobalAllocator.hpp">
+      <Filter>Memory\Allocators - Behavioral</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Memory\detail\AffixHelpers.hpp">
+      <Filter>Memory\detail</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Memory\NedAllocator.cpp">

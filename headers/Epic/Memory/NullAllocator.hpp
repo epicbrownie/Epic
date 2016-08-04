@@ -65,10 +65,4 @@ public:
 	void Deallocate(Blk blk) const;
 	void DeallocateAligned(Blk blk) const;
 	void DeallocateAll() const noexcept;
-
-private:
-	void* operator new (size_t) noexcept = delete;
-	void* operator new[] (size_t) noexcept = delete;
-	void operator delete (void*) noexcept = delete;
-	void operator delete[] (void*) noexcept = delete;
 };

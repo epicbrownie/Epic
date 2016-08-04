@@ -26,11 +26,13 @@
     <ClInclude Include="src\Memory\BinarySegregatorAllocator.hpp" />
     <ClInclude Include="src\Memory\CascadingAllocator.hpp" />
     <ClInclude Include="src\Memory\CorruptionGuardedAllocator.hpp" />
+    <ClInclude Include="src\Memory\detail\AffixHelpers.hpp" />
     <ClInclude Include="src\Memory\detail\AllocatorHelpers.hpp" />
     <ClInclude Include="src\Memory\detail\AllocatorTraits.hpp" />
     <ClInclude Include="src\Memory\detail\NedMalloc\malloc.c.h" />
     <ClInclude Include="src\Memory\detail\NedMalloc\nedmalloc.h" />
     <ClInclude Include="src\Memory\FreelistAllocator.hpp" />
+    <ClInclude Include="src\Memory\GlobalAllocator.hpp" />
     <ClInclude Include="src\Memory\LinearSegregatorAllocator.hpp" />
     <ClInclude Include="src\Memory\Mallocator.hpp" />
     <ClInclude Include="src\Memory\MemoryBlock.hpp" />
