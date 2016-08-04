@@ -23,37 +23,35 @@
 
 namespace Epic
 {
-	template<size_t Bytes, size_t DefaultAlignment = detail::DefaultAlignment>
+	template<size_t Bytes>
 	class AlignedStackAllocator;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-// AlignedStackAllocator<S, A>
-template<size_t S, size_t A>
+// AlignedStackAllocator<S>
+template<size_t S>
 class Epic::AlignedStackAllocator
 {
 public:
-	using type = Epic::AlignedStackAllocator<S, A>;
+	using type = Epic::AlignedStackAllocator<S>;
 	
 public:
-	static constexpr size_t Alignment = A;
+	static constexpr size_t Alignment = detail::DefaultAlignment;
 	static constexpr size_t MinAllocSize = 0;
 	static constexpr size_t MaxAllocSize = S;
 	static constexpr size_t MemorySize = S;
-
-	static_assert(detail::IsGoodAlignment(Alignment), "Error: Invalid default alignment");
 
 public:
 	constexpr AlignedStackAllocator() noexcept
 		: _pCursor{ _Memory }, _Memory{ } 
 	{ }
 
-	AlignedStackAllocator(const AlignedStackAllocator<S, A>&) = delete;
-	AlignedStackAllocator(AlignedStackAllocator<S, A>&& alloc) = delete;
+	AlignedStackAllocator(const type&) = delete;
+	AlignedStackAllocator(type&& alloc) = delete;
 
-	AlignedStackAllocator& operator = (const AlignedStackAllocator<S, A>&) = delete;
-	AlignedStackAllocator& operator = (AlignedStackAllocator<S, A>&&) = delete;
+	AlignedStackAllocator& operator = (const type&) = delete;
+	AlignedStackAllocator& operator = (type&&) = delete;
 
 private:
 	constexpr const char* _End() const noexcept
