@@ -66,8 +66,8 @@ namespace Epic
 {
 	template<class Allocator,
 		Epic::GuardMode Mode = Epic::GuardMode::After,
-		class DebugResponsePolicy = Epic::GuardResponseCErr,
-		class ReleaseResponsePolicy = Epic::GuardResponseIgnore,
+		class DebugResponsePolicy = Epic::GuardResponseAssert,
+		class ReleaseResponsePolicy = Epic::GuardResponseCErr,
 		size_t Pattern = Epic::DefaultGuardPattern::value>
 	using CorruptionGuardedAllocator = typename detail::CorruptionGuardInvoker<Allocator, Mode, Pattern, DebugResponsePolicy, ReleaseResponsePolicy>::type;
 }

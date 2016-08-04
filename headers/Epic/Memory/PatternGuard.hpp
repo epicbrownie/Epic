@@ -198,7 +198,7 @@ private:
 
 namespace Epic
 {
-	template<size_t Pattern = Epic::DefaultGuardPattern::value, class DebugResponsePolicy = Epic::GuardResponseCErr, class ReleaseResponsePolicy = Epic::GuardResponseIgnore>
+	template<size_t Pattern = Epic::DefaultGuardPattern::value, class DebugResponsePolicy = Epic::GuardResponseAssert, class ReleaseResponsePolicy = Epic::GuardResponseCErr>
 	using PatternGuard = 
 		detail::PatternGuardImpl<Pattern, typename TMP::DebugSwitch<DebugResponsePolicy, ReleaseResponsePolicy>::type>;
 }
