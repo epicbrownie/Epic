@@ -30,7 +30,7 @@ namespace Epic
 	{
 		struct FreelistBlock;
 
-		template<class Allocator, size_t BatchSize, size_t BatchLimit, size_t MaxAllocationSize, size_t MinAllocationSize = 0, size_t PreallocateBatches = 1, size_t DefaultAlignment = detail::DefaultAlignment>
+		template<class Allocator, size_t BatchSize, size_t BatchLimit, size_t MaxAllocationSize, size_t MinAllocationSize = 0, size_t DefaultAlignment = detail::DefaultAlignment>
 		class FreelistAllocatorImpl;
 	}
 }
@@ -44,15 +44,16 @@ struct Epic::detail::FreelistBlock
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// FreelistAllocatorImpl<A, ChunkSize, ChunkLimit, Max, Min, PreAlloc, DefAlign>
-template<class A, size_t ChunkSize, size_t ChunkLimit, size_t Max, size_t Min, size_t PreAlloc, size_t DefAlign>
+/// FreelistAllocatorImpl<A, ChunkSize, ChunkLimit, Max, Min, DefAlign>
+template<class A, size_t ChunkSize, size_t ChunkLimit, size_t Max, size_t Min, size_t DefAlign>
 class Epic::detail::FreelistAllocatorImpl
 {
 	static_assert(std::is_default_constructible<A>::value, "The freelist backing allocator must be default-constructible.");
-	static_assert(detail::CanAllocate<A>::value, "The freelist backing allocator must be able to perform unaligned allocations.");
+	static_assert(detail::CanAllocate<A>::value || detail::CanAllocateAligned<A>::value, 
+		"The freelist backing allocator must be able to perform allocations.");
 
 public:
-	using type = Epic::detail::FreelistAllocatorImpl<A, ChunkSize, ChunkLimit, Max, Min, PreAlloc, DefAlign>;
+	using type = Epic::detail::FreelistAllocatorImpl<A, ChunkSize, ChunkLimit, Max, Min, DefAlign>;
 	using AllocatorType = A;
 
 private:
@@ -71,10 +72,7 @@ public:
 public:
 	FreelistAllocatorImpl() noexcept(std::is_nothrow_default_constructible<A>::value)
 		: m_Allocator{ }, m_pChunks{ nullptr }, m_pFreeList{ nullptr }, m_ChunkCount{ 0 }
-	{
-		if (PreAlloc > 0)
-			AllocateChunks(PreAlloc);
-	}
+	{ }
 
 	FreelistAllocatorImpl(const type&) = delete;
 	
@@ -120,7 +118,13 @@ private:
 		size_t freeSize = ChunkSize * MaxAllocSize;
 		size_t chunkSize = freeSize + sizeof(PoolChunk) + Alignment;
 
-		Blk chunk = m_Allocator.Allocate(chunkSize);
+		Blk chunk;
+
+		if (detail::CanAllocate<A>::value)
+			chunk = detail::AllocateIf<A>::apply(m_Allocator, chunkSize);
+		else
+			chunk = detail::AllocateAlignedIf<A>::apply(m_Allocator, chunkSize);
+
 		if (!chunk) 
 			return false;
 
@@ -175,7 +179,12 @@ private:
 			while (m_pChunks)
 			{
 				auto pNext = m_pChunks->pNext;
-				detail::DeallocateIf<A>::apply(m_Allocator, m_pChunks->Mem);
+
+				if (detail::CanAllocate<A>::value)
+					detail::DeallocateIf<A>::apply(m_Allocator, m_pChunks->Mem);
+				else
+					detail::DeallocateAlignedIf<A>::apply(m_Allocator, m_pChunks->Mem);
+
 				m_pChunks = pNext;
 			}
 		}
@@ -213,8 +222,6 @@ public:
 	/* Returns whether or not this allocator is responsible for the block Blk. */
 	constexpr bool Owns(const Blk& blk) const noexcept
 	{
-		// Since we have exclusive access to the backing allocator,
-		// the check can be delegated.
 		return m_Allocator.Owns(blk);
 	}
 
@@ -288,20 +295,15 @@ public:
 	void DeallocateAligned(const Blk& blk)
 	{
 		if (!blk) return;
+		assert(Owns(blk) && "FreelistAllocator::DeallocateAligned - Attempted to free a block that was not allocated by this allocator");
 		PushBlock(blk);
 	}
 
 	/* Frees all of this allocator's memory */
-	void DeallocateAll()
+	void DeallocateAll() noexcept
 	{
 		FreeChunks();
 	}
-	
-private:
-	void* operator new (size_t) noexcept = delete;
-	void* operator new[](size_t) noexcept = delete;
-	void operator delete (void*) noexcept = delete;
-	void operator delete[](void*) noexcept = delete;
 
 private:
 	AllocatorType m_Allocator;
@@ -314,8 +316,8 @@ private:
 
 namespace Epic
 {
-	/// FreelistAllocator<Allocator, BatchSize, BatchLimit, MaxAllocationSize, MinAllocationSize, PreallocateBatches, DefaultAlignment>
-	template<class Allocator, size_t BatchSize, size_t BatchLimit, size_t MaxAllocationSize, size_t MinAllocationSize = 0, size_t PreallocateBatches = 1, size_t DefaultAlignment = detail::DefaultAlignment>
+	/// FreelistAllocator<Allocator, BatchSize, BatchLimit, MaxAllocationSize, MinAllocationSize, DefaultAlignment>
+	template<class Allocator, size_t BatchSize, size_t BatchLimit, size_t MaxAllocationSize, size_t MinAllocationSize = 0, size_t DefaultAlignment = detail::DefaultAlignment>
 	using FreelistAllocator = 
 		detail::FreelistAllocatorImpl
 		<
@@ -324,7 +326,6 @@ namespace Epic
 			BatchLimit,
 			std::max(MaxAllocationSize, std::max(sizeof(detail::FreelistBlock), MinAllocationSize)),
 			std::max(sizeof(detail::FreelistBlock), MinAllocationSize),
-			std::min(PreallocateBatches, BatchLimit),
 			DefaultAlignment
 		>;
 }
