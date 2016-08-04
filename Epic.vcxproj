@@ -24,6 +24,7 @@
     <ClInclude Include="src\Memory\AlignedMallocator.hpp" />
     <ClInclude Include="src\Memory\AlignedStackAllocator.hpp" />
     <ClInclude Include="src\Memory\BinarySegregatorAllocator.hpp" />
+    <ClInclude Include="src\Memory\CascadingAllocator.hpp" />
     <ClInclude Include="src\Memory\CorruptionGuardedAllocator.hpp" />
     <ClInclude Include="src\Memory\detail\AllocatorHelpers.hpp" />
     <ClInclude Include="src\Memory\detail\AllocatorTraits.hpp" />

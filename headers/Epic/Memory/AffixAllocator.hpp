@@ -99,7 +99,7 @@ public:
 	}
 
 private:
-	constexpr Blk ClientToAffixedBlock(const Blk& blk) const noexcept
+	static constexpr Blk ClientToAffixedBlock(const Blk& blk) noexcept
 	{
 		return Blk
 		{
@@ -108,7 +108,7 @@ private:
 		};
 	}
 
-	constexpr Blk AffixedToClientBlock(const Blk& blk) const noexcept
+	static constexpr Blk AffixedToClientBlock(const Blk& blk) noexcept
 	{
 		return Blk
 		{
@@ -117,22 +117,22 @@ private:
 		};
 	}
 
-	constexpr void* AffixedToPrefixPtr(const Blk& blk) const
+	static constexpr void* AffixedToPrefixPtr(const Blk& blk) noexcept
 	{
 		return blk.Ptr;
 	}
 
-	constexpr void* AffixedToSuffixPtr(const Blk& blk) const
+	static constexpr void* AffixedToSuffixPtr(const Blk& blk) noexcept
 	{
 		return static_cast<void*>(reinterpret_cast<char*>(blk.Ptr) + blk.Size - SuffixSize);
 	}
 
-	constexpr void* ClientToPrefixPtr(const Blk& blk) const
+	static constexpr void* ClientToPrefixPtr(const Blk& blk) noexcept
 	{
 		return static_cast<void*>(reinterpret_cast<char*>(blk.Ptr) - PrefixSize);
 	}
 
-	constexpr void* ClientToSuffixPtr(const Blk& blk) const
+	static constexpr void* ClientToSuffixPtr(const Blk& blk) noexcept
 	{
 		return static_cast<void*>(reinterpret_cast<char*>(blk.Ptr) + blk.Size);
 	}
@@ -233,12 +233,12 @@ public:
 	}
 
 public:
-	constexpr Prefix* GetPrefixObject(const Blk& blk) const noexcept
+	static constexpr Prefix* GetPrefixObject(const Blk& blk) noexcept
 	{
 		return HasPrefix ? reinterpret_cast<Prefix*>(ClientToPrefixPtr(blk)) : nullptr;
 	}
 
-	constexpr Suffix* GetSuffixObject(const Blk& blk) const noexcept
+	static constexpr Suffix* GetSuffixObject(const Blk& blk) noexcept
 	{
 		return HasSuffix ? reinterpret_cast<Suffix*>(ClientToSuffixPtr(blk)) : nullptr;
 	}
