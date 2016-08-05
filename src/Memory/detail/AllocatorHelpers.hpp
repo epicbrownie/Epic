@@ -307,11 +307,9 @@ struct Epic::detail::DeallocateAllIf<T, true>
 template<class T>
 struct Epic::detail::Reallocator
 {
-	static_assert(Epic::detail::CanAllocate<T>::value, "Reallocator requires that the allocator can perform unaligned allocations.");
-
 	static inline bool apply(T& alloc, Blk& blk, size_t sz)
 	{
-		auto newblk = alloc.Allocate(sz);
+		auto newblk = detail::AllocateIf<T>::apply(alloc, sz);
 		if (!newblk) return false;
 
 		if (blk)
@@ -327,7 +325,7 @@ struct Epic::detail::Reallocator
 
 	static inline bool apply(const T& alloc, Blk& blk, size_t sz)
 	{
-		auto newblk = alloc.Allocate(sz);
+		auto newblk = detail::AllocateIf<T>::apply(alloc, sz);
 		if (!newblk) return false;
 
 		if (blk)
@@ -345,11 +343,9 @@ struct Epic::detail::Reallocator
 template<class T>
 struct Epic::detail::AlignedReallocator
 {
-	static_assert(Epic::detail::CanAllocateAligned<T>::value, "AlignedReallocator requires that the allocator can perform aligned allocations.");
-
 	static inline bool apply(T& alloc, Blk& blk, size_t sz, size_t alignment = T::Alignment)
 	{
-		auto newblk = alloc.AllocateAligned(sz, alignment);
+		auto newblk = detail::AllocateAlignedIf<T>::apply(alloc, sz, alignment);
 		if (!newblk) return false;
 
 		if (blk)
@@ -365,7 +361,7 @@ struct Epic::detail::AlignedReallocator
 
 	static inline bool apply(const T& alloc, Blk& blk, size_t sz, size_t alignment = T::Alignment)
 	{
-		auto newblk = alloc.AllocateAligned(sz, alignment);
+		auto newblk = detail::AllocateAlignedIf<T>::apply(alloc, sz, alignment);
 		if (!newblk) return false;
 
 		if (blk)

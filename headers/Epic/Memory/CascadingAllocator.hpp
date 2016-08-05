@@ -487,21 +487,83 @@ public:
 		return result;
 	}
 
-//	/* Attempts to reallocate the memory of blk to the new size sz.
-//	Uses the unaligned allocator. */
-//	template<typename = std::enable_if_t<detail::CanReallocate<U>::value>>
-//	bool Reallocate(Blk& blk, size_t sz)
-//	{
-//		return m_UAllocator.Reallocate(blk, sz);
-//	}
-//
-//	/* Attempts to reallocate the memory of blk (aligned to alignment) to the new size sz.
-//	Uses the aligned allocator. */
-//	template<typename = std::enable_if_t<detail::CanReallocateAligned<A>::value>>
-//	bool ReallocateAligned(Blk& blk, size_t sz, size_t alignment = A::Alignment)
-//	{
-//		return m_AAllocator.ReallocateAligned(blk, sz, alignment);
-//	}
+	/* Attempts to reallocate the memory of blk to the new size sz. */
+	template<typename = std::enable_if_t<detail::CanAllocate<A>::value>>
+	bool Reallocate(Blk& blk, size_t sz)
+	{
+		// If the block isn't valid, delegate to Allocate
+		if (!blk)
+		{
+			blk = detail::AllocateIf<type>::apply(*this, sz);
+			return (bool)blk;
+		}
+
+		// If the requested size is zero, delegate to Deallocate
+		if (sz == 0)
+		{
+			detail::DeallocateIf<type>::apply(*this, blk);
+			return detail::CanDeallocate<type>::value;
+		}
+
+		// Verify that the requested size is within our allowed bounds
+		if (sz < MinAllocSize || sz > MaxAllocSize)
+			return false;
+
+		// First, attempt to reallocate it via the owning allocator
+		if (detail::CanReallocate<A>::value)
+		{
+			auto pNode = FindOwner(blk);
+			assert(pNode && "CascadingAllocator::Reallocate - Attempted to reallocate a block that was not allocated through this allocator");
+
+			if (detail::ReallocateIf<A>::apply(pNode->m_Allocator, blk, sz))
+				return true;
+		}
+
+		// Now attempt to reallocate using a helper.
+		// This could result in the allocation being moved to another node.
+		return detail::Reallocator<type>::apply(*this, blk, sz);
+	}
+
+	/* Attempts to reallocate the memory of blk (aligned to alignment) to the new size sz. */
+	template<typename = std::enable_if_t<detail::CanAllocateAligned<A>::value>>
+	bool ReallocateAligned(Blk& blk, size_t sz, size_t alignment = A::Alignment)
+	{
+		// Verify that the alignment is acceptable
+		if (!Epic::detail::IsGoodAlignment(alignment))
+			return false;
+
+		// If the block isn't valid, delegate to AllocateAligned
+		if (!blk)
+		{
+			blk = detail::AllocateAlignedIf<type>::apply(*this, sz, alignment);
+			return (bool)blk;
+		}
+
+		// If the requested size is zero, delegate to DeallocateAligned
+		if (sz == 0)
+		{
+			detail::DeallocateAlignedIf<type>::apply(*this, blk);
+			return detail::CanDeallocate<type>::value;
+		}
+
+		// Verify that the requested size is within our allowed bounds
+		if (sz < MinAllocSize || sz > MaxAllocSize)
+			return false;
+
+		// First, attempt to reallocate it via the owning allocator
+		if (detail::CanReallocateAligned<A>::value)
+		{
+			auto pNode = FindOwner(blk);
+			assert(pNode && "CascadingAllocator::ReallocateAligned - Attempted to reallocate a block that was not allocated through this allocator");
+
+			if (detail::ReallocateAlignedIf<A>::apply(pNode->m_Allocator, blk, sz, alignment))
+				return true;
+		}
+
+		// Now attempt to reallocate using a helper.
+		// This could result in the allocation being moved to another node.
+		return detail::AlignedReallocator<type>::apply(*this, blk, sz, alignment);
+	}
 
 public:
 	/* Frees the memory for blk. */
