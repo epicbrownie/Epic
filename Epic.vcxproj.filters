@@ -133,6 +133,9 @@
     <ClInclude Include="src\Memory\detail\AffixHelpers.hpp">
       <Filter>Memory\detail</Filter>
     </ClInclude>
+    <ClInclude Include="src\Memory\HeapAllocator.hpp">
+      <Filter>Memory\Allocators - Complex</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Memory\NedAllocator.cpp">
