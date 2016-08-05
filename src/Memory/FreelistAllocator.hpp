@@ -87,20 +87,7 @@ public:
 	}
 
 	FreelistAllocatorImpl& operator = (const type&) = delete;
-
-	template<typename = std::enable_if_t<std::is_move_assignable<A>::value>>
-	FreelistAllocatorImpl& operator = (type&& obj) noexcept(std::is_nothrow_move_assignable<A>::value)
-	{
-		FreeChunks();
-
-		m_Allocator = std::move(obj.m_Allocator);
-
-		std::swap(m_pChunks, obj.m_pChunks);
-		std::swap(m_pFreeList, obj.m_pFreeList);
-		std::swap(m_ChunkCount, obj.m_ChunkCount);
-
-		return *this;
-	}
+	FreelistAllocatorImpl& operator = (type&& obj) = delete;
 
 	~FreelistAllocatorImpl()
 	{

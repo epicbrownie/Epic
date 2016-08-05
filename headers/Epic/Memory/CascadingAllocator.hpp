@@ -399,7 +399,7 @@ private:
 /// CascadingAllocator<A, NodeA>
 template<class A, class NodeA>
 class Epic::CascadingAllocator : public Epic::detail::CascadingAllocatorBase<A, NodeA>
-{	
+{
 public:
 	using type = Epic::CascadingAllocator<A, NodeA>;
 	using base = Epic::detail::CascadingAllocatorBase<A, NodeA>;
@@ -567,16 +567,10 @@ public:
 
 	/* Frees all of the memory of all allocators. */
 	template<typename = std::enable_if_t<detail::CanDeallocateAll<A>::value>>
-	void DeallocateAll()
+	void DeallocateAll() noexcept
 	{
 		DestroyNodes();
 	}
-
-private:
-	void* operator new (size_t) noexcept = delete;
-	void* operator new[] (size_t) noexcept = delete;
-	void operator delete (void*) noexcept = delete;
-	void operator delete[] (void*) noexcept = delete;
 };
 
 //////////////////////////////////////////////////////////////////////////////
