@@ -82,10 +82,12 @@ public:
 			return{ nullptr, 0 };
 
 		// Round the requested size up so that subsequent allocations remain aligned
-		auto sznew = detail::RoundToAligned(sz, Alignment);
+		// unless the requested size is all of the remaining memory
+		auto szrem = _Remaining();
+		auto sznew = (sz == szrem) ? szrem : detail::RoundToAligned(sz, Alignment);
 		
 		// Verify that the request is not larger than available memory
-		if (sznew > _Remaining())
+		if (sznew > szrem)
 			return{ nullptr, 0 };
 
 		// Adjust cursor and return the allocation

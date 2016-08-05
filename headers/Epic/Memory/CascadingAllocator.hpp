@@ -133,18 +133,7 @@ public:
 	}
 
 	CascadingAllocatorBase& operator = (const type& obj) = delete;
-
-	template<typename = std::enable_if_t<std::is_move_assignable<NodeA>::value && CanDeallocateAll<A>::value>>
-	CascadingAllocatorBase& operator = (type&& obj)
-		noexcept(std::is_nothrow_move_assignable<NodeA>::value)
-	{
-		DestroyNodes();
-
-		m_NodeAllocator = std::move(obj.m_NodeAllocator);
-		std::swap(m_pAllocNodes, obj.m_pAllocNodes);
-
-		return *this;
-	}
+	CascadingAllocatorBase& operator = (type&& obj) = delete;
 
 	~CascadingAllocatorBase()
 	{
@@ -237,12 +226,6 @@ public:
 
 		return cnt;
 	}
-
-private:
-	void* operator new (size_t) noexcept = delete;
-	void* operator new[] (size_t) noexcept = delete;
-	void operator delete (void*) noexcept = delete;
-	void operator delete[] (void*) noexcept = delete;
 };
 
 /// CascadingAllocatorBase<A, void>
@@ -283,14 +266,7 @@ public:
 	}
 
 	CascadingAllocatorBase& operator = (const type& obj) = delete;
-
-	template<typename = std::enable_if_t<CanDeallocateAll<A>::value>>
-	CascadingAllocatorBase& operator = (type&& obj) noexcept
-	{
-		DestroyNodes();
-		std::swap(m_pAllocNodes, obj.m_pAllocNodes);
-		return *this;
-	}
+	CascadingAllocatorBase& operator = (type&& obj) noexcept = delete;
 
 	~CascadingAllocatorBase()
 	{
@@ -386,12 +362,6 @@ public:
 
 		return cnt;
 	}
-
-private:
-	void* operator new (size_t) noexcept = delete;
-	void* operator new[] (size_t) noexcept = delete;
-	void operator delete (void*) noexcept = delete;
-	void operator delete[] (void*) noexcept = delete;
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -424,15 +394,8 @@ public:
 	{ }
 
 	CascadingAllocator& operator = (const type& obj) = delete;
-
-	template<typename = std::enable_if_t<std::is_move_assignable<base>::value>>
-	CascadingAllocator& operator = (type&& obj)
-		noexcept(std::is_nothrow_move_assignable<base>::value)
-	{
-		base::operator = (std::move(obj));
-		return *this;
-	}
-
+	CascadingAllocator& operator = (type&& obj) = delete;
+	
 private:
 	Blk TryAllocate(size_t sz) noexcept
 	{
