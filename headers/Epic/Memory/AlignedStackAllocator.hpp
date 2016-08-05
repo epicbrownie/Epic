@@ -142,20 +142,6 @@ public:
 	}
 
 public:
-	/* Delegates to DeallocateAligned(blk). */
-	void Deallocate(const Blk& blk)
-	{
-		DeallocateAligned(blk);
-	}
-
-	/* No individual memory allocation can be reclaimed by this allocator. */
-	void DeallocateAligned(const Blk& blk)
-	{
-		if (!blk) return;
-
-		assert(Owns(blk) && "StackAllocator::Deallocate - Attempted to free a block that was not allocated by this allocator");
-	}
-
 	/* Frees all of this allocator's memory */
 	void DeallocateAll() noexcept
 	{
