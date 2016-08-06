@@ -70,7 +70,6 @@ struct Epic::detail::HeapBitmapMask<uint64_t>
 };
 
 //////////////////////////////////////////////////////////////////////////////
-#include <iostream>
 
 template<size_t BitCount>
 struct Epic::detail::HeapBitmap
@@ -261,32 +260,5 @@ struct Epic::detail::HeapBitmap
 		}
 
 		return true;
-	}
-
-	void Output()
-	{
-		const size_t byteCount = BlockCount * sizeof(StorageType);
-
-		uint8_t* pBuffer = reinterpret_cast<uint8_t*>(&Blocks[BlockCount - 1]) + sizeof(StorageType) - 1;
-
-		for (size_t i = 0; i < byteCount; ++i)
-		{
-			uint8_t mask = 0x80;
-
-			for (size_t j = 0; j < 8; ++j)
-			{
-				if (*pBuffer & mask)
-					std::cout << '1';
-				else
-					std::cout << '0';
-
-				mask >>= 1;
-			}
-
-			std::cout << " ";
-			--pBuffer;
-		}
-
-		std::cout << std::endl;
 	}
 };

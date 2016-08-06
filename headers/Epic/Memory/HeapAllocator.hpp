@@ -356,16 +356,7 @@ protected:
 
 			auto pBitmap = new (GetBitmapPointer()) BitmapType{};
 			pBitmap->Reset();
-
-std::cout << "Fresh Heap:" << std::endl;
-pBitmap->Output();
-std::cout << std::endl;
-
 			pBitmap->Set(0, blocksReq, true);
-
-std::cout << "Placed Bitmap:" << std::endl;
-pBitmap->Output();
-std::cout << std::endl;
 		}
 	}
 
@@ -446,13 +437,8 @@ protected:
 		if (blk)
 		{
 			m_Heap = { blk.Ptr, BlkSz * BlkCnt };
-
 			auto pBitmap = new (GetBitmapPointer()) BitmapType{};
 			pBitmap->Reset();
-
-std::cout << "Fresh Heap:" << std::endl;
-pBitmap->Output();
-std::cout << std::endl;
 		}
 	}
 
@@ -553,11 +539,7 @@ public:
 
 		// Allocate the blocks
 		Blk blk{ GetBlockPointer(block), sz };
-		pBitmap->Set(block, blocksReq);
-
-std::cout << "Allocated " << blocksReq << " blocks into location " << block << ":" << std::endl;
-pBitmap->Output();
-std::cout << std::endl;
+		pBitmap->Set(block, blocksReq, true);
 
 		return blk;
 	}
@@ -572,55 +554,34 @@ std::cout << std::endl;
 		size_t curBlocksReq = BytesToBlockSize(blk.Size);
 		size_t newBlocksReq = BytesToBlockSize(sz);
 
-		// If the allocation doesn't need to be expanded or shrunk,
-		// reallocating is easy
+		// In-place reallocation
 		if (curBlocksReq == newBlocksReq)
 		{
-std::cout << "Reallocated " << curBlock << " in place:" << std::endl;
-pBitmap->Output();
-std::cout << std::endl;
-
 			blk.Size = sz;
 			return true;
 		}
 
-		// If the allocation must be expanded, first try to do so
-		// in-place.  Try normal reallocation if that fails.
+		// Expand the allocation
 		if (sz > blk.Size)
 		{
+			// Try in-place expansion
 			size_t addBlocks = newBlocksReq - curBlocksReq;
 			if (pBitmap->HasAvailable(curBlock + curBlocksReq, addBlocks))
 			{
-				// This allocation can be expanded in-place
 				blk.Size = sz;
-				pBitmap->Set(curBlock + curBlocksReq, addBlocks);
-std::cout << "Reallocated " << curBlocksReq << " blocks to " << newBlocksReq 
-<< " blocks in place at location " << curBlock << ":" << std::endl;
-pBitmap->Output();
-std::cout << std::endl;
+				pBitmap->Set(curBlock + curBlocksReq, addBlocks, true);
+
 				return true;
 			}
 
-			bool result = detail::Reallocator<type>::apply(*this, blk, sz);
-			if (result)
-			{
-std::cout << "Reallocated block " << curBlock << " from " << curBlocksReq << " blocks to " << newBlocksReq 
-	<< " blocks at block " << GetBlock(blk.Ptr) << ":" << std::endl;
-pBitmap->Output();
-std::cout << std::endl;
-			}
-
-			return result;
+			// Normal reallocation
+			return detail::Reallocator<type>::apply(*this, blk, sz);
 		}
 
-		// The allocation must be shrunk
+		// Shrink the allocation
 		size_t remBlocks = curBlocksReq - newBlocksReq;
 		blk.Size = sz;
 		pBitmap->Unset(curBlock + newBlocksReq, remBlocks);
-
-std::cout << "Reallocated (shrunk) block " << curBlock << " down to " << newBlocksReq << " blocks:" << std::endl;
-pBitmap->Output();
-std::cout << std::endl;
 
 		return true;
 	}
@@ -638,10 +599,6 @@ public:
 		size_t blocksReq = BytesToBlockSize(blk.Size);
 
 		pBitmap->Unset(block, blocksReq);
-
-std::cout << "Deallocated " << blocksReq << " blocks from location " << block << ":" << std::endl;
-pBitmap->Output();
-std::cout << std::endl;
 	}
 
 	void DeallocateAll() noexcept
@@ -652,10 +609,6 @@ std::cout << std::endl;
 		size_t bitmapBlocks = BytesToBlockSize(BitmapSize);
 
 		pBitmap->Unset(bitmapBlocks, BlkCnt - bitmapBlocks);
-
-std::cout << "Deallocated (all) " << (BlkCnt - bitmapBlocks) << " blocks" << std::endl;
-pBitmap->Output();
-std::cout << std::endl;
 	}
 };
 
@@ -710,9 +663,8 @@ namespace Epic
 	template<size_t BlockSize, size_t BlockCount, class Allocator, size_t Alignment = 0>
 	using HeapAllocator = detail::HeapAllocatorImpl<Allocator, detail::InternalLinearHeapPolicy, BlockSize, BlockCount, Alignment>;
 
-	// TODO: Rename
 	template<size_t BlockSize, size_t BlockCount, class Allocator, size_t Alignment = 0>
-	using HeapStrictAllocator = detail::HeapAllocatorImpl<Allocator, detail::ExternalLinearHeapPolicy, BlockSize, BlockCount, Alignment>;
+	using StrictHeapAllocator = detail::HeapAllocatorImpl<Allocator, detail::ExternalLinearHeapPolicy, BlockSize, BlockCount, Alignment>;
 
 	template<size_t BlockSize, size_t BlockCount, class Allocator, size_t Alignment = 0>
 	using StaticHeapAllocator = detail::HeapAllocatorImpl<Allocator, detail::StaticHeapPolicy, BlockSize, BlockCount, Alignment>;
