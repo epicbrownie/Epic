@@ -58,7 +58,20 @@ bool AlignedNedAllocator::Reallocate(Blk& blk, size_t sz) const
 
 bool AlignedNedAllocator::ReallocateAligned(Blk& blk, size_t sz, size_t alignment) const
 {
-	return detail::AlignedReallocator<AlignedNedAllocator>::apply(*this, blk, sz, alignment);
+	assert(Owns(blk) && "AlignedNedAllocator::Reallocate - Attempted to reallocate a block that was not allocated by this allocator");
+
+	// If the size is 0, deallocate blk
+	if (sz == 0)
+	{
+		DeallocateAligned(blk);
+		return true;
+	}
+
+	// The reallocated size must still fall within our allocation size restrictions
+	if (sz < MinAllocSize || sz > MaxAllocSize) 
+		return false;
+
+	return detail::AlignedReallocator<AlignedNedAllocator>::ReallocateViaCopy(*this, blk, sz, alignment);
 }
 
 void AlignedNedAllocator::Deallocate(const Blk& blk) const

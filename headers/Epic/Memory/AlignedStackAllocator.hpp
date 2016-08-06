@@ -54,9 +54,19 @@ public:
 	AlignedStackAllocator& operator = (type&&) = delete;
 
 private:
+	char* _End() noexcept
+	{
+		return _Memory + MemorySize;
+	}
+
 	constexpr const char* _End() const noexcept
 	{
 		return _Memory + MemorySize;
+	}
+
+	size_t _Remaining() noexcept
+	{
+		return static_cast<size_t>(_End() - _pCursor);
 	}
 
 	constexpr size_t _Remaining() const noexcept
