@@ -526,7 +526,7 @@ public:
 
 		// Now attempt to reallocate using a helper.
 		// This could result in the allocation being moved to another node.
-		return detail::Reallocator<type>::apply(*this, blk, sz);
+		return detail::Reallocator<type>::ReallocateViaCopy(*this, blk, sz);
 	}
 
 	/* Attempts to reallocate the memory of blk (aligned to alignment) to the new size sz. */
@@ -572,7 +572,7 @@ public:
 
 		// Now attempt to reallocate using a helper.
 		// This could result in the allocation being moved to another node.
-		return detail::AlignedReallocator<type>::apply(*this, blk, sz, alignment);
+		return detail::AlignedReallocator<type>::ReallocateViaCopy(*this, blk, sz, alignment);
 	}
 
 public:

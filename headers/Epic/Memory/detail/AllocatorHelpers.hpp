@@ -307,7 +307,7 @@ struct Epic::detail::DeallocateAllIf<T, true>
 template<class T>
 struct Epic::detail::Reallocator
 {
-	static inline bool apply(T& alloc, Blk& blk, size_t sz)
+	static inline bool ReallocateViaCopy(T& alloc, Blk& blk, size_t sz)
 	{
 		auto newblk = detail::AllocateIf<T>::apply(alloc, sz);
 		if (!newblk) return false;
@@ -323,7 +323,7 @@ struct Epic::detail::Reallocator
 		return true;
 	}
 
-	static inline bool apply(const T& alloc, Blk& blk, size_t sz)
+	static inline bool ReallocateViaCopy(const T& alloc, Blk& blk, size_t sz)
 	{
 		auto newblk = detail::AllocateIf<T>::apply(alloc, sz);
 		if (!newblk) return false;
@@ -343,7 +343,7 @@ struct Epic::detail::Reallocator
 template<class T>
 struct Epic::detail::AlignedReallocator
 {
-	static inline bool apply(T& alloc, Blk& blk, size_t sz, size_t alignment = T::Alignment)
+	static inline bool ReallocateViaCopy(T& alloc, Blk& blk, size_t sz, size_t alignment = T::Alignment)
 	{
 		auto newblk = detail::AllocateAlignedIf<T>::apply(alloc, sz, alignment);
 		if (!newblk) return false;
@@ -359,7 +359,7 @@ struct Epic::detail::AlignedReallocator
 		return true;
 	}
 
-	static inline bool apply(const T& alloc, Blk& blk, size_t sz, size_t alignment = T::Alignment)
+	static inline bool ReallocateViaCopy(const T& alloc, Blk& blk, size_t sz, size_t alignment = T::Alignment)
 	{
 		auto newblk = detail::AllocateAlignedIf<T>::apply(alloc, sz, alignment);
 		if (!newblk) return false;

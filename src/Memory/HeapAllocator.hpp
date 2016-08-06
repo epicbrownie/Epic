@@ -575,7 +575,7 @@ public:
 			}
 
 			// Normal reallocation
-			return detail::Reallocator<type>::apply(*this, blk, sz);
+			return detail::Reallocator<type>::ReallocateViaCopy(*this, blk, sz);
 		}
 
 		// Shrink the allocation
