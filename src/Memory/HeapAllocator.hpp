@@ -710,9 +710,8 @@ namespace Epic
 	template<size_t BlockSize, size_t BlockCount, class Allocator, size_t Alignment = 0>
 	using HeapAllocator = detail::HeapAllocatorImpl<Allocator, detail::InternalLinearHeapPolicy, BlockSize, BlockCount, Alignment>;
 
-	// TODO: Rename
 	template<size_t BlockSize, size_t BlockCount, class Allocator, size_t Alignment = 0>
-	using HeapStrictAllocator = detail::HeapAllocatorImpl<Allocator, detail::ExternalLinearHeapPolicy, BlockSize, BlockCount, Alignment>;
+	using StrictHeapAllocator = detail::HeapAllocatorImpl<Allocator, detail::ExternalLinearHeapPolicy, BlockSize, BlockCount, Alignment>;
 
 	template<size_t BlockSize, size_t BlockCount, class Allocator, size_t Alignment = 0>
 	using StaticHeapAllocator = detail::HeapAllocatorImpl<Allocator, detail::StaticHeapPolicy, BlockSize, BlockCount, Alignment>;
