@@ -501,7 +501,12 @@ public:
 		// If the requested size is zero, delegate to Deallocate
 		if (sz == 0)
 		{
-			detail::DeallocateIf<type>::apply(*this, blk);
+			if (detail::CanDeallocate<type>::value)
+			{
+				detail::DeallocateIf<type>::apply(*this, blk);
+				blk = { nullptr, 0 };
+			}
+
 			return detail::CanDeallocate<type>::value;
 		}
 
@@ -542,8 +547,13 @@ public:
 		// If the requested size is zero, delegate to DeallocateAligned
 		if (sz == 0)
 		{
-			detail::DeallocateAlignedIf<type>::apply(*this, blk);
-			return detail::CanDeallocate<type>::value;
+			if (detail::CanDeallocateAligned<type>::value)
+			{
+				detail::DeallocateAlignedIf<type>::apply(*this, blk);
+				blk = { nullptr, 0 };
+			}
+
+			return detail::CanDeallocateAligned<type>::value;
 		}
 
 		// Verify that the requested size is within our allowed bounds
