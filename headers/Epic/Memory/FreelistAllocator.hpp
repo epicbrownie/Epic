@@ -61,7 +61,7 @@ private:
 
 public:
 	static constexpr size_t Alignment = A::Alignment;
-	static constexpr size_t MinAllocSize = std::max(sizeof(FreelistBlock), Min);
+	static constexpr size_t MinAllocSize = Min;
 	static constexpr size_t MaxAllocSize = std::max(MinAllocSize, Max);
 
 private:
@@ -292,12 +292,12 @@ namespace Epic
 	using FreelistAllocator = 
 		detail::FreelistAllocatorImpl<Allocator, BatchSize,
 			std::max(MaxAllocationSize, std::max(sizeof(detail::FreelistBlock), MinAllocationSize)),
-			std::max(sizeof(detail::FreelistBlock), MinAllocationSize)>;
+			MinAllocationSize>;
 
 	/// AlignedFreelistAllocator<Allocator, BatchSize, MaxAllocationSize, MinAllocationSize>
 	template<class Allocator, size_t BatchSize, size_t MaxAllocationSize, size_t MinAllocationSize = 0>
 	using AlignedFreelistAllocator =
 		detail::FreelistAllocatorImpl<Allocator, BatchSize,
 			detail::RoundToAligned(std::max(MaxAllocationSize, std::max(sizeof(detail::FreelistBlock), MinAllocationSize)), Allocator::Alignment),
-			std::max(sizeof(detail::FreelistBlock), MinAllocationSize)>;
+			MinAllocationSize>;
 }
