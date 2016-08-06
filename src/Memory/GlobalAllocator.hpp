@@ -13,54 +13,62 @@
 
 #pragma once
 
-#include <Epic/Singleton.hpp>
+#include <Epic/Memory/detail/GlobalHelpers.hpp>
 #include <Epic/Memory/detail/AllocatorTraits.hpp>
 #include <Epic/Memory/MemoryBlock.hpp>
+#include <Epic/Singleton.hpp>
 #include <cstdint>
-#include <functional>
 
 //////////////////////////////////////////////////////////////////////////////
 
-namespace Epic
+namespace Epic::detail
 {
-	template<class Allocator>
-	class GlobalAllocator;
+	struct GlobalAllocatorTag;
+
+	template<class Allocator, class Tag>
+	class GlobalAllocatorImpl;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// GlobalAllocator<A>
-template<class A>
-class Epic::GlobalAllocator
+/// GlobalAllocatorImpl<A, Tag>
+template<class A, class Tag>
+class Epic::detail::GlobalAllocatorImpl
 {
 	static_assert(std::is_default_constructible<A>::value, "Only default-constructible allocators can be made global.");
 
 public:
-	using type = Epic::GlobalAllocator<A>;
-	
+	using type = Epic::detail::GlobalAllocatorImpl<A, Tag>;
+	using AllocatorType = A;
+	using TagType = Tag;
+
 public:
 	static constexpr size_t Alignment = A::Alignment;
 	static constexpr size_t MinAllocSize = A::MinAllocSize;
 	static constexpr size_t MaxAllocSize = A::MaxAllocSize;
 
 private:
-	std::reference_wrapper<A> m_Allocator;
+	using SingletonAllocatorType = Epic::Singleton<A, Tag>;
+
+private:
+	A* m_pAllocator;
 
 public:
-	constexpr GlobalAllocator() noexcept
-		: m_Allocator{ Epic::Singleton<A>::Instance() } { }
+	constexpr GlobalAllocatorImpl() noexcept
+		: m_pAllocator{ &SingletonAllocatorType::Instance() } 
+	{ }
 
-	constexpr GlobalAllocator(const type& obj) = default;
-	constexpr GlobalAllocator(type&& obj) = default;
+	constexpr GlobalAllocatorImpl(const type& obj) = default;
+	constexpr GlobalAllocatorImpl(type&& obj) = default;
 
-	GlobalAllocator& operator = (const type& obj) = default;
-	GlobalAllocator& operator = (type&& obj) = default;
+	GlobalAllocatorImpl& operator = (const type& obj) = default;
+	GlobalAllocatorImpl& operator = (type&& obj) = default;
 
 public:
 	/* Returns whether or not this allocator is responsible for the block Blk. */
 	inline bool Owns(const Blk& blk) const noexcept
 	{
-		return m_Allocator.get().Owns(blk);
+		return m_pAllocator->Owns(blk);
 	}
 
 public:
@@ -68,35 +76,35 @@ public:
 	template<typename = std::enable_if_t<detail::CanAllocate<A>::value>>
 	Blk Allocate(size_t sz) noexcept
 	{
-		return m_Allocator.get().Allocate(sz);
+		return m_pAllocator->Allocate(sz);
 	}
 
 	/* Returns a block of uninitialized memory (aligned to alignment). */
 	template<typename = std::enable_if_t<detail::CanAllocateAligned<A>::value>>
 	Blk AllocateAligned(size_t sz, size_t alignment = A::Alignment) noexcept
 	{
-		return m_Allocator.get().AllocateAligned(sz, alignment);
+		return m_pAllocator->AllocateAligned(sz, alignment);
 	}
 
 	/* Attempts to reallocate the memory of blk to the new size sz. */
 	template<typename = std::enable_if_t<detail::CanReallocate<A>::value>>
 	bool Reallocate(Blk& blk, size_t sz)
 	{
-		return m_Allocator.get().Reallocate(blk, sz);
+		return m_pAllocator->Reallocate(blk, sz);
 	}
 
 	/* Attempts to reallocate the memory of blk (aligned to alignment) to the new size sz. */
 	template<typename = std::enable_if_t<detail::CanReallocateAligned<A>::value>>
 	bool ReallocateAligned(Blk& blk, size_t sz, size_t alignment = A::Alignment)
 	{
-		return m_Allocator.get().ReallocateAligned(blk, sz, alignment);
+		return m_pAllocator->ReallocateAligned(blk, sz, alignment);
 	}
 
 	/* Returns a block of uninitialized memory. */
 	template<typename = std::enable_if_t<detail::CanAllocateAll<A>::value>>
 	Blk AllocateAll() noexcept
 	{
-		return m_Allocator.get().AllocateAll();
+		return m_pAllocator->AllocateAll();
 	}
 
 public:
@@ -104,20 +112,34 @@ public:
 	template<typename = std::enable_if_t<detail::CanDeallocate<A>::value>>
 	void Deallocate(const Blk& blk)
 	{
-		m_Allocator.get().Deallocate(blk);
+		m_pAllocator->Deallocate(blk);
 	}
 
 	/* Frees the memory for blk. */
 	template<typename = std::enable_if_t<detail::CanDeallocateAligned<A>::value>>
 	void DeallocateAligned(const Blk& blk)
 	{
-		m_Allocator.get().DeallocateAligned(blk);
+		m_pAllocator->DeallocateAligned(blk);
 	}
 
 	/* Frees all of the allocator's memory. */
 	template<typename = std::enable_if_t<detail::CanDeallocateAll<A>::value>>
 	void DeallocateAll() noexcept
 	{
-		m_Allocator.get().DeallocateAll();
+		m_pAllocator->DeallocateAll();
+	}
+
+public:
+	static A& Allocator() noexcept
+	{
+		return SingletonAllocatorType::Instance();
 	}
 };
+
+//////////////////////////////////////////////////////////////////////////////
+
+namespace Epic
+{
+	template<class Allocator, class Tag = Epic::detail::GlobalAllocatorTag>
+	using GlobalAllocator = detail::GlobalAllocatorImpl<typename detail::UnwrapGlobalAllocator<Allocator>::type, Tag>;
+}

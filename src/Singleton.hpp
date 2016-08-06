@@ -19,14 +19,16 @@
 
 namespace Epic
 {
-	template<typename T>
+	struct SingletonTag;
+
+	template<class T, class Tag = SingletonTag>
 	class Singleton;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
 // Singleton
-template<typename T>
+template<class T, class Tag>
 class Epic::Singleton
 {
 public:
@@ -68,7 +70,5 @@ private:
 //////////////////////////////////////////////////////////////////////////////
 
 // Static Initialization
-template<typename T>
-decltype(Epic::Singleton<T>::s_Creator) Epic::Singleton<T>::s_Creator;
-
-
+template<class T, class Tag>
+decltype(Epic::Singleton<T, Tag>::s_Creator) Epic::Singleton<T, Tag>::s_Creator;
