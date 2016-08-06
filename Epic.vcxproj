@@ -29,9 +29,11 @@
     <ClInclude Include="src\Memory\detail\AffixHelpers.hpp" />
     <ClInclude Include="src\Memory\detail\AllocatorHelpers.hpp" />
     <ClInclude Include="src\Memory\detail\AllocatorTraits.hpp" />
+    <ClInclude Include="src\Memory\detail\GlobalHelpers.hpp" />
     <ClInclude Include="src\Memory\detail\HeapHelpers.hpp" />
     <ClInclude Include="src\Memory\detail\NedMalloc\malloc.c.h" />
     <ClInclude Include="src\Memory\detail\NedMalloc\nedmalloc.h" />
+    <ClInclude Include="src\Memory\detail\STLHelpers.hpp" />
     <ClInclude Include="src\Memory\FreelistAllocator.hpp" />
     <ClInclude Include="src\Memory\GlobalAllocator.hpp" />
     <ClInclude Include="src\Memory\HeapAllocator.hpp" />
@@ -47,6 +49,7 @@
     <ClInclude Include="src\Memory\AlignmentAllocator.hpp" />
     <ClInclude Include="src\Memory\SegregatorAllocator.hpp" />
     <ClInclude Include="src\Memory\FallbackAllocator.hpp" />
+    <ClInclude Include="src\Memory\STLAllocator.hpp" />
     <ClInclude Include="src\NullMutex.hpp" />
     <ClInclude Include="src\Singleton.hpp" />
     <ClInclude Include="src\StringHash.hpp" />

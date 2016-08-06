@@ -29,6 +29,9 @@
     <Filter Include="Memory\detail\NedMalloc">
       <UniqueIdentifier>{9d0a942b-8882-40d0-bc88-9a3d897f4a1c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Memory\STL">
+      <UniqueIdentifier>{e9124e88-979a-4ea0-a6bd-c61aea7b81b9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Singleton.hpp">
@@ -137,6 +140,15 @@
       <Filter>Memory\Allocators - Complex</Filter>
     </ClInclude>
     <ClInclude Include="src\Memory\detail\HeapHelpers.hpp">
+      <Filter>Memory\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Memory\STLAllocator.hpp">
+      <Filter>Memory\STL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Memory\detail\GlobalHelpers.hpp">
+      <Filter>Memory\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Memory\detail\STLHelpers.hpp">
       <Filter>Memory\detail</Filter>
     </ClInclude>
   </ItemGroup>
