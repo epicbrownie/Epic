@@ -81,20 +81,6 @@ namespace Epic::detail
 
 //////////////////////////////////////////////////////////////////////////////
 
-namespace Epic::detail
-{
-	template<class Affix>
-	struct AffixSize;
-
-	template<class Affix>
-	struct AffixConstructor;
-
-	template<class Affix, bool Enabled = std::is_same<Affix, void>::value || std::is_move_constructible<Affix>::value>
-	struct AffixBuffer;
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
 constexpr bool Epic::detail::IsGoodAlignment(const size_t alignment) noexcept
 {
 	return !(alignment == 0) &&				// alignment must be non-zero
@@ -135,7 +121,7 @@ struct Epic::detail::AllocateIf<T, true>
 template<class T, bool Enabled>
 struct Epic::detail::AllocateAlignedIf
 {
-	static inline Blk apply(const T&, size_t sz, size_t alignment) noexcept
+	static inline Blk apply(const T&, size_t sz, size_t alignment = T::Alignment) noexcept
 	{
 		return{ nullptr, 0 };
 	}
@@ -144,12 +130,12 @@ struct Epic::detail::AllocateAlignedIf
 template<class T>
 struct Epic::detail::AllocateAlignedIf<T, true>
 {
-	static inline Blk apply(T& alloc, size_t sz, size_t alignment) noexcept
+	static inline Blk apply(T& alloc, size_t sz, size_t alignment = T::Alignment) noexcept
 	{
 		return alloc.AllocateAligned(sz, alignment);
 	}
 
-	static inline Blk apply(const T& alloc, size_t sz, size_t alignment) noexcept
+	static inline Blk apply(const T& alloc, size_t sz, size_t alignment = T::Alignment) noexcept
 	{
 		return alloc.AllocateAligned(sz, alignment);
 	}
@@ -181,7 +167,7 @@ struct Epic::detail::ReallocateIf<T, true>
 template<class T, bool Enabled>
 struct Epic::detail::ReallocateAlignedIf
 {
-	static inline bool apply(const T&, Blk&, size_t, size_t)
+	static inline bool apply(const T&, Blk&, size_t, size_t = T::Alignment)
 	{
 		return false;
 	}
@@ -190,12 +176,12 @@ struct Epic::detail::ReallocateAlignedIf
 template<class T>
 struct Epic::detail::ReallocateAlignedIf<T, true>
 {
-	static inline bool apply(T& alloc, Blk& blk, size_t sz, size_t alignment)
+	static inline bool apply(T& alloc, Blk& blk, size_t sz, size_t alignment = T::Alignment)
 	{
 		return alloc.ReallocateAligned(blk, sz, alignment);
 	}
 
-	static inline bool apply(const T& alloc, Blk& blk, size_t sz, size_t alignment)
+	static inline bool apply(const T& alloc, Blk& blk, size_t sz, size_t alignment = T::Alignment)
 	{
 		return alloc.ReallocateAligned(blk, sz, alignment);
 	}
@@ -215,19 +201,19 @@ struct Epic::detail::AllocateAllIf<T, true>
 {
 	static inline Blk apply(T& alloc) noexcept
 	{
-		return alloc.Allocate();
+		return alloc.AllocateAll();
 	}
 
 	static inline Blk apply(const T& alloc) noexcept
 	{
-		return alloc.Allocate();
+		return alloc.AllocateAll();
 	}
 };
 
 template<class T, bool Enabled>
 struct Epic::detail::AllocateAllAlignedIf
 {
-	static inline Blk apply(const T&, size_t alignment) noexcept
+	static inline Blk apply(const T&, size_t alignment = T::Alignment) noexcept
 	{
 		return{ nullptr, 0 };
 	}
@@ -236,12 +222,12 @@ struct Epic::detail::AllocateAllAlignedIf
 template<class T>
 struct Epic::detail::AllocateAllAlignedIf<T, true>
 {
-	static inline Blk apply(T& alloc, size_t alignment) noexcept
+	static inline Blk apply(T& alloc, size_t alignment = T::Alignment) noexcept
 	{
 		return alloc.AllocateAllAligned(alignment);
 	}
 
-	static inline Blk apply(const T& alloc, size_t alignment) noexcept
+	static inline Blk apply(const T& alloc, size_t alignment = T::Alignment) noexcept
 	{
 		return alloc.AllocateAllAligned(alignment);
 	}
@@ -321,11 +307,9 @@ struct Epic::detail::DeallocateAllIf<T, true>
 template<class T>
 struct Epic::detail::Reallocator
 {
-	static_assert(Epic::detail::CanAllocate<T>::value, "Reallocator requires that the allocator can perform unaligned allocations.");
-
-	static inline bool apply(T& alloc, Blk& blk, size_t sz)
+	static inline bool ReallocateViaCopy(T& alloc, Blk& blk, size_t sz)
 	{
-		auto newblk = alloc.Allocate(sz);
+		auto newblk = detail::AllocateIf<T>::apply(alloc, sz);
 		if (!newblk) return false;
 
 		if (blk)
@@ -339,9 +323,9 @@ struct Epic::detail::Reallocator
 		return true;
 	}
 
-	static inline bool apply(const T& alloc, Blk& blk, size_t sz)
+	static inline bool ReallocateViaCopy(const T& alloc, Blk& blk, size_t sz)
 	{
-		auto newblk = alloc.Allocate(sz);
+		auto newblk = detail::AllocateIf<T>::apply(alloc, sz);
 		if (!newblk) return false;
 
 		if (blk)
@@ -359,11 +343,9 @@ struct Epic::detail::Reallocator
 template<class T>
 struct Epic::detail::AlignedReallocator
 {
-	static_assert(Epic::detail::CanAllocateAligned<T>::value, "AlignedReallocator requires that the allocator can perform aligned allocations.");
-
-	static inline bool apply(T& alloc, Blk& blk, size_t sz, size_t alignment)
+	static inline bool ReallocateViaCopy(T& alloc, Blk& blk, size_t sz, size_t alignment = T::Alignment)
 	{
-		auto newblk = alloc.AllocateAligned(sz, alignment);
+		auto newblk = detail::AllocateAlignedIf<T>::apply(alloc, sz, alignment);
 		if (!newblk) return false;
 
 		if (blk)
@@ -377,9 +359,9 @@ struct Epic::detail::AlignedReallocator
 		return true;
 	}
 
-	static inline bool apply(const T& alloc, Blk& blk, size_t sz, size_t alignment)
+	static inline bool ReallocateViaCopy(const T& alloc, Blk& blk, size_t sz, size_t alignment = T::Alignment)
 	{
-		auto newblk = alloc.AllocateAligned(sz, alignment);
+		auto newblk = detail::AllocateAlignedIf<T>::apply(alloc, sz, alignment);
 		if (!newblk) return false;
 
 		if (blk)
@@ -392,68 +374,4 @@ struct Epic::detail::AlignedReallocator
 
 		return true;
 	}
-};
-
-//////////////////////////////////////////////////////////////////////////////
-
-template<class Affix>
-struct Epic::detail::AffixSize
-{
-	static constexpr size_t value = sizeof(Affix);
-};
-
-template<>
-struct Epic::detail::AffixSize<void>
-{
-	static constexpr size_t value = 0;
-};
-
-template<class Affix>
-struct Epic::detail::AffixConstructor
-{
-	static void apply(void* pWhere)
-		noexcept(std::is_nothrow_default_constructible<Affix>::value)
-	{
-		new (pWhere) Affix{ };
-	}
-};
-
-template<>
-struct Epic::detail::AffixConstructor<void>
-{
-	static void apply(void*) noexcept { }
-};
-
-template<class Affix>
-struct Epic::detail::AffixBuffer<Affix, false>
-{
-	static constexpr bool CanStore = false;
-};
-
-template<class Affix>
-struct Epic::detail::AffixBuffer<Affix, true>
-{
-	static constexpr bool CanStore = true;
-
-	Affix _Buffer;
-
-	AffixBuffer(Affix* pObj) noexcept
-		: _Buffer(std::move(*pObj)) 
-	{
-		pObj->~Affix();
-	}
-
-	void Restore(void* pWhere) noexcept
-	{
-		new (pWhere) Affix{ std::move(_Buffer) };
-	}
-};
-
-template<>
-struct Epic::detail::AffixBuffer<void, true>
-{
-	static constexpr bool CanStore = true;
-
-	AffixBuffer(void*) noexcept { }
-	void Restore(void*) noexcept { }
 };

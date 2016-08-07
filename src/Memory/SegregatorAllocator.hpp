@@ -38,7 +38,7 @@ class Epic::SegregatorAllocator
 	static_assert(std::is_default_constructible<L>::value, "The large allocator must be default-constructible.");
 
 public:
-	using type = Epic::SegregatorAllocator<T, S, L>;
+	using Type = Epic::SegregatorAllocator<T, S, L>;
 	using SmallAllocatorType = S;
 	using LargeAllocatorType = L;
 
@@ -60,19 +60,19 @@ public:
 		noexcept(std::is_nothrow_default_constructible<S>::value && std::is_nothrow_default_constructible<L>::value) = default;
 
 	template<typename = std::enable_if_t<std::is_copy_constructible<S>::value && std::is_copy_constructible<L>::value>>
-	constexpr SegregatorAllocator(const SegregatorAllocator<T, S, L>& obj)
+	constexpr SegregatorAllocator(const Type& obj)
 		noexcept(std::is_nothrow_copy_constructible<S>::value && std::is_nothrow_copy_constructible<L>::value)
 		: m_SAllocator{ obj.m_SAllocator }, L{ obj.m_LAllocator }
 	{ }
 
 	template<typename = std::enable_if_t<std::is_move_constructible<S>::value && std::is_move_constructible<L>::value>>
-	constexpr SegregatorAllocator(SegregatorAllocator<T, S, L>&& obj)
+	constexpr SegregatorAllocator(Type&& obj)
 		noexcept(std::is_nothrow_move_constructible<S>::value && std::is_nothrow_move_constructible<L>::value)
 		: m_SAllocator{ std::move(obj.m_SAllocator) }, m_LAllocator{ std::move(obj.m_LAllocator) }
 	{ }
 
 	template<typename = std::enable_if_t<std::is_copy_assignable<S>::value && std::is_copy_assignable<L>::value>>
-	SegregatorAllocator& operator = (const SegregatorAllocator<T, S, L>& obj)
+	SegregatorAllocator& operator = (const Type& obj)
 		noexcept(std::is_nothrow_copy_assignable<S>::value && std::is_nothrow_copy_assignable<L>::value)
 	{
 		m_SAllocator = obj.m_SAllocator;
@@ -82,7 +82,7 @@ public:
 	}
 
 	template<typename = std::enable_if_t<std::is_move_assignable<S>::value && std::is_move_assignable<L>::value>>
-	SegregatorAllocator& operator = (SegregatorAllocator<T, S, L>&& obj)
+	SegregatorAllocator& operator = (Type&& obj)
 		noexcept(std::is_nothrow_move_assignable<S>::value && std::is_nothrow_move_assignable<L>::value)
 	{
 		m_SAllocator = std::move(obj.m_SAllocator);
@@ -249,7 +249,7 @@ public:
 
 	/* Frees all of the memory of both allocators. */
 	template<typename = std::enable_if_t<detail::CanDeallocateAll<S>::value && detail::CanDeallocateAll<L>::value>>
-	void DeallocateAll()
+	void DeallocateAll() noexcept
 	{
 		m_SAllocator.DeallocateAll();
 		m_LAllocator.DeallocateAll();
@@ -258,21 +258,15 @@ public:
 public:
 	/* Frees all of the memory in the small allocator. */
 	template<typename = std::enable_if_t<detail::CanDeallocateAll<S>::value>>
-	void DeallocateAllSmall()
+	void DeallocateAllSmall() noexcept
 	{
 		m_SAllocator.DeallocateAll();
 	}
 
 	/* Frees all of the memory in the large allocator. */
 	template<typename = std::enable_if_t<detail::CanDeallocateAll<L>::value>>
-	void DeallocateAllLarge()
+	void DeallocateAllLarge() noexcept
 	{
 		m_LAllocator.DeallocateAll();
 	}
-
-private:
-	void* operator new (size_t) noexcept = delete;
-	void* operator new[] (size_t) noexcept = delete;
-	void operator delete (void*) noexcept = delete;
-	void operator delete[] (void*) noexcept = delete;
 };

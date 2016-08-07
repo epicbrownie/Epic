@@ -15,7 +15,6 @@
 
 #include <Epic/Memory/detail/AllocatorHelpers.hpp>
 #include <Epic/Memory/MemoryBlock.hpp>
-#include <cassert>
 #include <cstdint>
 #include <memory>
 
@@ -23,42 +22,50 @@
 
 namespace Epic
 {
-	template<size_t Bytes, size_t DefaultAlignment = detail::DefaultAlignment>
+	template<size_t Bytes>
 	class AlignedStackAllocator;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-// AlignedStackAllocator<S, A>
-template<size_t S, size_t A>
+// AlignedStackAllocator<S>
+template<size_t S>
 class Epic::AlignedStackAllocator
 {
 public:
-	using type = Epic::AlignedStackAllocator<S, A>;
+	using Type = Epic::AlignedStackAllocator<S>;
 	
 public:
-	static constexpr size_t Alignment = A;
+	static constexpr size_t Alignment = detail::DefaultAlignment;
 	static constexpr size_t MinAllocSize = 0;
 	static constexpr size_t MaxAllocSize = S;
 	static constexpr size_t MemorySize = S;
-
-	static_assert(detail::IsGoodAlignment(Alignment), "Error: Invalid default alignment");
 
 public:
 	constexpr AlignedStackAllocator() noexcept
 		: _pCursor{ _Memory }, _Memory{ } 
 	{ }
 
-	AlignedStackAllocator(const AlignedStackAllocator<S, A>&) = delete;
-	AlignedStackAllocator(AlignedStackAllocator<S, A>&& alloc) = delete;
+	AlignedStackAllocator(const Type&) = delete;
+	AlignedStackAllocator(Type&& alloc) = delete;
 
-	AlignedStackAllocator& operator = (const AlignedStackAllocator<S, A>&) = delete;
-	AlignedStackAllocator& operator = (AlignedStackAllocator<S, A>&&) = delete;
+	AlignedStackAllocator& operator = (const Type&) = delete;
+	AlignedStackAllocator& operator = (Type&&) = delete;
 
 private:
+	char* _End() noexcept
+	{
+		return _Memory + MemorySize;
+	}
+
 	constexpr const char* _End() const noexcept
 	{
 		return _Memory + MemorySize;
+	}
+
+	size_t _Remaining() noexcept
+	{
+		return static_cast<size_t>(_End() - _pCursor);
 	}
 
 	constexpr size_t _Remaining() const noexcept
@@ -74,12 +81,6 @@ public:
 	}
 
 public:
-	/* Delegates to AllocateAligned(sz, Alignment). */
-	Blk Allocate(size_t sz) noexcept
-	{
-		return AllocateAligned(sz, Alignment);
-	}
-
 	/* Returns a block of uninitialized memory (aligned to alignment).
 	   If sz is zero, the returned block's pointer is null. */
 	Blk AllocateAligned(size_t sz, size_t alignment = Alignment) noexcept
@@ -93,25 +94,18 @@ public:
 			return{ nullptr, 0 };
 
 		// Calculate an aligned pointer to available memory if there is enough space available
-		Blk result;
+		Blk blk;
 		size_t space = _Remaining();
-		void* cursor = _pCursor;
-		void* pAligned = std::align(alignment, sz, cursor, space);
+		void* pAligned = _pCursor;
 
 		// If space was available, update the result and cursor
-		if (pAligned)
+		if (std::align(alignment, sz, pAligned, space))
 		{
-			result = { pAligned, sz };
+			blk = { pAligned, sz };
 			_pCursor = static_cast<char*>(pAligned) + sz;
 		}
 
-		return result;
-	}
-
-	/* Delegates to AllocateAllAligned() with default alignment. */
-	Blk AllocateAll() noexcept
-	{
-		return AllocateAllAligned(Alignment);
+		return blk;
 	}
 
 	/* Returns a block of uninitialized memory.
@@ -123,41 +117,21 @@ public:
 		if (!detail::IsGoodAlignment(alignment))
 			return{ nullptr, 0 };
 
-		// Verify that the requested size is within our allowed bounds
-		size_t szavail = _Remaining();
-		if (szavail == 0 || szavail < MinAllocSize || szavail > MaxAllocSize)
-			return{ nullptr, 0 };
-
 		// Attempt the allocation
-		void* cursor = _pCursor;
-		void* pAligned = std::align(alignment, 0, cursor, szavail);
-		Blk result;
+		Blk blk;
+		void* pAligned = _pCursor;
+		size_t szavail = _Remaining();
 
-		if (pAligned)
+		if (std::align(alignment, 0, pAligned, szavail))
 		{
-			size_t szReserved = static_cast<size_t>(_End() - static_cast<char*>(pAligned));
-			result = { pAligned, szReserved };
+			blk = { pAligned, szavail };
 			_pCursor = _End();
 		}
 		
-		return result;
+		return blk;
 	}
 
 public:
-	/* Delegates to DeallocateAligned(blk). */
-	void Deallocate(const Blk& blk)
-	{
-		DeallocateAligned(blk);
-	}
-
-	/* No individual memory allocation can be reclaimed by this allocator. */
-	void DeallocateAligned(const Blk& blk)
-	{
-		if (!blk) return;
-
-		assert(Owns(blk) && "StackAllocator::Deallocate - Attempted to free a block that was not allocated by this allocator");
-	}
-
 	/* Frees all of this allocator's memory */
 	void DeallocateAll() noexcept
 	{

@@ -28,11 +28,6 @@ using Epic::AlignedNedAllocator;
 
 //////////////////////////////////////////////////////////////////////////////
 
-Blk AlignedNedAllocator::Allocate(size_t sz) const noexcept
-{
-	return AllocateAligned(sz, Alignment);
-}
-
 Blk AlignedNedAllocator::AllocateAligned(size_t sz, size_t alignment) const noexcept
 {
 	// Verify that the alignment is acceptable
@@ -51,19 +46,22 @@ Blk AlignedNedAllocator::AllocateAligned(size_t sz, size_t alignment) const noex
 	return{ p, sz };
 }
 
-bool AlignedNedAllocator::Reallocate(Blk& blk, size_t sz) const
-{
-	return ReallocateAligned(blk, sz, Alignment);
-}
-
 bool AlignedNedAllocator::ReallocateAligned(Blk& blk, size_t sz, size_t alignment) const
 {
-	return detail::AlignedReallocator<AlignedNedAllocator>::apply(*this, blk, sz, alignment);
-}
+	assert(Owns(blk) && "AlignedNedAllocator::Reallocate - Attempted to reallocate a block that was not allocated by this allocator");
 
-void AlignedNedAllocator::Deallocate(const Blk& blk) const
-{
-	DeallocateAligned(blk);
+	// If the size is 0, deallocate blk
+	if (sz == 0)
+	{
+		DeallocateAligned(blk);
+		return true;
+	}
+
+	// The reallocated size must still fall within our allocation size restrictions
+	if (sz < MinAllocSize || sz > MaxAllocSize) 
+		return false;
+
+	return detail::AlignedReallocator<AlignedNedAllocator>::ReallocateViaCopy(*this, blk, sz, alignment);
 }
 
 void AlignedNedAllocator::DeallocateAligned(const Blk& blk) const

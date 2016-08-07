@@ -22,11 +22,6 @@ using Epic::AlignedMallocator;
 
 //////////////////////////////////////////////////////////////////////////////
 
-Blk AlignedMallocator::Allocate(size_t sz) const noexcept
-{
-	return AllocateAligned(sz, Alignment);
-}
-
 Blk AlignedMallocator::AllocateAligned(size_t sz, size_t alignment) const noexcept
 {
 	// Verify that the alignment is acceptable
@@ -43,11 +38,6 @@ Blk AlignedMallocator::AllocateAligned(size_t sz, size_t alignment) const noexce
 		return{ nullptr, 0 };
 
 	return{ p, sz };
-}
-
-bool AlignedMallocator::Reallocate(Blk& blk, size_t sz) const
-{
-	return ReallocateAligned(blk, sz, Alignment);
 }
 
 bool AlignedMallocator::ReallocateAligned(Blk& blk, size_t sz, size_t alignment) const
@@ -70,11 +60,6 @@ bool AlignedMallocator::ReallocateAligned(Blk& blk, size_t sz, size_t alignment)
 	blk = { p, sz };
 
 	return true;
-}
-
-void AlignedMallocator::Deallocate(const Blk& blk)
-{
-	DeallocateAligned(blk);
 }
 
 void AlignedMallocator::DeallocateAligned(const Blk& blk)

@@ -40,7 +40,7 @@ class Epic::AlignmentAllocator
 	static_assert(detail::CanAllocate<U>::value, "The unaligned allocator must support unaligned allocations.");
 
 public:
-	using type = Epic::AlignmentAllocator<A, U>;
+	using Type = Epic::AlignmentAllocator<A, U>;
 	using AlignedAllocatorType = A;
 	using UnalignedAllocatorType = U;
 
@@ -58,19 +58,19 @@ public:
 		noexcept(std::is_nothrow_default_constructible<A>::value && std::is_nothrow_default_constructible<U>::value) = default;
 
 	template<typename = std::enable_if_t<std::is_copy_constructible<A>::value && std::is_copy_constructible<U>::value>>
-	constexpr AlignmentAllocator(const AlignmentAllocator<A, U>& obj)
+	constexpr AlignmentAllocator(const Type& obj)
 		noexcept(std::is_nothrow_copy_constructible<A>::value && std::is_nothrow_copy_constructible<U>::value)
 		: m_AAllocator{ obj.m_AAllocator }, m_UAllocator{ obj.m_UAllocator }
 	{ }
 
 	template<typename = std::enable_if_t<std::is_move_constructible<A>::value && std::is_move_constructible<U>::value>>
-	constexpr AlignmentAllocator(AlignmentAllocator<A, U>&& obj)
+	constexpr AlignmentAllocator(Type&& obj)
 		noexcept(std::is_nothrow_move_constructible<A>::value && std::is_nothrow_move_constructible<U>::value)
 		: m_AAllocator{ std::move(obj.m_AAllocator) }, m_UAllocator{ std::move(obj.m_UAllocator) }
 	{ }
 
 	template<typename = std::enable_if_t<std::is_copy_assignable<A>::value && std::is_copy_assignable<U>::value>>
-	AlignmentAllocator& operator = (const AlignmentAllocator<A, U>& obj)
+	AlignmentAllocator& operator = (const Type& obj)
 		noexcept(std::is_nothrow_copy_assignable<A>::value && std::is_nothrow_copy_assignable<U>::value)
 	{
 		m_AAllocator = obj.m_AAllocator;
@@ -80,7 +80,7 @@ public:
 	}
 
 	template<typename = std::enable_if_t<std::is_move_assignable<A>::value && std::is_move_assignable<U>::value>>
-	AlignmentAllocator& operator = (AlignmentAllocator<A, U>&& obj)
+	AlignmentAllocator& operator = (Type&& obj)
 		noexcept(std::is_nothrow_move_assignable<A>::value && std::is_nothrow_move_assignable<U>::value)
 	{
 		m_AAllocator = std::move(obj.m_AAllocator);
@@ -160,7 +160,7 @@ public:
 
 	/* Frees all of the memory of both allocators. */
 	template<typename = std::enable_if_t<detail::CanDeallocateAll<U>::value && detail::CanDeallocateAll<A>::value>>
-	void DeallocateAll()
+	void DeallocateAll() noexcept
 	{
 		m_AAllocator.DeallocateAll();
 		m_UAllocator.DeallocateAll();
@@ -169,21 +169,15 @@ public:
 public:
 	/* Frees all of the memory of the aligned allocator. */
 	template<typename = std::enable_if_t<detail::CanDeallocateAll<A>::value>>
-	void DeallocateAllAligned()
+	void DeallocateAllAligned() noexcept
 	{
 		m_AAllocator.DeallocateAll();
 	}
 
 	/* Frees all of the memory of the unaligned allocator. */
 	template<typename = std::enable_if_t<detail::CanDeallocateAll<U>::value>>
-	void DeallocateAllUnaligned()
+	void DeallocateAllUnaligned() noexcept
 	{
 		m_UAllocator.DeallocateAll();
 	}
-
-private:
-	void* operator new (size_t) noexcept = delete;
-	void* operator new[] (size_t) noexcept = delete;
-	void operator delete (void*) noexcept = delete;
-	void operator delete[] (void*) noexcept = delete;
 };

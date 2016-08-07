@@ -16,9 +16,9 @@
 #include <Epic/Memory/detail/AllocatorHelpers.hpp>
 #include <Epic/Memory/detail/AllocatorTraits.hpp>
 #include <Epic/Memory/MemoryBlock.hpp>
+#include <algorithm>
 #include <cassert>
 #include <cstdint>
-#include <algorithm>
 #include <memory>
 #include <type_traits>
 
@@ -30,7 +30,7 @@ namespace Epic
 	{
 		struct FreelistBlock;
 
-		template<class Allocator, size_t BatchSize, size_t BatchLimit, size_t MaxAllocationSize, size_t MinAllocationSize = 0, size_t PreallocateBatches = 1, size_t DefaultAlignment = detail::DefaultAlignment>
+		template<class Allocator, size_t BatchSize, size_t BlockSize, size_t MinAllocationSize = 0, size_t Align = 0>
 		class FreelistAllocatorImpl;
 	}
 }
@@ -44,65 +44,67 @@ struct Epic::detail::FreelistBlock
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// FreelistAllocatorImpl<A, ChunkSize, ChunkLimit, Max, Min, PreAlloc, DefAlign>
-template<class A, size_t ChunkSize, size_t ChunkLimit, size_t Max, size_t Min, size_t PreAlloc, size_t DefAlign>
+/// FreelistAllocatorImpl<A, BatchSz, Max, Min, Align>
+template<class A, size_t BatchSz, size_t Max, size_t Min, size_t Align>
 class Epic::detail::FreelistAllocatorImpl
 {
 	static_assert(std::is_default_constructible<A>::value, "The freelist backing allocator must be default-constructible.");
-	static_assert(detail::CanAllocate<A>::value, "The freelist backing allocator must be able to perform unaligned allocations.");
+	static_assert(detail::CanAllocate<A>::value || detail::CanAllocateAligned<A>::value, 
+		"The freelist backing allocator must be able to perform allocations.");
 
 public:
-	using type = Epic::detail::FreelistAllocatorImpl<A, ChunkSize, ChunkLimit, Max, Min, PreAlloc, DefAlign>;
+	using Type = Epic::detail::FreelistAllocatorImpl<A, BatchSz, Max, Min>;
 	using AllocatorType = A;
 
 private:
 	struct PoolChunk { Blk Mem; PoolChunk* pNext; };
 
+	static constexpr bool IsAligned = (Align != 0) && (Align != A::Alignment);
+
 public:
-	static constexpr size_t Alignment = DefAlign;
-	static constexpr size_t MinAllocSize = std::max(sizeof(FreelistBlock), Min);
+	static constexpr size_t Alignment = IsAligned ? Align : A::Alignment;
+	static constexpr size_t MinAllocSize = Min;
 	static constexpr size_t MaxAllocSize = std::max(MinAllocSize, Max);
 
-	static constexpr size_t BatchSize = ChunkSize;
-	static constexpr size_t BatchLimit = ChunkLimit;
+	static constexpr size_t BlockSize = MaxAllocSize;
 
-	static_assert(detail::IsGoodAlignment(Alignment), "Error: Invalid Alignment");
+	static_assert(detail::IsGoodAlignment(Alignment), "Invalid freelist alignment.");
+	static_assert(!IsAligned || (IsAligned && detail::CanAllocateAligned<A>::value),
+		"A freelist's alignment can only differ from the backing allocator's alignment if the allocator supports aligned allocations.");
+	static_assert(!IsAligned || (BlockSize % Alignment) == 0,
+		"A freelist can only align if its block size is a multiple of the alignment.");
+
+private:
+	static constexpr size_t ChunkInfoBlocks = (sizeof(PoolChunk) + BlockSize - 1) / BlockSize;
 
 public:
-	FreelistAllocatorImpl() noexcept(std::is_nothrow_default_constructible<A>::value)
-		: m_Allocator{ }, m_pChunks{ nullptr }, m_pFreeList{ nullptr }, m_ChunkCount{ 0 }
-	{
-		if (PreAlloc > 0)
-			AllocateChunks(PreAlloc);
-	}
+	static constexpr size_t BatchSize = std::max(BatchSz, ChunkInfoBlocks + 1);
 
-	FreelistAllocatorImpl(const type&) = delete;
+private:
+	static constexpr size_t ChunkSize = BatchSize * BlockSize;
+
+private:
+	AllocatorType m_Allocator;
+	PoolChunk* m_pChunks;
+	FreelistBlock* m_pFreeList;
+	
+public:
+	FreelistAllocatorImpl() noexcept(std::is_nothrow_default_constructible<A>::value)
+		: m_Allocator{ }, m_pChunks{ nullptr }, m_pFreeList{ nullptr }
+	{ }
+
+	FreelistAllocatorImpl(const Type&) = delete;
 	
 	template<typename = std::enable_if_t<std::is_move_constructible<A>::value>>
-	FreelistAllocatorImpl(type&& obj) noexcept(std::is_nothrow_move_constructible<A>::value)
-		: m_Allocator{ std::move(obj) }, 
-		  m_pChunks{ nullptr }, m_pFreeList{ nullptr }, m_ChunkCount{ 0 }
+	FreelistAllocatorImpl(Type&& obj) noexcept(std::is_nothrow_move_constructible<A>::value)
+		: m_Allocator{ std::move(obj) }, m_pChunks{ nullptr }, m_pFreeList{ nullptr }
 	{
 		std::swap(m_pChunks, obj.m_pChunks);
 		std::swap(m_pFreeList, obj.m_pFreeList);
-		std::swap(m_ChunkCount, obj.m_ChunkCount);
 	}
 
-	FreelistAllocatorImpl& operator = (const type&) = delete;
-
-	template<typename = std::enable_if_t<std::is_move_assignable<A>::value>>
-	FreelistAllocatorImpl& operator = (type&& obj) noexcept(std::is_nothrow_move_assignable<A>::value)
-	{
-		FreeChunks();
-
-		m_Allocator = std::move(obj.m_Allocator);
-
-		std::swap(m_pChunks, obj.m_pChunks);
-		std::swap(m_pFreeList, obj.m_pFreeList);
-		std::swap(m_ChunkCount, obj.m_ChunkCount);
-
-		return *this;
-	}
+	FreelistAllocatorImpl& operator = (const Type&) = delete;
+	FreelistAllocatorImpl& operator = (Type&& obj) = delete;
 
 	~FreelistAllocatorImpl()
 	{
@@ -112,44 +114,34 @@ public:
 private:
 	bool AllocateChunk() noexcept
 	{
-		// Verify a new chunk can be allocated
-		if (m_ChunkCount == ChunkLimit)
-			return false;
-
 		// Allocate a chunk of memory from the backing allocator
-		size_t freeSize = ChunkSize * MaxAllocSize;
-		size_t chunkSize = freeSize + sizeof(PoolChunk) + Alignment;
+		Blk chunk;
 
-		Blk chunk = m_Allocator.Allocate(chunkSize);
+		if (IsAligned)
+			chunk = detail::AllocateAlignedIf<A>::apply(m_Allocator, ChunkSize, Alignment);
+		else
+			chunk = detail::AllocateIf<A>::apply(m_Allocator, ChunkSize);
+
 		if (!chunk) 
 			return false;
 
-		// Embed management info into the chunk
+		// Embed management info into the chunk (at the beginning)
 		PoolChunk* pNewChunk = new(chunk.Ptr) PoolChunk;
 		pNewChunk->Mem = chunk;
 		pNewChunk->pNext = m_pChunks;
-
 		m_pChunks = pNewChunk;
-		++m_ChunkCount;
 
-		// Align the chunk
-		size_t space = chunkSize - sizeof(PoolChunk);
-		void* cursor = reinterpret_cast<char*>(chunk.Ptr) + sizeof(PoolChunk);
-		void* pAligned = std::align(Alignment, freeSize, cursor, space);
-
-		// Alignment should never fail
-		assert(pAligned && "FreelistAllocator failed to align chunk memory.");
-
-		// Break the chunk into free blocks and add them to the freelist
-		char* pFreeBlock = reinterpret_cast<char*>(pAligned);
+		// Break the remaining chunk space into free blocks and add them to the freelist
+		size_t remainingBlocks = BatchSize - ChunkInfoBlocks;
+		char* pFreeBlocks = reinterpret_cast<char*>(chunk.Ptr) + (ChunkInfoBlocks * BlockSize);
 		
-		for (size_t i = 0; i < ChunkSize; ++i)
+		for (size_t i = 0; i < remainingBlocks; ++i)
 		{
-			FreelistBlock* pNewBlock = new(pFreeBlock) FreelistBlock;
+			FreelistBlock* pNewBlock = new(pFreeBlocks) FreelistBlock;
 			pNewBlock->pNext = m_pFreeList;
 			m_pFreeList = pNewBlock;
 
-			pFreeBlock += MaxAllocSize;
+			pFreeBlocks += BlockSize;
 		}
 
 		return true;
@@ -175,12 +167,16 @@ private:
 			while (m_pChunks)
 			{
 				auto pNext = m_pChunks->pNext;
-				detail::DeallocateIf<A>::apply(m_Allocator, m_pChunks->Mem);
+
+				if (IsAligned)
+					detail::DeallocateAlignedIf<A>::apply(m_Allocator, m_pChunks->Mem);
+				else
+					detail::DeallocateIf<A>::apply(m_Allocator, m_pChunks->Mem);
+
 				m_pChunks = pNext;
 			}
 		}
 
-		m_ChunkCount = 0;
 		m_pFreeList = nullptr;
 	}
 
@@ -191,7 +187,7 @@ private:
 			return{ nullptr, 0 };
 
 		// Take the head block
-		Blk result{ m_pFreeList, MaxAllocSize };
+		Blk result{ m_pFreeList, BlockSize };
 		m_pFreeList = m_pFreeList->pNext;
 
 		return result;
@@ -200,7 +196,7 @@ private:
 	void PushBlock(const Blk& blk) noexcept
 	{
 		// If the blk was allocated aligned, the alignment must be removed
-		size_t alignPad = MaxAllocSize - blk.Size;
+		size_t alignPad = BlockSize - blk.Size;
 		char* pPtr = reinterpret_cast<char*>(blk.Ptr) - alignPad;
 
 		// Push the adjusted pointer
@@ -213,8 +209,6 @@ public:
 	/* Returns whether or not this allocator is responsible for the block Blk. */
 	constexpr bool Owns(const Blk& blk) const noexcept
 	{
-		// Since we have exclusive access to the backing allocator,
-		// the check can be delegated.
 		return m_Allocator.Owns(blk);
 	}
 
@@ -252,18 +246,18 @@ public:
 			return{ nullptr, 0 };
 
 		// Allocate a full block
-		Blk result = Allocate(MaxAllocSize);
+		Blk result = Allocate(BlockSize);
 		if (!result)
 			return{ nullptr, 0 };
 
 		// Attempt to calculate an aligned pointer within the block
 		size_t space = result.Size;
-		void* cursor = result.Ptr;
+		void* pAligned = result.Ptr;
 
-		if (std::align(alignment, sz, cursor, space))
+		if (std::align(alignment, sz, pAligned, space))
 		{
 			// Alignment succeeded
-			result = { cursor, space };
+			result = { pAligned, space };
 		}
 		else
 		{
@@ -288,43 +282,36 @@ public:
 	void DeallocateAligned(const Blk& blk)
 	{
 		if (!blk) return;
+		assert(Owns(blk) && "FreelistAllocator::DeallocateAligned - Attempted to free a block that was not allocated by this allocator");
 		PushBlock(blk);
 	}
 
 	/* Frees all of this allocator's memory */
-	void DeallocateAll()
+	void DeallocateAll() noexcept
 	{
 		FreeChunks();
 	}
-	
-private:
-	void* operator new (size_t) noexcept = delete;
-	void* operator new[](size_t) noexcept = delete;
-	void operator delete (void*) noexcept = delete;
-	void operator delete[](void*) noexcept = delete;
-
-private:
-	AllocatorType m_Allocator;
-	PoolChunk* m_pChunks;
-	FreelistBlock* m_pFreeList;
-	size_t m_ChunkCount;
 };
 
 //////////////////////////////////////////////////////////////////////////////
 
 namespace Epic
 {
-	/// FreelistAllocator<Allocator, BatchSize, BatchLimit, MaxAllocationSize, MinAllocationSize, PreallocateBatches, DefaultAlignment>
-	template<class Allocator, size_t BatchSize, size_t BatchLimit, size_t MaxAllocationSize, size_t MinAllocationSize = 0, size_t PreallocateBatches = 1, size_t DefaultAlignment = detail::DefaultAlignment>
+	/// FreelistAllocator<Allocator, BatchSize, BlockSize, MinAllocationSize>
+	template<class Allocator, size_t BatchSize, size_t BlockSize, size_t MinAllocationSize = 0>
 	using FreelistAllocator = 
-		detail::FreelistAllocatorImpl
-		<
-			Allocator,
-			std::max<size_t>(BatchSize, 1),
-			BatchLimit,
-			std::max(MaxAllocationSize, std::max(sizeof(detail::FreelistBlock), MinAllocationSize)),
-			std::max(sizeof(detail::FreelistBlock), MinAllocationSize),
-			std::min(PreallocateBatches, BatchLimit),
-			DefaultAlignment
-		>;
+		detail::FreelistAllocatorImpl<Allocator, BatchSize,
+			std::max(BlockSize, std::max(sizeof(detail::FreelistBlock), MinAllocationSize)),
+			MinAllocationSize,
+			0>;
+
+	/// AlignedFreelistAllocator<Allocator, BatchSize, BlockSize, MinAllocationSize>
+	template<class Allocator, size_t BatchSize, size_t BlockSize, size_t Alignment = 0, size_t MinAllocationSize = 0>
+	using AlignedFreelistAllocator =
+		detail::FreelistAllocatorImpl<Allocator, BatchSize,
+			detail::RoundToAligned(
+				std::max(BlockSize, std::max(sizeof(detail::FreelistBlock), MinAllocationSize)), 
+						 (Alignment == 0) ? Allocator::Alignment : Alignment),
+			MinAllocationSize,
+			Alignment>;
 }

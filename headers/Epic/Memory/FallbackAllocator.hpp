@@ -38,7 +38,7 @@ class Epic::FallbackAllocator
 	static_assert(std::is_default_constructible<F>::value, "The fallback allocator must be default-constructible.");
 
 public:
-	using type = Epic::FallbackAllocator<P, F>;
+	using Type = Epic::FallbackAllocator<P, F>;
 	using PrimaryAllocatorType = P;
 	using FallbackAllocatorType = F;
 	
@@ -56,19 +56,19 @@ public:
 		noexcept(std::is_nothrow_default_constructible<P>::value && std::is_nothrow_default_constructible<F>::value) = default;
 
 	template<typename = std::enable_if_t<std::is_copy_constructible<P>::value && std::is_copy_constructible<F>::value>>
-	constexpr FallbackAllocator(const FallbackAllocator<P, F>& obj)
+	constexpr FallbackAllocator(const Type& obj)
 		noexcept(std::is_nothrow_copy_constructible<P>::value && std::is_nothrow_copy_constructible<F>::value)
 		: m_PAllocator{ obj.m_PAllocator }, m_FAllocator{ obj.m_FAllocator }
 	{ }
 
 	template<typename = std::enable_if_t<std::is_move_constructible<P>::value && std::is_move_constructible<F>::value>>
-	constexpr FallbackAllocator(FallbackAllocator<P, F>&& obj)
+	constexpr FallbackAllocator(Type&& obj)
 		noexcept(std::is_nothrow_move_constructible<P>::value && std::is_nothrow_move_constructible<F>::value)
 		: m_PAllocator{ std::move(obj.m_PAllocator) }, m_FAllocator{ std::move(obj.m_FAllocator) }
 	{ }
 
 	template<typename = std::enable_if_t<std::is_copy_assignable<P>::value && std::is_copy_assignable<F>::value>>
-	FallbackAllocator& operator = (const FallbackAllocator<P, F>& obj)
+	FallbackAllocator& operator = (const Type& obj)
 		noexcept(std::is_nothrow_copy_assignable<P>::value && std::is_nothrow_copy_assignable<F>::value)
 	{
 		m_PAllocator = obj.m_PAllocator;
@@ -78,7 +78,7 @@ public:
 	}
 
 	template<typename = std::enable_if_t<std::is_move_assignable<P>::value && std::is_move_assignable<F>::value>>
-	FallbackAllocator& operator = (FallbackAllocator<P, F>&& obj)
+	FallbackAllocator& operator = (Type&& obj)
 		noexcept(std::is_nothrow_move_assignable<P>::value && std::is_nothrow_move_assignable<F>::value)
 	{
 		m_PAllocator = std::move(obj.m_PAllocator);
@@ -178,21 +178,15 @@ public:
 public:
 	/* Frees all of the memory in the primary allocator. */
 	template<typename = std::enable_if_t<detail::CanDeallocateAll<P>::value>>
-	void DeallocateAllPrimary()
+	void DeallocateAllPrimary() noexcept
 	{
 		m_PAllocator.DeallocateAll();
 	}
 
 	/* Frees all of the memory in the fallback allocator. */
 	template<typename = std::enable_if_t<detail::CanDeallocateAll<F>::value>>
-	void DeallocateAllFallback()
+	void DeallocateAllFallback() noexcept
 	{
 		m_FAllocator.DeallocateAll();
 	}
-
-private:
-	void* operator new (size_t) noexcept = delete;
-	void* operator new[] (size_t) noexcept = delete;
-	void operator delete (void*) noexcept = delete;
-	void operator delete[] (void*) noexcept = delete;
 };

@@ -30,7 +30,7 @@ namespace Epic
 class Epic::AlignedNedAllocator
 {
 public:
-	using type = Epic::AlignedNedAllocator;
+	using Type = Epic::AlignedNedAllocator;
 
 public:
 	static constexpr size_t Alignment = alignof(std::max_align_t);
@@ -39,11 +39,11 @@ public:
 
 public:
 	constexpr AlignedNedAllocator() noexcept = default;
-	constexpr AlignedNedAllocator(const AlignedNedAllocator&) noexcept = default;
-	constexpr AlignedNedAllocator(AlignedNedAllocator&&) noexcept = default;
+	constexpr AlignedNedAllocator(const Type&) noexcept = default;
+	constexpr AlignedNedAllocator(Type&&) noexcept = default;
 
-	AlignedNedAllocator& operator = (const AlignedNedAllocator&) noexcept = default;
-	AlignedNedAllocator& operator = (AlignedNedAllocator&&) noexcept = default;
+	AlignedNedAllocator& operator = (const Type&) noexcept = default;
+	AlignedNedAllocator& operator = (Type&&) noexcept = default;
 
 public:
 	/* Returns whether or not this allocator is responsible for the block Blk. */
@@ -55,24 +55,15 @@ public:
 	}
 
 public:
-	/* Delegates to AllocateAligned(sz, Alignment). */
-	Blk Allocate(size_t sz) const noexcept;
-
 	/* Returns a block of uninitialized memory.
 	   If sz is zero, the returned block's pointer is null. */
 	Blk AllocateAligned(size_t sz, size_t alignment = Alignment) const noexcept;
-
-	/* Delegates to ReallocateAligned(blk, sz, Alignment). */
-	bool Reallocate(Blk& blk, size_t sz) const;
 
 	/* Attempts to reallocate the memory of blk (aligned to alignment) to the new size sz.
 	   If the block's pointer is null, this is equivalent to calling AllocateAligned(sz, alignment). */
 	bool ReallocateAligned(Blk& blk, size_t sz, size_t alignment = Alignment) const;
 
 public:
-	/* Delegates to DeallocateAligned(blk). */
-	void Deallocate(const Blk& blk) const;
-
 	/* Frees the memory for blk. */
 	void DeallocateAligned(const Blk& blk) const;
 };

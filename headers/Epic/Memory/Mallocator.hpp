@@ -30,7 +30,7 @@ namespace Epic
 class Epic::Mallocator
 {
 public:
-	using type = Epic::Mallocator;
+	using Type = Epic::Mallocator;
 
 public:
 	static constexpr size_t Alignment = alignof(std::max_align_t);
@@ -39,11 +39,11 @@ public:
 
 public:
 	constexpr Mallocator() noexcept = default;
-	constexpr Mallocator(const Mallocator&) noexcept = default;
-	constexpr Mallocator(Mallocator&&) noexcept = default;
+	constexpr Mallocator(const Type&) noexcept = default;
+	constexpr Mallocator(Type&&) noexcept = default;
 
-	Mallocator& operator = (const Mallocator&) noexcept = default;
-	Mallocator& operator = (Mallocator&&) noexcept = default;
+	Mallocator& operator = (const Type&) noexcept = default;
+	Mallocator& operator = (Type&&) noexcept = default;
 
 public:
 	/* Returns whether or not this allocator is responsible for the block Blk. */
@@ -67,10 +67,4 @@ public:
 public:
 	/* Frees the memory for blk (using std::free). */
 	void Deallocate(const Blk& blk);
-
-private:
-	void* operator new (size_t) noexcept = delete;
-	void* operator new[] (size_t) noexcept = delete;
-	void operator delete (void*) noexcept = delete;
-	void operator delete[] (void*) noexcept = delete;
 };

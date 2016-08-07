@@ -33,7 +33,7 @@ template<size_t S, size_t A>
 class Epic::StackAllocator
 {
 public:
-	using type = Epic::StackAllocator<S, A>;
+	using Type = Epic::StackAllocator<S, A>;
 
 public:
 	static constexpr size_t Alignment = A;
@@ -48,16 +48,26 @@ public:
 		: _pCursor{ _Memory }, _Memory{ } 
 	{ }
 
-	StackAllocator(const StackAllocator<S, A>&) = delete;
-	StackAllocator(StackAllocator<S, A>&& alloc) = delete;
+	StackAllocator(const Type&) = delete;
+	StackAllocator(Type&& alloc) = delete;
 
-	StackAllocator& operator = (const StackAllocator<S, A>&) = delete;
-	StackAllocator& operator = (StackAllocator<S, A>&&) = delete;
+	StackAllocator& operator = (const Type&) = delete;
+	StackAllocator& operator = (Type&&) = delete;
 
 private:
+	char* _End() noexcept
+	{
+		return _Memory + MemorySize;
+	}
+
 	constexpr const char* _End() const noexcept
 	{
 		return _Memory + MemorySize;
+	}
+
+	size_t _Remaining() noexcept
+	{
+		return static_cast<size_t>(_End() - _pCursor);
 	}
 
 	constexpr size_t _Remaining() const noexcept
@@ -82,10 +92,12 @@ public:
 			return{ nullptr, 0 };
 
 		// Round the requested size up so that subsequent allocations remain aligned
-		auto sznew = detail::RoundToAligned(sz, Alignment);
+		// unless the requested size is all of the remaining memory
+		auto szrem = _Remaining();
+		auto sznew = (sz == szrem) ? szrem : detail::RoundToAligned(sz, Alignment);
 		
 		// Verify that the request is not larger than available memory
-		if (sznew > _Remaining())
+		if (sznew > szrem)
 			return{ nullptr, 0 };
 
 		// Adjust cursor and return the allocation
@@ -122,6 +134,13 @@ public:
 
 		assert(Owns(blk) && "StackAllocator::Deallocate - Attempted to free a block that was not allocated by this allocator");
 		
+		// If this block was the last block available (obtained via AllocateAll()), free it
+		if (reinterpret_cast<char*>(blk.Ptr) + blk.Size == _End())
+		{
+			_pCursor = reinterpret_cast<char*>(blk.Ptr);
+			return;
+		}
+
 		// Calculate the actual size of the block
 		size_t sz = detail::RoundToAligned(blk.Size, Alignment);
 
