@@ -265,6 +265,6 @@ struct std::allocator_traits<Epic::detail::STLAllocatorImpl<T, A>>
 
 namespace Epic
 {
-	template<class T, class Allocator>
-	using STLAllocator = detail::STLAllocatorImpl<T, STLAllocatorAdapted<Allocator>>;
+	template<class T, class Allocator, class Tag = Epic::detail::GlobalAllocatorTag>
+	using STLAllocator = detail::STLAllocatorImpl<T, STLAllocatorAdapted<Allocator, Tag>>;
 }

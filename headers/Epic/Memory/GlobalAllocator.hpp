@@ -31,16 +31,16 @@ namespace Epic::detail
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// GlobalAllocatorImpl<A, Tag>
-template<class A, class Tag>
+/// GlobalAllocatorImpl<A, Tag_>
+template<class A, class Tag_>
 class Epic::detail::GlobalAllocatorImpl
 {
 	static_assert(std::is_default_constructible<A>::value, "Only default-constructible allocators can be made global.");
 
 public:
-	using type = Epic::detail::GlobalAllocatorImpl<A, Tag>;
+	using type = Epic::detail::GlobalAllocatorImpl<A, Tag_>;
 	using AllocatorType = A;
-	using TagType = Tag;
+	using Tag = Tag_;
 
 public:
 	static constexpr size_t Alignment = A::Alignment;

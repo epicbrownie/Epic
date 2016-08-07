@@ -21,7 +21,7 @@
 
 namespace Epic::detail
 {
-	template<class A>
+	template<class A, class Tag>
 	struct STLAllocatorAdaptor;
 
 	struct STLAllocatorPrefix;
@@ -36,27 +36,27 @@ struct Epic::detail::STLAllocatorPrefix
 
 //////////////////////////////////////////////////////////////////////////////
 
-template<class A>
+template<class A, class Tag>
 struct Epic::detail::STLAllocatorAdaptor
 {
 	using _affixed = Epic::AffixAllocator<A, Epic::detail::STLAllocatorPrefix>;
 
-	using type = Epic::GlobalAllocator<_affixed>;
+	using type = Epic::GlobalAllocator<_affixed, Tag>;
 };
 
-template<class A, class Tag>
-struct Epic::detail::STLAllocatorAdaptor<Epic::detail::GlobalAllocatorImpl<A, Tag>>
+template<class A, class Tag, class OldTag>
+struct Epic::detail::STLAllocatorAdaptor<Epic::detail::GlobalAllocatorImpl<A, OldTag>, Tag>
 {
 	using _unwrapped = typename detail::UnwrapGlobalAllocator<A>::type;
 	using _affixed = Epic::AffixAllocator<_unwrapped, Epic::detail::STLAllocatorPrefix>;
 
-	using type = Epic::GlobalAllocator<_affixed, Tag>;
+	using type = Epic::GlobalAllocator<_affixed, OldTag>;
 };
 
 //////////////////////////////////////////////////////////////////////////////
 
 namespace Epic
 {
-	template<class Allocator>
-	using STLAllocatorAdapted = typename detail::STLAllocatorAdaptor<Allocator>::type;
+	template<class Allocator, class Tag = detail::GlobalAllocatorTag>
+	using STLAllocatorAdapted = typename detail::STLAllocatorAdaptor<Allocator, Tag>::type;
 }
