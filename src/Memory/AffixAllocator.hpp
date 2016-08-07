@@ -39,7 +39,7 @@ class Epic::AffixAllocator
 	static_assert(std::is_default_constructible<A>::value, "The aligned allocator must be default-constructible.");
 	
 public:
-	using type = Epic::AffixAllocator<A, Prefix, Suffix>;
+	using Type = Epic::AffixAllocator<A, Prefix, Suffix>;
 	using AllocatorType = A;
 	using PrefixType = Prefix;
 	using SuffixType = Suffix;
@@ -57,8 +57,8 @@ public:
 	static constexpr size_t MinAllocSize = A::MinAllocSize;
 	static constexpr size_t MaxAllocSize = A::MaxAllocSize - AffixSize;
 
-	static_assert(!HasPrefix || std::is_default_constructible<Prefix>::value, "The Prefix type must be default-constructible.");
-	static_assert(!HasSuffix || std::is_default_constructible<Suffix>::value, "The Suffix type must be default-constructible.");
+	static_assert(!HasPrefix || std::is_default_constructible<Prefix>::value, "The Prefix Type must be default-constructible.");
+	static_assert(!HasSuffix || std::is_default_constructible<Suffix>::value, "The Suffix Type must be default-constructible.");
 
 	static_assert(A::MaxAllocSize > AffixSize || MaxAllocSize > MinAllocSize, "The Affix sizes are too large for this Allocator.");
 
@@ -70,19 +70,19 @@ public:
 		noexcept(std::is_nothrow_default_constructible<A>::value) = default;
 
 	template<typename = std::enable_if_t<std::is_copy_constructible<A>::value>>
-	constexpr AffixAllocator(const type& obj)
+	constexpr AffixAllocator(const Type& obj)
 		noexcept(std::is_nothrow_copy_constructible<A>::value)
 		: m_Allocator{ obj.m_Allocator }
 	{ }
 
 	template<typename = std::enable_if_t<std::is_move_constructible<A>::value>>
-	constexpr AffixAllocator(type&& obj)
+	constexpr AffixAllocator(Type&& obj)
 		noexcept(std::is_nothrow_move_constructible<A>::value)
 		: m_Allocator{ std::move(obj.m_Allocator) }
 	{ }
 
 	template<typename = std::enable_if_t<std::is_copy_assignable<A>::value>>
-	AffixAllocator& operator = (const type& obj)
+	AffixAllocator& operator = (const Type& obj)
 		noexcept(std::is_nothrow_copy_assignable<A>::value)
 	{
 		m_Allocator = obj.m_Allocator;
@@ -91,7 +91,7 @@ public:
 	}
 
 	template<typename = std::enable_if_t<std::is_move_assignable<A>::value>>
-	AffixAllocator& operator = (type&& obj)
+	AffixAllocator& operator = (Type&& obj)
 		noexcept(std::is_nothrow_move_assignable<A>::value)
 	{
 		m_Allocator = std::move(obj.m_Allocator);
@@ -179,20 +179,20 @@ public:
 		// If the block isn't valid, delegate to Allocate
 		if (!blk)
 		{
-			blk = detail::AllocateIf<type>::apply(*this, sz);
+			blk = detail::AllocateIf<Type>::apply(*this, sz);
 			return (bool)blk;
 		}
 
 		// If the requested size is zero, delegate to Deallocate
 		if (sz == 0)
 		{
-			if (detail::CanDeallocate<type>::value)
+			if (detail::CanDeallocate<Type>::value)
 			{
-				detail::DeallocateIf<type>::apply(*this, blk);
+				detail::DeallocateIf<Type>::apply(*this, blk);
 				blk = { nullptr, 0 };
 			}
 
-			return detail::CanDeallocate<type>::value;
+			return detail::CanDeallocate<Type>::value;
 		}
 
 		size_t newsz = sz + AffixSize;

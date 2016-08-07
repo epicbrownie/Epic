@@ -32,11 +32,11 @@ namespace Epic
 template<class A>
 struct Epic::detail::UnwrapGlobalAllocator
 {
-	using type = A;
+	using Type = A;
 };
 
 template<class A, class Tag>
 struct Epic::detail::UnwrapGlobalAllocator<Epic::GlobalAllocatorImpl<A, Tag>>
 {
-	using type = typename UnwrapGlobalAllocator<A>::type;
+	using Type = typename UnwrapGlobalAllocator<A>::Type;
 };

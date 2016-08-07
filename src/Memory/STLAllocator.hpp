@@ -36,7 +36,7 @@ class Epic::detail::STLAllocatorImpl
 	static_assert(!std::is_const<T>::value, "The C++ Standard forbids containers of const elements.");
 	
 public:
-	using type = Epic::detail::STLAllocatorImpl<T, A>;
+	using Type = Epic::detail::STLAllocatorImpl<T, A>;
 	using AllocatorType = A;
 
 public:
@@ -67,7 +67,7 @@ public:
 public:
 	STLAllocatorImpl() noexcept { }
 
-	STLAllocatorImpl(const type& obj) noexcept { }
+	STLAllocatorImpl(const Type& obj) noexcept { }
 
 	template<class U>
 	STLAllocatorImpl(const STLAllocatorImpl<U, A>&) noexcept
@@ -152,7 +152,7 @@ template<class A>
 class Epic::detail::STLAllocatorImpl<void, A>
 {
 public:
-	using type = Epic::detail::STLAllocatorImpl<void, A>;
+	using Type = Epic::detail::STLAllocatorImpl<void, A>;
 
 public:
 	using value_type = void;
@@ -168,7 +168,7 @@ public:
 
 public:
 	STLAllocatorImpl() noexcept = default;
-	STLAllocatorImpl(const type&) noexcept = default;
+	STLAllocatorImpl(const Type&) noexcept = default;
 
 	template<class U>
 	STLAllocatorImpl(const STLAllocatorImpl<U, A>&) noexcept { }

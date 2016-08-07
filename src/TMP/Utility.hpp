@@ -34,19 +34,19 @@ namespace Epic::TMP
 	template<size_t I>
 	struct GenIndexSequence
 	{
-		using type = typename Concat<typename GenIndexSequence<I - 1>::type, List<std::integral_constant<size_t, I>>>::type;
+		using Type = typename Concat<typename GenIndexSequence<I - 1>::Type, List<std::integral_constant<size_t, I>>>::Type;
 	};
 
 	template<> 
 	struct GenIndexSequence<0>
 	{
-		using type = List<std::integral_constant<size_t, 0>>;
+		using Type = List<std::integral_constant<size_t, 0>>;
 	};
 	
 
 	/// IndexSequenceFor<Ts...> - Invokes GenIndexSequence on the size of Ts
 	template<typename... Ts>
-	using IndexSequenceFor = typename GenIndexSequence<sizeof...(Ts) - 1>::type;
+	using IndexSequenceFor = typename GenIndexSequence<sizeof...(Ts) - 1>::Type;
 }
 
 namespace Epic::TMP
@@ -55,13 +55,13 @@ namespace Epic::TMP
 	template<class, class R>
 	struct DebugSwitch
 	{
-		using type = R;
+		using Type = R;
 	};
 #else
 	template<class D, class> 
 	struct DebugSwitch
 	{
-		using type = D;
+		using Type = D;
 	};
 #endif
 }

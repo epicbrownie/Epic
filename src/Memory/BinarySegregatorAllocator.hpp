@@ -27,7 +27,7 @@ namespace Epic::detail
 {
 	// Bucket List Filter
 	template<template<typename> class Pred, typename T, typename U>
-	using SegBucketListFilterHelper = typename std::conditional<Pred<U>::value, TMP::List<T>, TMP::List<>>::type;
+	using SegBucketListFilterHelper = typename std::conditional<Pred<U>::value, TMP::List<T>, TMP::List<>>::Type;
 
 	template<template<typename> class Pred, typename Is, typename... Ts>
 	struct SegBucketListFilter;
@@ -35,7 +35,7 @@ namespace Epic::detail
 	template<template<typename> class Pred, typename... Is, typename... Ts>
 	struct SegBucketListFilter<Pred, TMP::List<Is...>, Ts...>
 	{
-		using type = typename TMP::Concat<SegBucketListFilterHelper<Pred, Ts, Is>...>::type;
+		using Type = typename TMP::Concat<SegBucketListFilterHelper<Pred, Ts, Is>...>::Type;
 	};
 
 
@@ -75,34 +75,34 @@ namespace Epic::detail
 		using Left = typename SegBucketListFilter<
 			SegBucketIndexLess<N>::Predicate, 
 			TMP::IndexSequenceFor<Buckets...>, 
-			Buckets...>::type;
+			Buckets...>::Type;
 		
 		using Right = typename SegBucketListFilter<
 			SegBucketIndexGreater<N>::Predicate, 
 			TMP::IndexSequenceFor<Buckets...>, 
-			Buckets...>::type;
+			Buckets...>::Type;
 
-		using type = typename BinarySegregatorAllocatorBuilder<Center, Left, Right, Buckets...>::type;
+		using Type = typename BinarySegregatorAllocatorBuilder<Center, Left, Right, Buckets...>::Type;
 	};
 
 	template<size_t T, class A, typename... Ls, typename... Rs, typename... Buckets>
 	struct BinarySegregatorAllocatorBuilder<SegregatorBucket<T, A>, TMP::List<Ls...>, TMP::List<Rs...>, Buckets...>
 	{
-		using type = Epic::SegregatorAllocator<T,
-			typename BinarySegregatorAllocatorBuilder<typename TMP::Concat<TMP::List<Ls...>, TMP::List<A>>::type>::type,
-			typename BinarySegregatorAllocatorBuilder<TMP::List<Rs...>>::type>;
+		using Type = Epic::SegregatorAllocator<T,
+			typename BinarySegregatorAllocatorBuilder<typename TMP::Concat<TMP::List<Ls...>, TMP::List<A>>::Type>::Type,
+			typename BinarySegregatorAllocatorBuilder<TMP::List<Rs...>>::Type>;
 	};
 
 	template<class A>
 	struct BinarySegregatorAllocatorBuilder<TMP::List<A>>
 	{
-		using type = A;
+		using Type = A;
 	};
 
 	template<size_t T, class A, class B>
 	struct BinarySegregatorAllocatorBuilder<TMP::List<SegregatorBucket<T, A>, B>>
 	{
-		using type = Epic::SegregatorAllocator<T, A, B>;
+		using Type = Epic::SegregatorAllocator<T, A, B>;
 	};
 
 
@@ -113,30 +113,30 @@ namespace Epic::detail
 	template<size_t T, class A, typename... Args>
 	struct MakeSegregatorBucketList<SegregatorBucket<T, A>, Args...>
 	{
-		using type = typename TMP::Concat<
+		using Type = typename TMP::Concat<
 			TMP::List<SegregatorBucket<T, A>>, 
-			typename MakeSegregatorBucketList<Args...>::type>::type;
+			typename MakeSegregatorBucketList<Args...>::Type>::Type;
 	};
 
 	template<size_t T, class A, typename... Args>
 	struct MakeSegregatorBucketList<std::integral_constant<size_t, T>, A, Args...>
 	{
-		using type = typename TMP::Concat<
+		using Type = typename TMP::Concat<
 			TMP::List<SegregatorBucket<T, A>>, 
-			typename MakeSegregatorBucketList<Args...>::type>::type;
+			typename MakeSegregatorBucketList<Args...>::Type>::Type;
 	};
 
 	template<class A>
 	struct MakeSegregatorBucketList<A>
 	{
-		using type = TMP::List<A>;
+		using Type = TMP::List<A>;
 	};
 
 
 	// BinarySegregatorAllocatorBuilder Invoker
 	template<typename... Args>
 	using BinarySegregatorAllocatorBuilderInvoker =
-		typename BinarySegregatorAllocatorBuilder<typename MakeSegregatorBucketList<Args...>::type>::type;
+		typename BinarySegregatorAllocatorBuilder<typename MakeSegregatorBucketList<Args...>::Type>::Type;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -144,5 +144,5 @@ namespace Epic::detail
 namespace Epic
 {
 	template<typename... Args>
-	using BinarySegregatorAllocator = typename Epic::detail::BinarySegregatorAllocatorBuilderInvoker<Args...>::type;
+	using BinarySegregatorAllocator = typename Epic::detail::BinarySegregatorAllocatorBuilderInvoker<Args...>::Type;
 }

@@ -31,7 +31,7 @@ namespace Epic
 class Epic::AlignedMallocator
 {
 public:
-	using type = Epic::AlignedMallocator;
+	using Type = Epic::AlignedMallocator;
 
 public:
 	static constexpr size_t Alignment = alignof(std::max_align_t);
@@ -40,11 +40,11 @@ public:
 
 public:
 	constexpr AlignedMallocator() noexcept = default;
-	constexpr AlignedMallocator(const AlignedMallocator&) noexcept = default;
-	constexpr AlignedMallocator(AlignedMallocator&&) noexcept = default;
+	constexpr AlignedMallocator(const Type&) noexcept = default;
+	constexpr AlignedMallocator(Type&&) noexcept = default;
 
-	AlignedMallocator& operator = (const AlignedMallocator&) noexcept = default;
-	AlignedMallocator& operator = (AlignedMallocator&&) noexcept = default;
+	AlignedMallocator& operator = (const Type&) noexcept = default;
+	AlignedMallocator& operator = (Type&&) noexcept = default;
 
 public:
 	/* Returns whether or not this allocator is responsible for the block Blk. */

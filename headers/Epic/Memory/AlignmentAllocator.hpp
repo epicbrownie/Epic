@@ -40,7 +40,7 @@ class Epic::AlignmentAllocator
 	static_assert(detail::CanAllocate<U>::value, "The unaligned allocator must support unaligned allocations.");
 
 public:
-	using type = Epic::AlignmentAllocator<A, U>;
+	using Type = Epic::AlignmentAllocator<A, U>;
 	using AlignedAllocatorType = A;
 	using UnalignedAllocatorType = U;
 
@@ -58,19 +58,19 @@ public:
 		noexcept(std::is_nothrow_default_constructible<A>::value && std::is_nothrow_default_constructible<U>::value) = default;
 
 	template<typename = std::enable_if_t<std::is_copy_constructible<A>::value && std::is_copy_constructible<U>::value>>
-	constexpr AlignmentAllocator(const AlignmentAllocator<A, U>& obj)
+	constexpr AlignmentAllocator(const Type& obj)
 		noexcept(std::is_nothrow_copy_constructible<A>::value && std::is_nothrow_copy_constructible<U>::value)
 		: m_AAllocator{ obj.m_AAllocator }, m_UAllocator{ obj.m_UAllocator }
 	{ }
 
 	template<typename = std::enable_if_t<std::is_move_constructible<A>::value && std::is_move_constructible<U>::value>>
-	constexpr AlignmentAllocator(AlignmentAllocator<A, U>&& obj)
+	constexpr AlignmentAllocator(Type&& obj)
 		noexcept(std::is_nothrow_move_constructible<A>::value && std::is_nothrow_move_constructible<U>::value)
 		: m_AAllocator{ std::move(obj.m_AAllocator) }, m_UAllocator{ std::move(obj.m_UAllocator) }
 	{ }
 
 	template<typename = std::enable_if_t<std::is_copy_assignable<A>::value && std::is_copy_assignable<U>::value>>
-	AlignmentAllocator& operator = (const AlignmentAllocator<A, U>& obj)
+	AlignmentAllocator& operator = (const Type& obj)
 		noexcept(std::is_nothrow_copy_assignable<A>::value && std::is_nothrow_copy_assignable<U>::value)
 	{
 		m_AAllocator = obj.m_AAllocator;
@@ -80,7 +80,7 @@ public:
 	}
 
 	template<typename = std::enable_if_t<std::is_move_assignable<A>::value && std::is_move_assignable<U>::value>>
-	AlignmentAllocator& operator = (AlignmentAllocator<A, U>&& obj)
+	AlignmentAllocator& operator = (Type&& obj)
 		noexcept(std::is_nothrow_move_assignable<A>::value && std::is_nothrow_move_assignable<U>::value)
 	{
 		m_AAllocator = std::move(obj.m_AAllocator);
