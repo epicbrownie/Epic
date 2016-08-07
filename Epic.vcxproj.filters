@@ -157,12 +157,6 @@
     <ClInclude Include="src\Memory\detail\ForceAlignHelpers.hpp">
       <Filter>Memory\detail</Filter>
     </ClInclude>
-    <ClInclude Include="src\Memory\STLVector.hpp">
-      <Filter>Memory\STL</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Memory\Default.hpp">
-      <Filter>Memory</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Memory\NedAllocator.cpp">

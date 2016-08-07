@@ -32,10 +32,10 @@ template<class T, class Tag>
 class Epic::Singleton
 {
 public:
-	using SingletonType = std::decay_t<T>;
+	using singleton_type = std::decay_t<T>;
 
-	static_assert(std::is_class<SingletonType>::value, "Singleton type must be a class Type.");
-	static_assert(std::is_default_constructible<SingletonType>::value, "Singleton type must be default constructible.");
+	static_assert(std::is_class<singleton_type>::value, "Singleton type must be a class type.");
+	static_assert(std::is_default_constructible<singleton_type>::value, "Singleton type must be default constructible.");
 
 private:
 	Singleton() = delete;
@@ -48,11 +48,11 @@ private:
 	};
 
 public:
-	static SingletonType& Instance() noexcept
+	static singleton_type& Instance() noexcept
 	{
 		// The singleton instance
 		// C++ guarantees that s_Instance is created in a thread-safe manner
-		static SingletonType s_Instance;
+		static singleton_type s_Instance;
 
 		// Calling DoNothing forcibly instantiates
 		// and initializes the object prior to main()

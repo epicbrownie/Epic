@@ -170,7 +170,7 @@ class Epic::detail::PatternGuardImpl
 		"PatternGuard ResponsePolicy must have a non-throwing default constructor.");
 
 public:
-	using Type = Epic::detail::PatternGuardImpl<P, Response>;
+	using type = Epic::detail::PatternGuardImpl<P, Response>;
 	using ResponsePolicy = Response;
 
 	static constexpr size_t Pattern = P;
@@ -200,5 +200,5 @@ namespace Epic
 {
 	template<size_t Pattern = Epic::DefaultGuardPattern::value, class DebugResponsePolicy = Epic::GuardResponseAssert, class ReleaseResponsePolicy = Epic::GuardResponseCErr>
 	using PatternGuard = 
-		detail::PatternGuardImpl<Pattern, typename TMP::DebugSwitch<DebugResponsePolicy, ReleaseResponsePolicy>::Type>;
+		detail::PatternGuardImpl<Pattern, typename TMP::DebugSwitch<DebugResponsePolicy, ReleaseResponsePolicy>::type>;
 }

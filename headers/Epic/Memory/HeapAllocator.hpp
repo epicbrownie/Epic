@@ -56,7 +56,7 @@ class Epic::detail::HeapAllocatorImpl
 public:
 	using AllocatorType = A;
 	using PolicyType = Policy<A, BlkSz, BlkCnt, Align>;
-	using Type = Epic::detail::HeapAllocatorImpl<A, Policy, BlkSz, BlkCnt, Align>;
+	using type = Epic::detail::HeapAllocatorImpl<A, Policy, BlkSz, BlkCnt, Align>;
 
 	static_assert(std::is_default_constructible<PolicyType>::value, "The heap policy must be default-constructible.");
 
@@ -74,16 +74,16 @@ public:
 	HeapAllocatorImpl()
 		noexcept(std::is_nothrow_default_constructible<PolicyType>::value) = default;
 
-	HeapAllocatorImpl(const Type&) = delete;
+	HeapAllocatorImpl(const type&) = delete;
 
 	template<typename = std::enable_if_t<std::is_move_constructible<PolicyType>::value>>
-	HeapAllocatorImpl(Type&& obj)
+	HeapAllocatorImpl(type&& obj)
 		noexcept(std::is_nothrow_move_constructible<PolicyType>::value)
 		: PolicyType{ std::move(obj) }
 	{ }
 
-	HeapAllocatorImpl& operator = (const Type&) = delete;
-	HeapAllocatorImpl& operator = (Type&& obj) = delete;
+	HeapAllocatorImpl& operator = (const type&) = delete;
+	HeapAllocatorImpl& operator = (type&& obj) = delete;
 
 public:
 	/* Returns whether or not this allocator is responsible for the block Blk. */
@@ -111,20 +111,20 @@ public:
 		// If the block isn't valid, delegate to Allocate
 		if (!blk)
 		{
-			blk = detail::AllocateIf<Type>::apply(*this, sz);
+			blk = detail::AllocateIf<type>::apply(*this, sz);
 			return (bool)blk;
 		}
 
 		// If the requested size is zero, delegate to Deallocate
 		if (sz == 0)
 		{
-			if (detail::CanDeallocate<Type>::value)
+			if (detail::CanDeallocate<type>::value)
 			{
-				detail::DeallocateIf<Type>::apply(*this, blk);
+				detail::DeallocateIf<type>::apply(*this, blk);
 				blk = { nullptr, 0 };
 			}
 
-			return detail::CanDeallocate<Type>::value;
+			return detail::CanDeallocate<type>::value;
 		}
 
 		// Verify that the new requested size is within our allowed bounds
@@ -172,7 +172,7 @@ class Epic::detail::StaticHeapPolicy
 		"The heap backing allocator must be able to perform allocations.");
 	
 public:
-	using Type = Epic::detail::StaticHeapPolicy<A, BlkSz, BlkCnt, Align>;
+	using type = Epic::detail::StaticHeapPolicy<A, BlkSz, BlkCnt, Align>;
 	using AllocatorType = A;
 
 private:
@@ -199,18 +199,18 @@ public:
 		: m_Allocator{ }, m_Heap{ }, m_BlocksAvailable{ 0 } 
 	{ }
 
-	StaticHeapPolicy(const Type&) = delete;
+	StaticHeapPolicy(const type&) = delete;
 
 	template<typename = std::enable_if_t<std::is_move_constructible<A>::value>>
-	StaticHeapPolicy(Type&& obj) noexcept(std::is_nothrow_move_constructible<A>::value)
+	StaticHeapPolicy(type&& obj) noexcept(std::is_nothrow_move_constructible<A>::value)
 		: m_Allocator{ std::move(obj.m_Allocator) }, m_Heap{ }, m_BlocksAvailable{ 0 }
 	{
 		std::swap(m_Heap, obj.m_Heap);
 		std::swap(m_BlocksAvailable, obj.m_BlocksAvailable);
 	}
 
-	StaticHeapPolicy& operator = (const Type&) = delete;
-	StaticHeapPolicy& operator = (Type&& obj) = delete;
+	StaticHeapPolicy& operator = (const type&) = delete;
+	StaticHeapPolicy& operator = (type&& obj) = delete;
 
 	~StaticHeapPolicy()
 	{
@@ -304,7 +304,7 @@ class Epic::detail::LinearHeapInternalStoragePolicy
 		"The heap backing allocator must be able to perform allocations.");
 
 public:
-	using Type = Epic::detail::LinearHeapInternalStoragePolicy<A, BlkSz, BlkCnt, Align>;
+	using type = Epic::detail::LinearHeapInternalStoragePolicy<A, BlkSz, BlkCnt, Align>;
 
 protected:
 	static constexpr bool IsAligned = (Align != 0) && (Align != A::Alignment);
@@ -329,16 +329,16 @@ protected:
 
 protected:
 	constexpr LinearHeapInternalStoragePolicy() noexcept = default;
-	LinearHeapInternalStoragePolicy(const Type&) = delete;
+	LinearHeapInternalStoragePolicy(const type&) = delete;
 
-	constexpr LinearHeapInternalStoragePolicy(Type&& obj) noexcept 
+	constexpr LinearHeapInternalStoragePolicy(type&& obj) noexcept 
 		: m_Heap{ }
 	{
 		std::swap(m_Heap, obj.m_Heap);
 	}
 	
-	LinearHeapInternalStoragePolicy& operator = (const Type&) = delete;
-	LinearHeapInternalStoragePolicy& operator = (Type&& obj) = delete;
+	LinearHeapInternalStoragePolicy& operator = (const type&) = delete;
+	LinearHeapInternalStoragePolicy& operator = (type&& obj) = delete;
 
 protected:
 	void AllocateHeap(A& allocator) noexcept
@@ -387,7 +387,7 @@ class Epic::detail::LinearHeapExternalStoragePolicy
 		"The heap backing allocator must be able to perform allocations.");
 
 public:
-	using Type = Epic::detail::LinearHeapExternalStoragePolicy<A, BlkSz, BlkCnt, Align>;
+	using type = Epic::detail::LinearHeapExternalStoragePolicy<A, BlkSz, BlkCnt, Align>;
 
 protected:
 	static constexpr bool IsAligned = (Align != 0) && (Align != A::Alignment);
@@ -410,16 +410,16 @@ protected:
 
 protected:
 	constexpr LinearHeapExternalStoragePolicy() noexcept = default;
-	LinearHeapExternalStoragePolicy(const Type&) = delete;
+	LinearHeapExternalStoragePolicy(const type&) = delete;
 
-	constexpr LinearHeapExternalStoragePolicy(Type&& obj) noexcept
+	constexpr LinearHeapExternalStoragePolicy(type&& obj) noexcept
 		: m_Heap{ }
 	{
 		std::swap(m_Heap, obj.m_Heap);
 	}
 
-	LinearHeapExternalStoragePolicy& operator = (const Type&) = delete;
-	LinearHeapExternalStoragePolicy& operator = (Type&& obj) = delete;
+	LinearHeapExternalStoragePolicy& operator = (const type&) = delete;
+	LinearHeapExternalStoragePolicy& operator = (type&& obj) = delete;
 
 protected:
 	void AllocateHeap(A& allocator) noexcept
@@ -469,7 +469,7 @@ class Epic::detail::LinearHeapPolicyImpl
 	static_assert(std::is_default_constructible<A>::value, "The heap backing allocator must be default-constructible.");
 
 public:
-	using Type = Epic::detail::LinearHeapPolicyImpl<StoragePolicy, A, BlkSz, BlkCnt, Align>;
+	using type = Epic::detail::LinearHeapPolicyImpl<StoragePolicy, A, BlkSz, BlkCnt, Align>;
 	using AllocatorType = A;
 	using StoragePolicyType = StoragePolicy;
 
@@ -486,15 +486,15 @@ protected:
 		: m_Allocator{ }, StoragePolicyType{ }
 	{ }
 
-	LinearHeapPolicyImpl(const Type&) = delete;
+	LinearHeapPolicyImpl(const type&) = delete;
 
 	template<typename = std::enable_if_t<std::is_move_constructible<A>::value>>
-	LinearHeapPolicyImpl(Type&& obj) noexcept(std::is_nothrow_move_constructible<A>::value)
+	LinearHeapPolicyImpl(type&& obj) noexcept(std::is_nothrow_move_constructible<A>::value)
 		: m_Allocator{ std::move(obj.m_Allocator) }, StoragePolicyType{ std::move(obj) }
 	{ }
 
-	LinearHeapPolicyImpl& operator = (const Type&) = delete;
-	LinearHeapPolicyImpl& operator = (Type&& obj) = delete;
+	LinearHeapPolicyImpl& operator = (const type&) = delete;
+	LinearHeapPolicyImpl& operator = (type&& obj) = delete;
 
 	~LinearHeapPolicyImpl()
 	{
@@ -575,7 +575,7 @@ public:
 			}
 
 			// Normal reallocation
-			return detail::Reallocator<Type>::ReallocateViaCopy(*this, blk, sz);
+			return detail::Reallocator<type>::ReallocateViaCopy(*this, blk, sz);
 		}
 
 		// Shrink the allocation
@@ -618,7 +618,7 @@ class Epic::detail::InternalLinearHeapPolicy
 	: public Epic::detail::LinearHeapPolicyImpl<Epic::detail::LinearHeapInternalStoragePolicy<A, BlkSz, BlkCnt, Align>, A, BlkSz, BlkCnt, Align>
 {
 public:
-	using Type = Epic::detail::InternalLinearHeapPolicy<A, BlkSz, BlkCnt, Align>;
+	using type = Epic::detail::InternalLinearHeapPolicy<A, BlkSz, BlkCnt, Align>;
 
 private:
 	using StoragePolicyType = Epic::detail::LinearHeapInternalStoragePolicy<A, BlkSz, BlkCnt, Align>;
@@ -627,11 +627,11 @@ private:
 public:
 	constexpr InternalLinearHeapPolicy() noexcept = default;
 
-	InternalLinearHeapPolicy(const Type&) = delete;
-	constexpr InternalLinearHeapPolicy(Type&& obj) = default;
+	InternalLinearHeapPolicy(const type&) = delete;
+	constexpr InternalLinearHeapPolicy(type&& obj) = default;
 
-	InternalLinearHeapPolicy& operator = (const Type&) = delete;
-	InternalLinearHeapPolicy& operator = (Type&& obj) = delete;
+	InternalLinearHeapPolicy& operator = (const type&) = delete;
+	InternalLinearHeapPolicy& operator = (type&& obj) = delete;
 };
 
 /// ExternalLinearHeapPolicy<A, BlkSz, BlkCnt, Align>
@@ -640,7 +640,7 @@ class Epic::detail::ExternalLinearHeapPolicy
 	: public Epic::detail::LinearHeapPolicyImpl<Epic::detail::LinearHeapExternalStoragePolicy<A, BlkSz, BlkCnt, Align>, A, BlkSz, BlkCnt, Align>
 {
 public:
-	using Type = Epic::detail::ExternalLinearHeapPolicy<A, BlkSz, BlkCnt, Align>;
+	using type = Epic::detail::ExternalLinearHeapPolicy<A, BlkSz, BlkCnt, Align>;
 
 private:
 	using StoragePolicyType = Epic::detail::LinearHeapExternalStoragePolicy<A, BlkSz, BlkCnt, Align>;
@@ -649,11 +649,11 @@ private:
 public:
 	constexpr ExternalLinearHeapPolicy() noexcept = default;
 
-	ExternalLinearHeapPolicy(const Type&) = delete;
-	constexpr ExternalLinearHeapPolicy(Type&& obj) = default;
+	ExternalLinearHeapPolicy(const type&) = delete;
+	constexpr ExternalLinearHeapPolicy(type&& obj) = default;
 
-	ExternalLinearHeapPolicy& operator = (const Type&) = delete;
-	ExternalLinearHeapPolicy& operator = (Type&& obj) = delete;
+	ExternalLinearHeapPolicy& operator = (const type&) = delete;
+	ExternalLinearHeapPolicy& operator = (type&& obj) = delete;
 };
 
 //////////////////////////////////////////////////////////////////////////////

@@ -16,6 +16,7 @@
 #include <Epic/Memory/detail/AllocatorHelpers.hpp>
 #include <Epic/Memory/MemoryBlock.hpp>
 #include <cstdint>
+#include <cassert>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -30,15 +31,15 @@ namespace Epic
 class Epic::NullAllocator
 {
 public:
-	using Type = Epic::NullAllocator;
+	using type = Epic::NullAllocator;
 
 public:
 	constexpr NullAllocator() noexcept = default;
-	constexpr NullAllocator(const Type&) noexcept = default;
-	constexpr NullAllocator(Type&&) noexcept = default;
+	constexpr NullAllocator(const NullAllocator&) noexcept = default;
+	constexpr NullAllocator(NullAllocator&&) noexcept = default;
 
-	NullAllocator& operator = (const Type&) noexcept = default;
-	NullAllocator& operator = (Type&&) noexcept = default;
+	NullAllocator& operator = (const NullAllocator&) noexcept = default;
+	NullAllocator& operator = (NullAllocator&&) noexcept = default;
 
 public:
 	static constexpr size_t Alignment = detail::DefaultAlignment; 

@@ -15,6 +15,7 @@
 
 #include <Epic/Memory/detail/AllocatorHelpers.hpp>
 #include <Epic/Memory/MemoryBlock.hpp>
+#include <cassert>
 #include <cstdint>
 #include <memory>
 
@@ -33,7 +34,7 @@ template<size_t S>
 class Epic::AlignedStackAllocator
 {
 public:
-	using Type = Epic::AlignedStackAllocator<S>;
+	using type = Epic::AlignedStackAllocator<S>;
 	
 public:
 	static constexpr size_t Alignment = detail::DefaultAlignment;
@@ -46,11 +47,11 @@ public:
 		: _pCursor{ _Memory }, _Memory{ } 
 	{ }
 
-	AlignedStackAllocator(const Type&) = delete;
-	AlignedStackAllocator(Type&& alloc) = delete;
+	AlignedStackAllocator(const type&) = delete;
+	AlignedStackAllocator(type&& alloc) = delete;
 
-	AlignedStackAllocator& operator = (const Type&) = delete;
-	AlignedStackAllocator& operator = (Type&&) = delete;
+	AlignedStackAllocator& operator = (const type&) = delete;
+	AlignedStackAllocator& operator = (type&&) = delete;
 
 private:
 	char* _End() noexcept
@@ -81,6 +82,12 @@ public:
 	}
 
 public:
+	/* Delegates to AllocateAligned(sz, Alignment). */
+	Blk Allocate(size_t sz) noexcept
+	{
+		return AllocateAligned(sz, Alignment);
+	}
+
 	/* Returns a block of uninitialized memory (aligned to alignment).
 	   If sz is zero, the returned block's pointer is null. */
 	Blk AllocateAligned(size_t sz, size_t alignment = Alignment) noexcept
@@ -94,18 +101,25 @@ public:
 			return{ nullptr, 0 };
 
 		// Calculate an aligned pointer to available memory if there is enough space available
-		Blk blk;
+		Blk result;
 		size_t space = _Remaining();
-		void* pAligned = _pCursor;
+		void* cursor = _pCursor;
+		void* pAligned = std::align(alignment, sz, cursor, space);
 
 		// If space was available, update the result and cursor
-		if (std::align(alignment, sz, pAligned, space))
+		if (pAligned)
 		{
-			blk = { pAligned, sz };
+			result = { pAligned, sz };
 			_pCursor = static_cast<char*>(pAligned) + sz;
 		}
 
-		return blk;
+		return result;
+	}
+
+	/* Delegates to AllocateAllAligned() with default alignment. */
+	Blk AllocateAll() noexcept
+	{
+		return AllocateAllAligned(Alignment);
 	}
 
 	/* Returns a block of uninitialized memory.
@@ -117,18 +131,24 @@ public:
 		if (!detail::IsGoodAlignment(alignment))
 			return{ nullptr, 0 };
 
-		// Attempt the allocation
-		Blk blk;
-		void* pAligned = _pCursor;
+		// Verify that the requested size is within our allowed bounds
 		size_t szavail = _Remaining();
+		if (szavail == 0 || szavail < MinAllocSize || szavail > MaxAllocSize)
+			return{ nullptr, 0 };
 
-		if (std::align(alignment, 0, pAligned, szavail))
+		// Attempt the allocation
+		void* cursor = _pCursor;
+		void* pAligned = std::align(alignment, 0, cursor, szavail);
+		Blk result;
+
+		if (pAligned)
 		{
-			blk = { pAligned, szavail };
+			size_t szReserved = static_cast<size_t>(_End() - static_cast<char*>(pAligned));
+			result = { pAligned, szReserved };
 			_pCursor = _End();
 		}
 		
-		return blk;
+		return result;
 	}
 
 public:

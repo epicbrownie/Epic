@@ -38,7 +38,7 @@ class Epic::FallbackAllocator
 	static_assert(std::is_default_constructible<F>::value, "The fallback allocator must be default-constructible.");
 
 public:
-	using Type = Epic::FallbackAllocator<P, F>;
+	using type = Epic::FallbackAllocator<P, F>;
 	using PrimaryAllocatorType = P;
 	using FallbackAllocatorType = F;
 	
@@ -56,19 +56,19 @@ public:
 		noexcept(std::is_nothrow_default_constructible<P>::value && std::is_nothrow_default_constructible<F>::value) = default;
 
 	template<typename = std::enable_if_t<std::is_copy_constructible<P>::value && std::is_copy_constructible<F>::value>>
-	constexpr FallbackAllocator(const Type& obj)
+	constexpr FallbackAllocator(const FallbackAllocator<P, F>& obj)
 		noexcept(std::is_nothrow_copy_constructible<P>::value && std::is_nothrow_copy_constructible<F>::value)
 		: m_PAllocator{ obj.m_PAllocator }, m_FAllocator{ obj.m_FAllocator }
 	{ }
 
 	template<typename = std::enable_if_t<std::is_move_constructible<P>::value && std::is_move_constructible<F>::value>>
-	constexpr FallbackAllocator(Type&& obj)
+	constexpr FallbackAllocator(FallbackAllocator<P, F>&& obj)
 		noexcept(std::is_nothrow_move_constructible<P>::value && std::is_nothrow_move_constructible<F>::value)
 		: m_PAllocator{ std::move(obj.m_PAllocator) }, m_FAllocator{ std::move(obj.m_FAllocator) }
 	{ }
 
 	template<typename = std::enable_if_t<std::is_copy_assignable<P>::value && std::is_copy_assignable<F>::value>>
-	FallbackAllocator& operator = (const Type& obj)
+	FallbackAllocator& operator = (const FallbackAllocator<P, F>& obj)
 		noexcept(std::is_nothrow_copy_assignable<P>::value && std::is_nothrow_copy_assignable<F>::value)
 	{
 		m_PAllocator = obj.m_PAllocator;
@@ -78,7 +78,7 @@ public:
 	}
 
 	template<typename = std::enable_if_t<std::is_move_assignable<P>::value && std::is_move_assignable<F>::value>>
-	FallbackAllocator& operator = (Type&& obj)
+	FallbackAllocator& operator = (FallbackAllocator<P, F>&& obj)
 		noexcept(std::is_nothrow_move_assignable<P>::value && std::is_nothrow_move_assignable<F>::value)
 	{
 		m_PAllocator = std::move(obj.m_PAllocator);

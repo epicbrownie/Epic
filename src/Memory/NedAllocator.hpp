@@ -30,7 +30,7 @@ namespace Epic
 class Epic::NedAllocator
 {
 public:
-	using Type = Epic::NedAllocator;
+	using type = Epic::NedAllocator;
 
 public:
 	static constexpr size_t Alignment = alignof(std::max_align_t);
@@ -39,11 +39,11 @@ public:
 
 public:
 	constexpr NedAllocator() noexcept = default;
-	constexpr NedAllocator(const Type&) noexcept = default;
-	constexpr NedAllocator(Type&&) noexcept = default;
+	constexpr NedAllocator(const NedAllocator&) noexcept = default;
+	constexpr NedAllocator(NedAllocator&&) noexcept = default;
 
-	NedAllocator& operator = (const Type&) noexcept = default;
-	NedAllocator& operator = (Type&&) noexcept = default;
+	NedAllocator& operator = (const NedAllocator&) noexcept = default;
+	NedAllocator& operator = (NedAllocator&&) noexcept = default;
 
 public:
 	/* Returns whether or not this allocator is responsible for the block Blk. */

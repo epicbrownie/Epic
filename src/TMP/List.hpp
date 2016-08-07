@@ -34,25 +34,25 @@ namespace Epic::TMP
 	template<>
 	struct Concat<>
 	{
-		using Type = List<>;
+		using type = List<>;
 	};
 
 	template<typename... Ts>
 	struct Concat<List<Ts...>>
 	{
-		using Type = List<Ts...>;
+		using type = List<Ts...>;
 	};
 
 	template<typename... Ts, typename... Us>
 	struct Concat<List<Ts...>, List<Us...>>
 	{
-		using Type = List<Ts..., Us...>;
+		using type = List<Ts..., Us...>;
 	};
 
 	template<typename... Ts, typename... Us, typename... Rest>
 	struct Concat<List<Ts...>, List<Us...>, Rest...>
 	{
-		using Type = typename Concat<List<Ts..., Us...>, Rest...>::Type;
+		using type = typename Concat<List<Ts..., Us...>, Rest...>::type;
 	};
 }
 
@@ -68,5 +68,5 @@ namespace Epic::TMP
 	}
 
 	template<template<typename> class Pred, typename... Ts>
-	using Filter = typename Concat<detail::FilterHelper<Pred, Ts>...>::Type;
+	using Filter = typename Concat<detail::FilterHelper<Pred, Ts>...>::type;
 }

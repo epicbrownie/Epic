@@ -30,7 +30,7 @@ namespace Epic
 class Epic::AlignedNedAllocator
 {
 public:
-	using Type = Epic::AlignedNedAllocator;
+	using type = Epic::AlignedNedAllocator;
 
 public:
 	static constexpr size_t Alignment = alignof(std::max_align_t);
@@ -39,11 +39,11 @@ public:
 
 public:
 	constexpr AlignedNedAllocator() noexcept = default;
-	constexpr AlignedNedAllocator(const Type&) noexcept = default;
-	constexpr AlignedNedAllocator(Type&&) noexcept = default;
+	constexpr AlignedNedAllocator(const AlignedNedAllocator&) noexcept = default;
+	constexpr AlignedNedAllocator(AlignedNedAllocator&&) noexcept = default;
 
-	AlignedNedAllocator& operator = (const Type&) noexcept = default;
-	AlignedNedAllocator& operator = (Type&&) noexcept = default;
+	AlignedNedAllocator& operator = (const AlignedNedAllocator&) noexcept = default;
+	AlignedNedAllocator& operator = (AlignedNedAllocator&&) noexcept = default;
 
 public:
 	/* Returns whether or not this allocator is responsible for the block Blk. */

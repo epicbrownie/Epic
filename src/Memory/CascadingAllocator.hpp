@@ -47,8 +47,8 @@ namespace Epic
 template<class Allocator>
 struct Epic::detail::CascadingAllocatorNode 
 {
-	using Type = Epic::detail::CascadingAllocatorNode<Allocator>;
-	using NodePtr = Type*;
+	using type = Epic::detail::CascadingAllocatorNode<Allocator>;
+	using NodePtr = type*;
 
 	CascadingAllocatorNode() 
 		noexcept(std::is_nothrow_default_constructible<Allocator>::value)
@@ -63,7 +63,7 @@ struct Epic::detail::CascadingAllocatorNode
 	CascadingAllocatorNode(const CascadingAllocatorNode<Allocator>&) = delete;
 
 	template<typename = std::enable_if_t<std::is_move_constructible<Allocator>::value>>
-	CascadingAllocatorNode(Type&& obj)
+	CascadingAllocatorNode(type&& obj)
 		noexcept(std::is_nothrow_move_constructible<Allocator>::value)
 		: m_Allocator{ std::move(obj.m_Allocator) }, m_pNext{ nullptr }, m_AllocatedSize{ 0 }
 	{
@@ -98,7 +98,7 @@ class Epic::detail::CascadingAllocatorBase
 	static_assert(std::is_default_constructible<NodeA>::value, "The node allocator must be default-constructible.");
 
 public:
-	using Type = Epic::detail::CascadingAllocatorBase<A, void>;
+	using type = Epic::detail::CascadingAllocatorBase<A, void>;
 
 protected:
 	using NodeType = CascadingAllocatorNode<A>;
@@ -122,18 +122,18 @@ public:
 		: m_NodeAllocator{ }, m_pAllocNodes{ nullptr }
 	{ }
 
-	constexpr CascadingAllocatorBase(const Type& obj) = delete;
+	constexpr CascadingAllocatorBase(const type& obj) = delete;
 
 	template<typename = std::enable_if_t<std::is_move_constructible<NodeA>::value>>
-	constexpr CascadingAllocatorBase(Type&& obj)
+	constexpr CascadingAllocatorBase(type&& obj)
 		noexcept(std::is_nothrow_move_constructible<NodeA>::value)
 		: m_NodeAllocator{ std::move(obj.m_NodeAllocator) }, m_pAllocNodes{ nullptr }
 	{ 
 		std::swap(m_pAllocNodes, obj.m_pAllocNodes);
 	}
 
-	CascadingAllocatorBase& operator = (const Type& obj) = delete;
-	CascadingAllocatorBase& operator = (Type&& obj) = delete;
+	CascadingAllocatorBase& operator = (const type& obj) = delete;
+	CascadingAllocatorBase& operator = (type&& obj) = delete;
 
 	~CascadingAllocatorBase()
 	{
@@ -236,7 +236,7 @@ class Epic::detail::CascadingAllocatorBase<A, void>
 	static_assert(std::is_move_constructible<A>::value, "The template allocator must be move-constructible when not using a node allocator.");
 	
 public:
-	using Type = Epic::detail::CascadingAllocatorBase<A, void>;
+	using type = Epic::detail::CascadingAllocatorBase<A, void>;
 
 protected:
 	using NodeType = CascadingAllocatorNode<A>;
@@ -257,16 +257,16 @@ public:
 	constexpr CascadingAllocatorBase() noexcept
 		: m_pAllocNodes{ nullptr } { }
 
-	constexpr CascadingAllocatorBase(const Type& obj) = delete;
+	constexpr CascadingAllocatorBase(const type& obj) = delete;
 
-	constexpr CascadingAllocatorBase(Type&& obj) noexcept
+	constexpr CascadingAllocatorBase(type&& obj) noexcept
 		: m_pAllocNodes{ nullptr }
 	{ 
 		std::swap(m_pAllocNodes, obj.m_pAllocNodes);
 	}
 
-	CascadingAllocatorBase& operator = (const Type& obj) = delete;
-	CascadingAllocatorBase& operator = (Type&& obj) noexcept = delete;
+	CascadingAllocatorBase& operator = (const type& obj) = delete;
+	CascadingAllocatorBase& operator = (type&& obj) noexcept = delete;
 
 	~CascadingAllocatorBase()
 	{
@@ -371,7 +371,7 @@ template<class A, class NodeA>
 class Epic::CascadingAllocator : public Epic::detail::CascadingAllocatorBase<A, NodeA>
 {
 public:
-	using Type = Epic::CascadingAllocator<A, NodeA>;
+	using type = Epic::CascadingAllocator<A, NodeA>;
 	using base = Epic::detail::CascadingAllocatorBase<A, NodeA>;
 	using AllocatorType = A;
 	using NodeAllocatorType = NodeA;
@@ -385,16 +385,16 @@ public:
 	constexpr CascadingAllocator()
 		noexcept(std::is_nothrow_default_constructible<base>::value) = default;
 
-	constexpr CascadingAllocator(const Type& obj) = delete;
+	constexpr CascadingAllocator(const type& obj) = delete;
 
 	template<typename = std::enable_if_t<std::is_move_constructible<base>::value>>
-	constexpr CascadingAllocator(Type&& obj)
+	constexpr CascadingAllocator(type&& obj)
 		noexcept(std::is_nothrow_move_constructible<base>::value)
 		: base(std::move(obj))
 	{ }
 
-	CascadingAllocator& operator = (const Type& obj) = delete;
-	CascadingAllocator& operator = (Type&& obj) = delete;
+	CascadingAllocator& operator = (const type& obj) = delete;
+	CascadingAllocator& operator = (type&& obj) = delete;
 	
 private:
 	Blk TryAllocate(size_t sz) noexcept
@@ -494,20 +494,20 @@ public:
 		// If the block isn't valid, delegate to Allocate
 		if (!blk)
 		{
-			blk = detail::AllocateIf<Type>::apply(*this, sz);
+			blk = detail::AllocateIf<type>::apply(*this, sz);
 			return (bool)blk;
 		}
 
 		// If the requested size is zero, delegate to Deallocate
 		if (sz == 0)
 		{
-			if (detail::CanDeallocate<Type>::value)
+			if (detail::CanDeallocate<type>::value)
 			{
-				detail::DeallocateIf<Type>::apply(*this, blk);
+				detail::DeallocateIf<type>::apply(*this, blk);
 				blk = { nullptr, 0 };
 			}
 
-			return detail::CanDeallocate<Type>::value;
+			return detail::CanDeallocate<type>::value;
 		}
 
 		// Verify that the requested size is within our allowed bounds
@@ -526,7 +526,7 @@ public:
 
 		// Now attempt to reallocate using a helper.
 		// This could result in the allocation being moved to another node.
-		return detail::Reallocator<Type>::ReallocateViaCopy(*this, blk, sz);
+		return detail::Reallocator<type>::ReallocateViaCopy(*this, blk, sz);
 	}
 
 	/* Attempts to reallocate the memory of blk (aligned to alignment) to the new size sz. */
@@ -540,20 +540,20 @@ public:
 		// If the block isn't valid, delegate to AllocateAligned
 		if (!blk)
 		{
-			blk = detail::AllocateAlignedIf<Type>::apply(*this, sz, alignment);
+			blk = detail::AllocateAlignedIf<type>::apply(*this, sz, alignment);
 			return (bool)blk;
 		}
 
 		// If the requested size is zero, delegate to DeallocateAligned
 		if (sz == 0)
 		{
-			if (detail::CanDeallocateAligned<Type>::value)
+			if (detail::CanDeallocateAligned<type>::value)
 			{
-				detail::DeallocateAlignedIf<Type>::apply(*this, blk);
+				detail::DeallocateAlignedIf<type>::apply(*this, blk);
 				blk = { nullptr, 0 };
 			}
 
-			return detail::CanDeallocateAligned<Type>::value;
+			return detail::CanDeallocateAligned<type>::value;
 		}
 
 		// Verify that the requested size is within our allowed bounds
@@ -572,7 +572,7 @@ public:
 
 		// Now attempt to reallocate using a helper.
 		// This could result in the allocation being moved to another node.
-		return detail::AlignedReallocator<Type>::ReallocateViaCopy(*this, blk, sz, alignment);
+		return detail::AlignedReallocator<type>::ReallocateViaCopy(*this, blk, sz, alignment);
 	}
 
 public:
