@@ -13,14 +13,14 @@
 
 #pragma once
 
-#include <Epic/Memory/Default.hpp>
-#include <Epic/Memory/STLAllocator.hpp>
-#include <vector>
+#include <Epic/STL/Default.hpp>
+#include <Epic/STL/STLAllocator.hpp>
+#include <forward_list>
 
 //////////////////////////////////////////////////////////////////////////////
 
 namespace Epic
 {
-	template<class T, class A = Epic::DefaultAllocatorFor<T, eDefaultAllocatorTypes::STLVector>>
-	using STLVector = std::vector<T, Epic::STLAllocator<T, A>>;
+	template<class T, class A = Epic::DefaultAllocatorFor<T, eDefaultAllocatorTypes::STLForwardList>>
+	using STLForwardList = std::forward_list<T, Epic::STLAllocator<T, A>>;
 }

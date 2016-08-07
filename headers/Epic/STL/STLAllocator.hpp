@@ -14,7 +14,7 @@
 #pragma once
 
 #include <Epic/Memory/detail/AllocatorHelpers.hpp>
-#include <Epic/Memory/detail/STLHelpers.hpp>
+#include <Epic/STL/detail/STLHelpers.hpp>
 #include <memory>
 #include <new>
 #include <type_traits>

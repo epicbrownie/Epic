@@ -29,8 +29,11 @@
     <Filter Include="Memory\detail\NedMalloc">
       <UniqueIdentifier>{9d0a942b-8882-40d0-bc88-9a3d897f4a1c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Memory\STL">
-      <UniqueIdentifier>{e9124e88-979a-4ea0-a6bd-c61aea7b81b9}</UniqueIdentifier>
+    <Filter Include="STL">
+      <UniqueIdentifier>{8e8cfefe-fc1b-41e3-9fa9-70bc45a55cc9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="STL\detail">
+      <UniqueIdentifier>{876eeaa8-6834-4e80-81b5-c92c48141a6c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -142,13 +145,7 @@
     <ClInclude Include="src\Memory\detail\HeapHelpers.hpp">
       <Filter>Memory\detail</Filter>
     </ClInclude>
-    <ClInclude Include="src\Memory\STLAllocator.hpp">
-      <Filter>Memory\STL</Filter>
-    </ClInclude>
     <ClInclude Include="src\Memory\detail\GlobalHelpers.hpp">
-      <Filter>Memory\detail</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Memory\detail\STLHelpers.hpp">
       <Filter>Memory\detail</Filter>
     </ClInclude>
     <ClInclude Include="src\Memory\ForceAlignAllocator.hpp">
@@ -157,11 +154,26 @@
     <ClInclude Include="src\Memory\detail\ForceAlignHelpers.hpp">
       <Filter>Memory\detail</Filter>
     </ClInclude>
-    <ClInclude Include="src\Memory\STLVector.hpp">
-      <Filter>Memory\STL</Filter>
-    </ClInclude>
     <ClInclude Include="src\Memory\Default.hpp">
       <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="src\STL\detail\STLHelpers.hpp">
+      <Filter>STL\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\STL\STLAllocator.hpp">
+      <Filter>STL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\STL\STLForwardList.hpp">
+      <Filter>STL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\STL\STLList.hpp">
+      <Filter>STL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\STL\STLVector.hpp">
+      <Filter>STL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\STL\Default.hpp">
+      <Filter>STL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

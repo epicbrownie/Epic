@@ -23,6 +23,7 @@ namespace Epic
 	{
 		STLVector,
 		STLList,
+		STLForwardList,
 		STLMap
 	};
 

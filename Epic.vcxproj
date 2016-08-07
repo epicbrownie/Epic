@@ -35,7 +35,6 @@
     <ClInclude Include="src\Memory\detail\HeapHelpers.hpp" />
     <ClInclude Include="src\Memory\detail\NedMalloc\malloc.c.h" />
     <ClInclude Include="src\Memory\detail\NedMalloc\nedmalloc.h" />
-    <ClInclude Include="src\Memory\detail\STLHelpers.hpp" />
     <ClInclude Include="src\Memory\ForceAlignAllocator.hpp" />
     <ClInclude Include="src\Memory\FreelistAllocator.hpp" />
     <ClInclude Include="src\Memory\GlobalAllocator.hpp" />
@@ -52,10 +51,14 @@
     <ClInclude Include="src\Memory\AlignmentAllocator.hpp" />
     <ClInclude Include="src\Memory\SegregatorAllocator.hpp" />
     <ClInclude Include="src\Memory\FallbackAllocator.hpp" />
-    <ClInclude Include="src\Memory\STLAllocator.hpp" />
-    <ClInclude Include="src\Memory\STLVector.hpp" />
     <ClInclude Include="src\NullMutex.hpp" />
     <ClInclude Include="src\Singleton.hpp" />
+    <ClInclude Include="src\STL\Default.hpp" />
+    <ClInclude Include="src\STL\detail\STLHelpers.hpp" />
+    <ClInclude Include="src\STL\STLAllocator.hpp" />
+    <ClInclude Include="src\STL\STLForwardList.hpp" />
+    <ClInclude Include="src\STL\STLList.hpp" />
+    <ClInclude Include="src\STL\STLVector.hpp" />
     <ClInclude Include="src\StringHash.hpp" />
     <ClInclude Include="src\StringHashAlgorithm.hpp" />
     <ClInclude Include="src\TMP\List.hpp" />
