@@ -13,42 +13,16 @@
 
 #pragma once
 
-#include <Epic/Memory/Mallocator.hpp>
+#include <Epic/STL/Default.hpp>
+#include <Epic/STL/Allocator.hpp>
+#include <Epic/STL/Deque.hpp>
+#include <stack>
 
 //////////////////////////////////////////////////////////////////////////////
 
 namespace Epic
 {
-	enum class eSTLType
-	{
-		STLString,
-		STLWString,
-
-		STLList,
-		STLForwardList,
-		STLDeque,
-		STLVector,
-		STLMap,
-		STLMultiSet,
-		STLMultiMap,
-		STLSet,
-		STLUnorderedMap,
-		STLUnorderedSet,
-
-		STLStringStream,
-		STLIStringStream,
-		STLOStringStream,
-		STLWStringStream,
-		STLWIStringStream,
-		STLWOStringStream
-	};
-
-	template<class T, eSTLType DefaultType>
-	struct DefaultSTLAllocator
-	{
-		using Type = Epic::Mallocator;
-	};
-
-	template<class T, eSTLType DefaultType>
-	using DefaultSTLAllocatorFor = typename DefaultSTLAllocator<T, DefaultType>::Type;
+	/// STLStack<T, C>
+	template<class T, class C = Epic::STLDeque<T>>
+	using STLStack = std::stack<T, C>;
 }

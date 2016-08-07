@@ -14,13 +14,14 @@
 #pragma once
 
 #include <Epic/STL/Default.hpp>
-#include <Epic/STL/STLAllocator.hpp>
-#include <list>
+#include <Epic/STL/Allocator.hpp>
+#include <vector>
 
 //////////////////////////////////////////////////////////////////////////////
 
 namespace Epic
 {
-	template<class T, class A = Epic::DefaultAllocatorFor<T, eDefaultAllocatorTypes::STLList>>
-	using STLList = std::list<T, Epic::STLAllocator<T, A>>;
+	/// STLVector<T, A>
+	template<class T, class A = Epic::DefaultSTLAllocatorFor<T, eSTLType::STLVector>>
+	using STLVector = std::vector<T, Epic::STLAllocator<T, A>>;
 }

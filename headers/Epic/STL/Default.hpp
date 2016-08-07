@@ -19,20 +19,36 @@
 
 namespace Epic
 {
-	enum class eDefaultAllocatorTypes
+	enum class eSTLType
 	{
-		STLVector,
+		STLString,
+		STLWString,
+
 		STLList,
 		STLForwardList,
-		STLMap
+		STLDeque,
+		STLVector,
+		STLMap,
+		STLMultiSet,
+		STLMultiMap,
+		STLSet,
+		STLUnorderedMap,
+		STLUnorderedSet,
+
+		STLStringStream,
+		STLIStringStream,
+		STLOStringStream,
+		STLWStringStream,
+		STLWIStringStream,
+		STLWOStringStream
 	};
 
-	template<class T, eDefaultAllocatorTypes DefaultType>
-	struct DefaultAllocator
+	template<class T, eSTLType DefaultType>
+	struct DefaultSTLAllocator
 	{
 		using Type = Epic::Mallocator;
 	};
 
-	template<class T, eDefaultAllocatorTypes DefaultType>
-	using DefaultAllocatorFor = typename DefaultAllocator<T, DefaultType>::Type;
+	template<class T, eSTLType DefaultType>
+	using DefaultSTLAllocatorFor = typename DefaultSTLAllocator<T, DefaultType>::Type;
 }

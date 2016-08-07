@@ -160,19 +160,40 @@
     <ClInclude Include="src\STL\detail\STLHelpers.hpp">
       <Filter>STL\detail</Filter>
     </ClInclude>
-    <ClInclude Include="src\STL\STLAllocator.hpp">
-      <Filter>STL</Filter>
-    </ClInclude>
-    <ClInclude Include="src\STL\STLForwardList.hpp">
-      <Filter>STL</Filter>
-    </ClInclude>
-    <ClInclude Include="src\STL\STLList.hpp">
-      <Filter>STL</Filter>
-    </ClInclude>
-    <ClInclude Include="src\STL\STLVector.hpp">
-      <Filter>STL</Filter>
-    </ClInclude>
     <ClInclude Include="src\STL\Default.hpp">
+      <Filter>STL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\STL\Allocator.hpp">
+      <Filter>STL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\STL\ForwardList.hpp">
+      <Filter>STL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\STL\List.hpp">
+      <Filter>STL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\STL\Vector.hpp">
+      <Filter>STL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\STL\Deque.hpp">
+      <Filter>STL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\STL\Queue.hpp">
+      <Filter>STL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\STL\Stack.hpp">
+      <Filter>STL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\STL\Map.hpp">
+      <Filter>STL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\STL\Set.hpp">
+      <Filter>STL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\STL\String.hpp">
+      <Filter>STL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\STL\SStream.hpp">
       <Filter>STL</Filter>
     </ClInclude>
   </ItemGroup>

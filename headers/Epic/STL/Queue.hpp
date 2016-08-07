@@ -14,13 +14,20 @@
 #pragma once
 
 #include <Epic/STL/Default.hpp>
-#include <Epic/STL/STLAllocator.hpp>
-#include <forward_list>
+#include <Epic/STL/Allocator.hpp>
+#include <Epic/STL/Deque.hpp>
+#include <Epic/STL/Vector.hpp>
+#include <queue>
 
 //////////////////////////////////////////////////////////////////////////////
 
 namespace Epic
 {
-	template<class T, class A = Epic::DefaultAllocatorFor<T, eDefaultAllocatorTypes::STLForwardList>>
-	using STLForwardList = std::forward_list<T, Epic::STLAllocator<T, A>>;
+	/// STLQueue<T, C>
+	template<class T, class C = Epic::STLDeque<T>>
+	using STLQueue = std::queue<T, C>;
+
+	/// STLPriorityQueue<T, C, CompareFn>
+	template<class T, class C = Epic::STLVector<T>, class CompareFn = std::less<typename C::value_type>>
+	using STLPriorityQueue = std::priority_queue<T, C, CompareFn>;
 }
