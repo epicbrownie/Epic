@@ -46,11 +46,6 @@ Blk AlignedNedAllocator::AllocateAligned(size_t sz, size_t alignment) const noex
 	return{ p, sz };
 }
 
-bool AlignedNedAllocator::Reallocate(Blk& blk, size_t sz) const
-{
-	return ReallocateAligned(blk, sz, Alignment);
-}
-
 bool AlignedNedAllocator::ReallocateAligned(Blk& blk, size_t sz, size_t alignment) const
 {
 	assert(Owns(blk) && "AlignedNedAllocator::Reallocate - Attempted to reallocate a block that was not allocated by this allocator");

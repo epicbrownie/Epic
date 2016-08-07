@@ -59,9 +59,6 @@ public:
 	   If sz is zero, the returned block's pointer is null. */
 	Blk AllocateAligned(size_t sz, size_t alignment = Alignment) const noexcept;
 
-	/* Delegates to ReallocateAligned(blk, sz, Alignment). */
-	bool Reallocate(Blk& blk, size_t sz) const;
-
 	/* Attempts to reallocate the memory of blk (aligned to alignment) to the new size sz.
 	   If the block's pointer is null, this is equivalent to calling AllocateAligned(sz, alignment). */
 	bool ReallocateAligned(Blk& blk, size_t sz, size_t alignment = Alignment) const;

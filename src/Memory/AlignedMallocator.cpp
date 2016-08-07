@@ -40,11 +40,6 @@ Blk AlignedMallocator::AllocateAligned(size_t sz, size_t alignment) const noexce
 	return{ p, sz };
 }
 
-bool AlignedMallocator::Reallocate(Blk& blk, size_t sz) const
-{
-	return ReallocateAligned(blk, sz, Alignment);
-}
-
 bool AlignedMallocator::ReallocateAligned(Blk& blk, size_t sz, size_t alignment) const
 {
 	assert(Owns(blk) && "AlignedMallocator::ReallocateAligned - Attempted to reallocate a block that was not allocated by this allocator");
