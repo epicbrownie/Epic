@@ -71,19 +71,18 @@ public:
 
 	template<class U>
 	STLAllocatorImpl(const STLAllocatorImpl<U, A>&) noexcept
-	{ /* Allocator should not be copied */ }
+	{ /* m_Allocator should not be copied */ }
 
 	template<class U>
 	STLAllocatorImpl<T, A>& operator = (const STLAllocatorImpl<U, A>&) noexcept
 	{
-		/* Allocator should not be copied */
+		/* m_Allocator should not be copied */
 		return (*this);
 	}
 
 public:
 	constexpr size_t max_size() const noexcept
 	{
-		// Maximum array elements
 		return (AllocatorType::MaxAllocSize / sizeof(T));
 	}
 
@@ -144,6 +143,12 @@ public:
 	void destroy(U* p)
 	{
 		p->~U();
+	}
+
+public:
+	Type select_on_container_copy_construction()
+	{
+		return m_Allocator;
 	}
 };
 
@@ -258,7 +263,7 @@ struct std::allocator_traits<Epic::detail::STLAllocatorImpl<T, A>>
 	{  return (allocator.max_size());  }
 
 	static allocator_type select_on_container_copy_construction(const allocator_type& allocator)
-	{  return (allocator);  }
+	{  return (allocator.select_on_container_copy_construction());  }
 };
 
 //////////////////////////////////////////////////////////////////////////////
