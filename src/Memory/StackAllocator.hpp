@@ -134,6 +134,13 @@ public:
 
 		assert(Owns(blk) && "StackAllocator::Deallocate - Attempted to free a block that was not allocated by this allocator");
 		
+		// If this block was the last block available (obtained via AllocateAll()), free it
+		if (reinterpret_cast<char*>(blk.Ptr) + blk.Size == _End())
+		{
+			_pCursor = reinterpret_cast<char*>(blk.Ptr);
+			return;
+		}
+
 		// Calculate the actual size of the block
 		size_t sz = detail::RoundToAligned(blk.Size, Alignment);
 
