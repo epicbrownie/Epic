@@ -56,9 +56,6 @@ public:
 	}
 
 public:
-	/* Delegates to AllocateAligned(sz, Alignment). */
-	Blk Allocate(size_t sz) const noexcept;
-
 	/* Returns a block of uninitialized memory (using ::_aligned_malloc).
 	   If sz is zero, the returned block's pointer is null. */
 	Blk AllocateAligned(size_t sz, size_t alignment = Alignment) const noexcept;
@@ -74,9 +71,6 @@ public:
 	bool ReallocateAligned(Blk& blk, size_t sz, size_t alignment = Alignment) const;
 
 public:
-	/* Delegates to DeallocateAligned(blk). */
-	void Deallocate(const Blk& blk);
-
 	/* Frees the memory for blk (using ::_aligned_free). */
 	void DeallocateAligned(const Blk& blk);
 };

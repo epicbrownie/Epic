@@ -28,11 +28,6 @@ using Epic::AlignedNedAllocator;
 
 //////////////////////////////////////////////////////////////////////////////
 
-Blk AlignedNedAllocator::Allocate(size_t sz) const noexcept
-{
-	return AllocateAligned(sz, Alignment);
-}
-
 Blk AlignedNedAllocator::AllocateAligned(size_t sz, size_t alignment) const noexcept
 {
 	// Verify that the alignment is acceptable
@@ -72,11 +67,6 @@ bool AlignedNedAllocator::ReallocateAligned(Blk& blk, size_t sz, size_t alignmen
 		return false;
 
 	return detail::AlignedReallocator<AlignedNedAllocator>::ReallocateViaCopy(*this, blk, sz, alignment);
-}
-
-void AlignedNedAllocator::Deallocate(const Blk& blk) const
-{
-	DeallocateAligned(blk);
 }
 
 void AlignedNedAllocator::DeallocateAligned(const Blk& blk) const
