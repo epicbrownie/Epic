@@ -13,30 +13,14 @@
 
 #pragma once
 
+#include <Epic/Memory/Default.hpp>
+#include <Epic/Memory/STLAllocator.hpp>
+#include <vector>
+
 //////////////////////////////////////////////////////////////////////////////
 
 namespace Epic
 {
-	template<class Allocator, class Tag>
-	class GlobalAllocatorImpl;
-
-	namespace detail
-	{
-		template<class A> 
-		struct UnwrapGlobalAllocator;
-	}
+	template<class T, class A = Epic::DefaultAllocatorFor<T, eDefaultAllocatorTypes::STLVector>>
+	using STLVector = std::vector<T, Epic::STLAllocator<T, A>>;
 }
-
-//////////////////////////////////////////////////////////////////////////////
-
-template<class A>
-struct Epic::detail::UnwrapGlobalAllocator
-{
-	using Type = A;
-};
-
-template<class A, class Tag>
-struct Epic::detail::UnwrapGlobalAllocator<Epic::GlobalAllocatorImpl<A, Tag>>
-{
-	using Type = typename UnwrapGlobalAllocator<A>::Type;
-};

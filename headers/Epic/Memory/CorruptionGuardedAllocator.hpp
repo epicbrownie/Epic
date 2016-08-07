@@ -43,19 +43,19 @@ enum class Epic::GuardMode
 template<class A, size_t Pattern, class DebugPolicy, class ReleasePolicy>
 struct Epic::detail::CorruptionGuardInvoker<A, Epic::GuardMode::Before, Pattern, DebugPolicy, ReleasePolicy>
 {
-	using type = Epic::AffixAllocator<A, Epic::PatternGuard<Pattern, DebugPolicy, ReleasePolicy>>;
+	using Type = Epic::AffixAllocator<A, Epic::PatternGuard<Pattern, DebugPolicy, ReleasePolicy>>;
 };
 
 template<class A, size_t Pattern, class DebugPolicy, class ReleasePolicy>
 struct Epic::detail::CorruptionGuardInvoker<A, Epic::GuardMode::After, Pattern, DebugPolicy, ReleasePolicy>
 {
-	using type = Epic::AffixAllocator<A, void, Epic::PatternGuard<Pattern, DebugPolicy, ReleasePolicy>>;
+	using Type = Epic::AffixAllocator<A, void, Epic::PatternGuard<Pattern, DebugPolicy, ReleasePolicy>>;
 };
 
 template<class A, size_t Pattern, class DebugPolicy, class ReleasePolicy>
 struct Epic::detail::CorruptionGuardInvoker<A, Epic::GuardMode::Both, Pattern, DebugPolicy, ReleasePolicy>
 {
-	using type = Epic::AffixAllocator<A, 
+	using Type = Epic::AffixAllocator<A, 
 		Epic::PatternGuard<Pattern, DebugPolicy, ReleasePolicy>, 
 		Epic::PatternGuard<Pattern, DebugPolicy, ReleasePolicy>>;
 };
@@ -69,5 +69,5 @@ namespace Epic
 		class DebugResponsePolicy = Epic::GuardResponseAssert,
 		class ReleaseResponsePolicy = Epic::GuardResponseCErr,
 		size_t Pattern = Epic::DefaultGuardPattern::value>
-	using CorruptionGuardedAllocator = typename detail::CorruptionGuardInvoker<Allocator, Mode, Pattern, DebugResponsePolicy, ReleaseResponsePolicy>::type;
+	using CorruptionGuardedAllocator = typename detail::CorruptionGuardInvoker<Allocator, Mode, Pattern, DebugResponsePolicy, ReleaseResponsePolicy>::Type;
 }

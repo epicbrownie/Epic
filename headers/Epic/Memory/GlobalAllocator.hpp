@@ -38,7 +38,7 @@ class Epic::detail::GlobalAllocatorImpl
 	static_assert(std::is_default_constructible<A>::value, "Only default-constructible allocators can be made global.");
 
 public:
-	using type = Epic::detail::GlobalAllocatorImpl<A, Tag_>;
+	using Type = Epic::detail::GlobalAllocatorImpl<A, Tag_>;
 	using AllocatorType = A;
 	using Tag = Tag_;
 
@@ -58,11 +58,11 @@ public:
 		: m_pAllocator{ &SingletonAllocatorType::Instance() } 
 	{ }
 
-	constexpr GlobalAllocatorImpl(const type& obj) = default;
-	constexpr GlobalAllocatorImpl(type&& obj) = default;
+	constexpr GlobalAllocatorImpl(const Type& obj) = default;
+	constexpr GlobalAllocatorImpl(Type&& obj) = default;
 
-	GlobalAllocatorImpl& operator = (const type& obj) = default;
-	GlobalAllocatorImpl& operator = (type&& obj) = default;
+	GlobalAllocatorImpl& operator = (const Type& obj) = default;
+	GlobalAllocatorImpl& operator = (Type&& obj) = default;
 
 public:
 	/* Returns whether or not this allocator is responsible for the block Blk. */
@@ -141,5 +141,5 @@ public:
 namespace Epic
 {
 	template<class Allocator, class Tag = Epic::detail::GlobalAllocatorTag>
-	using GlobalAllocator = detail::GlobalAllocatorImpl<typename detail::UnwrapGlobalAllocator<Allocator>::type, Tag>;
+	using GlobalAllocator = detail::GlobalAllocatorImpl<typename detail::UnwrapGlobalAllocator<Allocator>::Type, Tag>;
 }

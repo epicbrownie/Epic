@@ -13,30 +13,25 @@
 
 #pragma once
 
+#include <Epic/Memory/Mallocator.hpp>
+
 //////////////////////////////////////////////////////////////////////////////
 
 namespace Epic
 {
-	template<class Allocator, class Tag>
-	class GlobalAllocatorImpl;
-
-	namespace detail
+	enum class eDefaultAllocatorTypes
 	{
-		template<class A> 
-		struct UnwrapGlobalAllocator;
-	}
+		STLVector,
+		STLList,
+		STLMap
+	};
+
+	template<class T, eDefaultAllocatorTypes DefaultType>
+	struct DefaultAllocator
+	{
+		using Type = Epic::Mallocator;
+	};
+
+	template<class T, eDefaultAllocatorTypes DefaultType>
+	using DefaultAllocatorFor = typename DefaultAllocator<T, DefaultType>::Type;
 }
-
-//////////////////////////////////////////////////////////////////////////////
-
-template<class A>
-struct Epic::detail::UnwrapGlobalAllocator
-{
-	using Type = A;
-};
-
-template<class A, class Tag>
-struct Epic::detail::UnwrapGlobalAllocator<Epic::GlobalAllocatorImpl<A, Tag>>
-{
-	using Type = typename UnwrapGlobalAllocator<A>::Type;
-};

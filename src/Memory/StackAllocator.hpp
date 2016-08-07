@@ -33,7 +33,7 @@ template<size_t S, size_t A>
 class Epic::StackAllocator
 {
 public:
-	using type = Epic::StackAllocator<S, A>;
+	using Type = Epic::StackAllocator<S, A>;
 
 public:
 	static constexpr size_t Alignment = A;
@@ -48,11 +48,11 @@ public:
 		: _pCursor{ _Memory }, _Memory{ } 
 	{ }
 
-	StackAllocator(const StackAllocator<S, A>&) = delete;
-	StackAllocator(StackAllocator<S, A>&& alloc) = delete;
+	StackAllocator(const Type&) = delete;
+	StackAllocator(Type&& alloc) = delete;
 
-	StackAllocator& operator = (const StackAllocator<S, A>&) = delete;
-	StackAllocator& operator = (StackAllocator<S, A>&&) = delete;
+	StackAllocator& operator = (const Type&) = delete;
+	StackAllocator& operator = (Type&&) = delete;
 
 private:
 	char* _End() noexcept

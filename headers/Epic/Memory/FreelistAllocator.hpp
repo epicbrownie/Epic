@@ -53,7 +53,7 @@ class Epic::detail::FreelistAllocatorImpl
 		"The freelist backing allocator must be able to perform allocations.");
 
 public:
-	using type = Epic::detail::FreelistAllocatorImpl<A, BatchSz, Max, Min>;
+	using Type = Epic::detail::FreelistAllocatorImpl<A, BatchSz, Max, Min>;
 	using AllocatorType = A;
 
 private:
@@ -93,18 +93,18 @@ public:
 		: m_Allocator{ }, m_pChunks{ nullptr }, m_pFreeList{ nullptr }
 	{ }
 
-	FreelistAllocatorImpl(const type&) = delete;
+	FreelistAllocatorImpl(const Type&) = delete;
 	
 	template<typename = std::enable_if_t<std::is_move_constructible<A>::value>>
-	FreelistAllocatorImpl(type&& obj) noexcept(std::is_nothrow_move_constructible<A>::value)
+	FreelistAllocatorImpl(Type&& obj) noexcept(std::is_nothrow_move_constructible<A>::value)
 		: m_Allocator{ std::move(obj) }, m_pChunks{ nullptr }, m_pFreeList{ nullptr }
 	{
 		std::swap(m_pChunks, obj.m_pChunks);
 		std::swap(m_pFreeList, obj.m_pFreeList);
 	}
 
-	FreelistAllocatorImpl& operator = (const type&) = delete;
-	FreelistAllocatorImpl& operator = (type&& obj) = delete;
+	FreelistAllocatorImpl& operator = (const Type&) = delete;
+	FreelistAllocatorImpl& operator = (Type&& obj) = delete;
 
 	~FreelistAllocatorImpl()
 	{
@@ -252,12 +252,12 @@ public:
 
 		// Attempt to calculate an aligned pointer within the block
 		size_t space = result.Size;
-		void* cursor = result.Ptr;
+		void* pAligned = result.Ptr;
 
-		if (std::align(alignment, sz, cursor, space))
+		if (std::align(alignment, sz, pAligned, space))
 		{
 			// Alignment succeeded
-			result = { cursor, space };
+			result = { pAligned, space };
 		}
 		else
 		{

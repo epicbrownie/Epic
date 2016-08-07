@@ -42,7 +42,7 @@ class Epic::ForceAlignAllocator
 		"The allocator must support allocations.");
 
 public:
-	using type = Epic::ForceAlignAllocator<A, ForcedAlignment>;
+	using Type = Epic::ForceAlignAllocator<A, ForcedAlignment>;
 	
 public:
 	static constexpr size_t Alignment = ForcedAlignment;
@@ -60,19 +60,19 @@ public:
 		noexcept(std::is_nothrow_default_constructible<A>::value) = default;
 
 	template<typename = std::enable_if_t<std::is_copy_constructible<A>::value>>
-	constexpr ForceAlignAllocator(const type& obj)
+	constexpr ForceAlignAllocator(const Type& obj)
 		noexcept(std::is_nothrow_copy_constructible<A>::value)
 		: m_Allocator{ obj.m_Allocator }
 	{ }
 
 	template<typename = std::enable_if_t<std::is_move_constructible<A>::value>>
-	constexpr ForceAlignAllocator(type&& obj)
+	constexpr ForceAlignAllocator(Type&& obj)
 		noexcept(std::is_nothrow_move_constructible<A>::value)
 		: m_Allocator{ std::move(obj.m_Allocator) }
 	{ }
 
 	template<typename = std::enable_if_t<std::is_copy_assignable<A>::value>>
-	ForceAlignAllocator& operator = (const type& obj)
+	ForceAlignAllocator& operator = (const Type& obj)
 		noexcept(std::is_nothrow_copy_assignable<A>::value)
 	{
 		m_Allocator = obj.m_Allocator;
@@ -81,7 +81,7 @@ public:
 	}
 
 	template<typename = std::enable_if_t<std::is_move_assignable<A>::value>>
-	ForceAlignAllocator& operator = (type&& obj)
+	ForceAlignAllocator& operator = (Type&& obj)
 		noexcept(std::is_nothrow_move_assignable<A>::value)
 	{
 		m_Allocator = std::move(obj.m_Allocator);
@@ -147,27 +147,27 @@ public:
 		// If the block isn't valid, delegate to Allocate
 		if (!blk)
 		{
-			blk = detail::AllocateIf<type>::apply(*this, sz);
+			blk = detail::AllocateIf<Type>::apply(*this, sz);
 			return (bool)blk;
 		}
 
 		// If the requested size is zero, delegate to Deallocate
 		if (sz == 0)
 		{
-			if (detail::CanDeallocate<type>::value)
+			if (detail::CanDeallocate<Type>::value)
 			{
-				detail::DeallocateIf<type>::apply(*this, blk);
+				detail::DeallocateIf<Type>::apply(*this, blk);
 				blk = { nullptr, 0 };
 			}
 
-			return detail::CanDeallocate<type>::value;
+			return detail::CanDeallocate<Type>::value;
 		}
 
 		// Verify that the requested size is within our allowed bounds
 		if (sz < MinAllocSize || sz > MaxAllocSize)
 			return false;
 
-		return detail::Reallocator<type>::ReallocateViaCopy(*this, blk, sz);
+		return detail::Reallocator<Type>::ReallocateViaCopy(*this, blk, sz);
 	}
 
 	/* Attempts to reallocate the memory of blk (aligned to alignment) to the new size sz. 
@@ -209,8 +209,7 @@ public:
 		size_t space = blk.Size - sizeof(detail::ForceAlignSuffix);
 		void* pAlignedRegion = blk.Ptr;
 
-		pAlignedRegion = std::align(Alignment, 1, pAlignedRegion, space);
-		if (!pAlignedRegion)
+		if (!std::align(Alignment, 1, pAlignedRegion, space))
 		{
 			detail::DeallocateIf<A>::apply(m_Allocator, blk);
 			return{ nullptr, 0 };

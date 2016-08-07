@@ -26,6 +26,7 @@
     <ClInclude Include="src\Memory\BinarySegregatorAllocator.hpp" />
     <ClInclude Include="src\Memory\CascadingAllocator.hpp" />
     <ClInclude Include="src\Memory\CorruptionGuardedAllocator.hpp" />
+    <ClInclude Include="src\Memory\Default.hpp" />
     <ClInclude Include="src\Memory\detail\AffixHelpers.hpp" />
     <ClInclude Include="src\Memory\detail\AllocatorHelpers.hpp" />
     <ClInclude Include="src\Memory\detail\AllocatorTraits.hpp" />
@@ -52,6 +53,7 @@
     <ClInclude Include="src\Memory\SegregatorAllocator.hpp" />
     <ClInclude Include="src\Memory\FallbackAllocator.hpp" />
     <ClInclude Include="src\Memory\STLAllocator.hpp" />
+    <ClInclude Include="src\Memory\STLVector.hpp" />
     <ClInclude Include="src\NullMutex.hpp" />
     <ClInclude Include="src\Singleton.hpp" />
     <ClInclude Include="src\StringHash.hpp" />
