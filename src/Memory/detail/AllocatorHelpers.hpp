@@ -201,12 +201,12 @@ struct Epic::detail::AllocateAllIf<T, true>
 {
 	static inline Blk apply(T& alloc) noexcept
 	{
-		return alloc.Allocate();
+		return alloc.AllocateAll();
 	}
 
 	static inline Blk apply(const T& alloc) noexcept
 	{
-		return alloc.Allocate();
+		return alloc.AllocateAll();
 	}
 };
 
