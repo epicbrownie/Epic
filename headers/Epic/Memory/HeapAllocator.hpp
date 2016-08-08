@@ -353,7 +353,7 @@ protected:
 		{
 			size_t blocksReq = (BitmapSize + BlkSz - 1) / BlkSz;
 
-			auto pBitmap = new (GetBitmapPointer()) BitmapType{};
+			auto pBitmap = ::new (GetBitmapPointer()) BitmapType{};
 			pBitmap->Reset();
 			pBitmap->Set(0, blocksReq, true);
 		}
@@ -436,7 +436,7 @@ protected:
 		if (blk)
 		{
 			m_Heap = { blk.Ptr, BlkSz * BlkCnt };
-			auto pBitmap = new (GetBitmapPointer()) BitmapType{};
+			auto pBitmap = ::new (GetBitmapPointer()) BitmapType{};
 			pBitmap->Reset();
 		}
 	}
