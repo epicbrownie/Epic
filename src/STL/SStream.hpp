@@ -46,6 +46,8 @@ namespace Epic
 	using STLWOStringStream = std::basic_ostringstream<Char, std::char_traits<Char>, Epic::STLAllocator<Char, A>>;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+
 #if defined(EPIC_ENABLE_STL_ALIAS) || defined(EPIC_ENABLE_SSTREAM_ALIAS)
 
 namespace Epic

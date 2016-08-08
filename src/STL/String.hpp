@@ -30,6 +30,8 @@ namespace Epic
 	using STLWString = std::basic_string<WChar, std::char_traits<WChar>, Epic::STLAllocator<WChar, A>>;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+
 #if defined(EPIC_ENABLE_STL_ALIAS) || defined(EPIC_ENABLE_STRING_ALIAS)
 
 namespace Epic

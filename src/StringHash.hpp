@@ -81,6 +81,8 @@ public:
 	CREATE_COMPARISON_OPERATOR(<=);
 	CREATE_COMPARISON_OPERATOR(>=);
 
+	#undef CREATE_COMPARISON_OPERATOR
+
 public:
 	friend struct std::hash<Epic::StringHash<C, A>>;
 
