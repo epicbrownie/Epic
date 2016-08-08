@@ -16,6 +16,7 @@
 #include <Epic/Memory/detail/AllocatorHelpers.hpp>
 #include <Epic/Memory/detail/AllocatorTraits.hpp>
 #include <Epic/Memory/MemoryBlock.hpp>
+#include <Epic/TMP/Utility.hpp>
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
@@ -90,7 +91,7 @@ private:
 	
 public:
 	FreelistAllocatorImpl() noexcept(std::is_nothrow_default_constructible<A>::value)
-		: m_Allocator{ }, m_pChunks{ nullptr }, m_pFreeList{ nullptr }
+		: m_Allocator{ }, m_pChunks{ nullptr }, m_pFreeList{ nullptr }  
 	{ }
 
 	FreelistAllocatorImpl(const Type&) = delete;
@@ -301,7 +302,7 @@ namespace Epic
 	template<class Allocator, size_t BatchSize, size_t BlockSize, size_t MinAllocationSize = 0>
 	using FreelistAllocator = 
 		detail::FreelistAllocatorImpl<Allocator, BatchSize,
-			std::max(BlockSize, std::max(sizeof(detail::FreelistBlock), MinAllocationSize)),
+			Epic::TMP::StaticMax<BlockSize, sizeof(detail::FreelistBlock), MinAllocationSize>::value,
 			MinAllocationSize,
 			0>;
 
@@ -310,8 +311,8 @@ namespace Epic
 	using AlignedFreelistAllocator =
 		detail::FreelistAllocatorImpl<Allocator, BatchSize,
 			detail::RoundToAligned(
-				std::max(BlockSize, std::max(sizeof(detail::FreelistBlock), MinAllocationSize)), 
-						 (Alignment == 0) ? Allocator::Alignment : Alignment),
+				Epic::TMP::StaticMax<BlockSize, sizeof(detail::FreelistBlock), MinAllocationSize>::value, 
+				(Alignment == 0) ? Allocator::Alignment : Alignment),
 			MinAllocationSize,
 			Alignment>;
 }
