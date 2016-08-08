@@ -32,8 +32,17 @@ namespace Epic::detail
 
 namespace Epic::detail
 {
-	constexpr bool IsGoodAlignment(const size_t alignment) noexcept;
-	constexpr size_t RoundToAligned(size_t sz, size_t alignment) noexcept;
+	constexpr bool IsGoodAlignment(const size_t alignment) noexcept
+	{
+		return !(alignment == 0) &&				// alignment must be non-zero
+			   !(alignment & (alignment - 1));	// alignment must be a power-of-two
+	}
+
+	constexpr size_t RoundToAligned(const size_t sz, const size_t alignment) noexcept
+	{
+		// Round sz up to the nearest multiple of alignment
+		return ((sz + alignment - 1) / alignment) * alignment;
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -77,20 +86,6 @@ namespace Epic::detail
 
 	template<class T>
 	struct AlignedReallocator;
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
-constexpr bool Epic::detail::IsGoodAlignment(const size_t alignment) noexcept
-{
-	return !(alignment == 0) &&				// alignment must be non-zero
-		   !(alignment & (alignment - 1));	// alignment must be a power-of-two
-}
-
-constexpr size_t Epic::detail::RoundToAligned(size_t sz, size_t alignment) noexcept
-{
-	// Round sz up to the nearest multiple of alignment
-	return ((sz + alignment - 1) / alignment) * alignment;
 }
 
 //////////////////////////////////////////////////////////////////////////////
