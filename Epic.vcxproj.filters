@@ -196,6 +196,9 @@
     <ClInclude Include="src\STL\SStream.hpp">
       <Filter>STL</Filter>
     </ClInclude>
+    <ClInclude Include="src\STL\SharedPtr.hpp">
+      <Filter>STL</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Memory\NedAllocator.cpp">

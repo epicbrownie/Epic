@@ -62,6 +62,7 @@
     <ClInclude Include="src\STL\Map.hpp" />
     <ClInclude Include="src\STL\Queue.hpp" />
     <ClInclude Include="src\STL\Set.hpp" />
+    <ClInclude Include="src\STL\SharedPtr.hpp" />
     <ClInclude Include="src\STL\SStream.hpp" />
     <ClInclude Include="src\STL\Stack.hpp" />
     <ClInclude Include="src\STL\String.hpp" />

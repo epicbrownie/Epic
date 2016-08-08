@@ -43,7 +43,7 @@ private:
 private:
 	struct _Creator
 	{
-		_Creator() noexcept { Singleton<T>::Instance(); }
+		_Creator() noexcept { Singleton<T, Tag>::Instance(); }
 		inline void DoNothing() const noexcept { }
 	};
 
