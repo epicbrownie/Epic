@@ -23,17 +23,17 @@
 namespace Epic
 {
 	/// STLSet<K, CompareFn, A>
-	template<class K, class CompareFn = std::less<K>, class A = Epic::DefaultSTLAllocatorFor<K, eSTLType::STLSet>>
+	template<class K, class CompareFn = std::less<K>, class A = Epic::DefaultAllocatorFor<K, eAllocatorFor::STLSet>>
 	using STLSet = std::set<K, CompareFn, Epic::STLAllocator<K, A>>;
 
 	/// STLMultiSet<K, CompareFn, A>
-	template<class K, class CompareFn = std::less<K>, class A = Epic::DefaultSTLAllocatorFor<K, eSTLType::STLMultiSet>>
+	template<class K, class CompareFn = std::less<K>, class A = Epic::DefaultAllocatorFor<K, eAllocatorFor::STLMultiSet>>
 	using STLMultiSet = std::multiset<K, CompareFn, Epic::STLAllocator<K, A>>;
 
 	/// STLUnorderedSet<K, HashFn, EqualFn, A>
 	template<class K, 
 			 class HashFn = std::hash<K>, 
 			 class EqualFn = std::equal_to<K>, 
-			 class A = Epic::DefaultSTLAllocatorFor<K, eSTLType::STLUnorderedSet>>
+			 class A = Epic::DefaultAllocatorFor<K, eAllocatorFor::STLUnorderedSet>>
 	using STLUnorderedSet = std::unordered_set<K, HashFn, EqualFn, Epic::STLAllocator<K, A>>;
 }

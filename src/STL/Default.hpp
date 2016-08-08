@@ -19,7 +19,7 @@
 
 namespace Epic
 {
-	enum class eSTLType
+	enum class eAllocatorFor
 	{
 		STLString,
 		STLWString,
@@ -40,15 +40,17 @@ namespace Epic
 		STLOStringStream,
 		STLWStringStream,
 		STLWIStringStream,
-		STLWOStringStream
+		STLWOStringStream,
+		  
+		STLSharedPtr
 	};
 
-	template<class T, eSTLType DefaultType>
-	struct DefaultSTLAllocator
+	template<class T, eAllocatorFor DefaultForType>
+	struct DefaultAllocator
 	{
 		using Type = Epic::Mallocator;
 	};
 
-	template<class T, eSTLType DefaultType>
-	using DefaultSTLAllocatorFor = typename DefaultSTLAllocator<T, DefaultType>::Type;
+	template<class T, eAllocatorFor DefaultForType>
+	using DefaultAllocatorFor = typename DefaultAllocator<T, DefaultForType>::Type;
 }
