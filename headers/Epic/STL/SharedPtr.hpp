@@ -22,19 +22,19 @@
 namespace Epic::detail
 {
 	template<class T, class A>
-	struct MakeSTLAllocator;
+	struct MakeSharedPtrSTLAllocator;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
 template<class T, class A>
-struct Epic::detail::MakeSTLAllocator
+struct Epic::detail::MakeSharedPtrSTLAllocator
 {
 	using Type = Epic::STLAllocator<T, A>;
 };
 
 template<class T, class A>
-struct Epic::detail::MakeSTLAllocator<T, Epic::detail::STLAllocatorImpl<T, A>>
+struct Epic::detail::MakeSharedPtrSTLAllocator<T, Epic::detail::STLAllocatorImpl<T, A>>
 {
 	using Type = A;
 };
@@ -44,12 +44,34 @@ struct Epic::detail::MakeSTLAllocator<T, Epic::detail::STLAllocatorImpl<T, A>>
 namespace Epic
 {
 	/// MakeShared<T, A, Args...>
-	template<class T, class A = Epic::DefaultAllocatorFor<T, Epic::eAllocatorFor::STLSharedPtr>, class... Args>
-	std::shared_ptr<T> MakeShared(Args&&... args)
+	template<class T, class A = Epic::DefaultAllocatorFor<T, Epic::eAllocatorFor::SharedPtr>, class... Args>
+	inline std::shared_ptr<T> MakeShared(Args&&... args)
 	{
-		using AdaptedAllocator = typename detail::MakeSTLAllocator<T, A>::Type;
+		using AdaptedAllocator = typename detail::MakeSharedPtrSTLAllocator<T, A>::Type;
 		AdaptedAllocator allocator;
 
-		return std::allocate_shared<T, AdaptedAllocator>(allocator, std::forward<Args>(args)...);
+		// Use the allocator to create a T
+		T* pObject = allocator.allocate(1);
+
+		// Attempt to construct the T
+		try
+		{
+			allocator.construct(pObject, std::forward<Args>(args)...);
+		}
+		catch (...)
+		{
+			allocator.deallocate(pObject, 1);
+			throw;
+		}
+
+		// Create a Deleter
+		auto Deleter = [=] (auto p) -> void
+		{
+			AdaptedAllocator alloc;
+			alloc.destroy(p); 
+			alloc.deallocate(p, 1); 
+		};
+
+		return std::shared_ptr<T>{ pObject, Deleter, allocator };
 	}
 }
