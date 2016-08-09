@@ -22,6 +22,6 @@
 namespace Epic
 {
 	/// STLForwardList<T, A>
-	template<class T, class A = Epic::DefaultAllocatorFor<T, eAllocatorFor::STLForwardList>>
+	template<class T, class A = Epic::DefaultAllocatorFor<T, eAllocatorFor::ForwardList>>
 	using STLForwardList = std::forward_list<T, Epic::STLAllocator<T, A>>;
 }

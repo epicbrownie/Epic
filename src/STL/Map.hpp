@@ -27,7 +27,7 @@ namespace Epic
 			 class T, 
 			 class CompareFn = std::less<K>, 
 			 class Pair = std::pair<const K, T>, 
-			 class A = Epic::DefaultAllocatorFor<Pair, eAllocatorFor::STLMap>>
+			 class A = Epic::DefaultAllocatorFor<Pair, eAllocatorFor::Map>>
 	using STLMap = std::map<K, T, CompareFn, Epic::STLAllocator<Pair, A>>;
 
 	/// STLMultiMap<K, T, CompareFn, Pair, A>
@@ -35,7 +35,7 @@ namespace Epic
 			 class T, 
 			 class CompareFn = std::less<K>, 
 			 class Pair = std::pair<const K, T>, 
-			 class A = Epic::DefaultAllocatorFor<Pair, eAllocatorFor::STLMultiMap>>
+			 class A = Epic::DefaultAllocatorFor<Pair, eAllocatorFor::MultiMap>>
 	using STLMultiMap = std::multimap<K, T, CompareFn, Epic::STLAllocator<Pair, A>>;
 
 	/// STLUnorderedMap<K, T, HashFn, CompareFn, Pair, A>
@@ -44,6 +44,6 @@ namespace Epic
 			 class HashFn = std::hash<K>,
 			 class CompareFn = std::equal_to<K>,
 			 class Pair = std::pair<const K, T>,
-			 class A = Epic::DefaultAllocatorFor<Pair, eAllocatorFor::STLUnorderedMap>>
+			 class A = Epic::DefaultAllocatorFor<Pair, eAllocatorFor::UnorderedMap>>
 	using STLUnorderedMap = std::unordered_map<K, T, HashFn, CompareFn, Epic::STLAllocator<Pair, A>>;
 }

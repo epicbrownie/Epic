@@ -22,6 +22,6 @@
 namespace Epic
 {
 	/// STLVector<T, A>
-	template<class T, class A = Epic::DefaultAllocatorFor<T, eAllocatorFor::STLVector>>
+	template<class T, class A = Epic::DefaultAllocatorFor<T, eAllocatorFor::Vector>>
 	using STLVector = std::vector<T, Epic::STLAllocator<T, A>>;
 }
