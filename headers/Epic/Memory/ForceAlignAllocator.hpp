@@ -114,7 +114,7 @@ public:
 		}
 
 		// Allocating aligned failed. Force a normal allocation to be aligned.
-		size_t blockSpace = sz + Alignment;
+		size_t blockSpace = sz + Alignment - 1;
 		size_t newsz = blockSpace + sizeof(detail::ForceAlignSuffix);
 		
 		blk = detail::AllocateIf<A>::apply(m_Allocator, newsz);
