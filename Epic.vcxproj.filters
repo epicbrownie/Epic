@@ -35,6 +35,9 @@
     <Filter Include="STL\detail">
       <UniqueIdentifier>{876eeaa8-6834-4e80-81b5-c92c48141a6c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="detail">
+      <UniqueIdentifier>{a2497ab7-a614-472f-87bd-eb400c31db6b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Singleton.hpp">
@@ -198,6 +201,18 @@
     </ClInclude>
     <ClInclude Include="src\STL\SharedPtr.hpp">
       <Filter>STL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\STL\UniquePtr.hpp">
+      <Filter>STL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\STL\detail\UniqueHelpers.hpp">
+      <Filter>STL\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Config.hpp">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\ReadConfig.hpp">
+      <Filter>detail</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -19,6 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Config.hpp" />
+    <ClInclude Include="src\detail\ReadConfig.hpp" />
     <ClInclude Include="src\Ext\Erase.hpp" />
     <ClInclude Include="src\Memory\AffixAllocator.hpp" />
     <ClInclude Include="src\Memory\AlignedMallocator.hpp" />
@@ -57,6 +59,7 @@
     <ClInclude Include="src\STL\Deque.hpp" />
     <ClInclude Include="src\STL\detail\STLHelpers.hpp" />
     <ClInclude Include="src\STL\Allocator.hpp" />
+    <ClInclude Include="src\STL\detail\UniqueHelpers.hpp" />
     <ClInclude Include="src\STL\ForwardList.hpp" />
     <ClInclude Include="src\STL\List.hpp" />
     <ClInclude Include="src\STL\Map.hpp" />
@@ -66,6 +69,7 @@
     <ClInclude Include="src\STL\SStream.hpp" />
     <ClInclude Include="src\STL\Stack.hpp" />
     <ClInclude Include="src\STL\String.hpp" />
+    <ClInclude Include="src\STL\UniquePtr.hpp" />
     <ClInclude Include="src\STL\Vector.hpp" />
     <ClInclude Include="src\StringHash.hpp" />
     <ClInclude Include="src\StringHashAlgorithm.hpp" />
