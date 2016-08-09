@@ -22,6 +22,6 @@
 namespace Epic
 {
 	/// STLList<T, A>
-	template<class T, class A = Epic::DefaultSTLAllocatorFor<T, eSTLType::STLList>>
+	template<class T, class A = Epic::DefaultAllocatorFor<T, eAllocatorFor::List>>
 	using STLList = std::list<T, Epic::STLAllocator<T, A>>;
 }

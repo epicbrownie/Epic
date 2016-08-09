@@ -15,8 +15,8 @@
 
 #include <Epic/Memory/detail/AllocatorHelpers.hpp>
 #include <Epic/STL/detail/STLHelpers.hpp>
+#include <cassert>
 #include <memory>
-#include <new>
 #include <type_traits>
 
 //////////////////////////////////////////////////////////////////////////////
@@ -99,16 +99,37 @@ public:
 public:
 	__declspec(allocator) pointer allocate(size_type n)
 	{
-		// Attempt to allocate
-		Blk blk = detail::AllocateIf<AllocatorType>::apply(m_Allocator, sizeof(T) * n);
+		Blk blk;
 
-		// Ensure memory was acquired
-		if (!blk) 
-			throw std::bad_alloc{ };
+		if (!detail::CanAllocate<AllocatorType>::value || (AllocatorType::Alignment % alignof(T)) != 0)
+		{
+			assert(detail::CanAllocateAligned<AllocatorType>::value &&
+				"STLAllocator::Allocate() - This type requires an allocator that is capable of "
+				"performing arbitrarily aligned allocations");
 
-		// Store size in prefix object
-		auto pPrefix = m_Allocator.Allocator().GetPrefixObject(blk);
-		pPrefix->Size = blk.Size;
+			// Attempt to allocate aligned memory via AllocateAligned()
+			blk = detail::AllocateAlignedIf<AllocatorType>::apply(m_Allocator, sizeof(T) * n, alignof(T));
+
+			// Ensure memory was acquired
+			if (!blk) throw std::bad_alloc{};
+
+			// Store size in prefix object
+			auto pPrefix = m_Allocator.Allocator().GetPrefixObject(blk, alignof(T));
+			pPrefix->Size = blk.Size;
+
+		}
+		else
+		{
+			// Attempt to allocate memory via Allocate()
+			blk = detail::AllocateIf<AllocatorType>::apply(m_Allocator, sizeof(T) * n);
+
+			// Ensure memory was acquired
+			if (!blk) throw std::bad_alloc{};
+
+			// Store size in prefix object
+			auto pPrefix = m_Allocator.Allocator().GetPrefixObject(blk);
+			pPrefix->Size = blk.Size;
+		}
 
 		return static_cast<pointer>(blk.Ptr);
 	}
@@ -124,19 +145,29 @@ public:
 		// prefix object from a pointer.  A temporary block will be used.
 		Blk blk{ p, 1 };
 
-		// Retrieve the block size
-		auto pPrefix = m_Allocator.Allocator().GetPrefixObject(blk);
-		blk.Size = pPrefix->Size;
+		if (!detail::CanAllocate<AllocatorType>::value || (AllocatorType::Alignment % alignof(T)) != 0)
+		{
+			// AllocateAligned was used
+			auto pPrefix = m_Allocator.Allocator().GetPrefixObject(blk, alignof(T));
+			blk.Size = pPrefix->Size;
 
-		// Attempt to deallocate
-		detail::DeallocateIf<AllocatorType>::apply(m_Allocator, blk);
+			detail::DeallocateAlignedIf<AllocatorType>::apply(m_Allocator, blk);
+		}
+		else
+		{
+			// Allocate was used
+			auto pPrefix = m_Allocator.Allocator().GetPrefixObject(blk);
+			blk.Size = pPrefix->Size;
+
+			detail::DeallocateIf<AllocatorType>::apply(m_Allocator, blk);
+		}
 	}
 
 public:
 	template<class U, class... Args>
 	void construct(U* p, Args&&... args)
 	{
-		::new (static_cast<void*>(p)) U{ std::forward<Args>(args)... };
+		::new (static_cast<void*>(p)) U(std::forward<Args>(args)...);
 	}
 
 	template<class U>

@@ -14,6 +14,7 @@
 #pragma once
 
 #include <Epic/TMP/List.hpp>
+#include <type_traits>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -24,6 +25,9 @@ namespace Epic::TMP
 
 	template<class DebugType, class ReleaseType> 
 	struct DebugSwitch;
+
+	template<size_t... Vs>
+	struct StaticMax;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -49,6 +53,8 @@ namespace Epic::TMP
 	using IndexSequenceFor = typename GenIndexSequence<sizeof...(Ts) - 1>::Type;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+
 namespace Epic::TMP
 {
 #ifdef NDEBUG
@@ -64,4 +70,21 @@ namespace Epic::TMP
 		using Type = D;
 	};
 #endif
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+namespace Epic::TMP
+{
+	template<size_t V1>
+	struct StaticMax<V1>
+	{
+		static constexpr size_t value = V1;
+	};
+	
+	template<size_t V1, size_t... Vs>
+	struct StaticMax<V1, Vs...>
+	{
+		static constexpr size_t value = (V1 > StaticMax<Vs...>::value) ? V1 : StaticMax<Vs...>::value;
+	};
 }

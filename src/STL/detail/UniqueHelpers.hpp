@@ -13,50 +13,60 @@
 
 #pragma once
 
+#include <Epic/Memory/detail/GlobalHelpers.hpp>
 #include <Epic/Memory/GlobalAllocator.hpp>
-#include <Epic/Memory/AffixAllocator.hpp>
 #include <Epic/Memory/MemoryBlock.hpp>
+#include <type_traits>
 
 //////////////////////////////////////////////////////////////////////////////
 
 namespace Epic::detail
 {
-	template<class A, class Tag>
-	struct STLAllocatorAdaptor;
+	template<class A>
+	struct UniqueDeallocator;
 
-	struct STLAllocatorPrefix;
+	template<class T, class A, class Tag>
+	struct UniqueAllocatorAdaptor;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-struct Epic::detail::STLAllocatorPrefix
+template<class A>
+struct Epic::detail::UniqueDeallocator
 {
-	Epic::MemoryBlock::size_type Size;
+	static void Deallocate(const Blk& blk)
+	{
+		A allocator;
+		detail::DeallocateIf<A>::apply(allocator, blk);
+	}
+
+	static void DeallocateAligned(const Blk& blk)
+	{
+		A allocator;
+		detail::DeallocateAlignedIf<A>::apply(allocator, blk);
+	}
 };
 
 //////////////////////////////////////////////////////////////////////////////
 
-template<class A, class Tag>
-struct Epic::detail::STLAllocatorAdaptor
+template<class T, class A, class Tag>
+struct Epic::detail::UniqueAllocatorAdaptor
 {
-	using _affixed = Epic::AffixAllocator<A, Epic::detail::STLAllocatorPrefix>;
-
-	using Type = Epic::GlobalAllocator<_affixed, Tag>;
+	using Type = Epic::GlobalAllocator<A, Tag>;
 };
 
-template<class A, class Tag, class OldTag>
-struct Epic::detail::STLAllocatorAdaptor<Epic::detail::GlobalAllocatorImpl<A, OldTag>, Tag>
-{
+template<class T, class A, class Tag, class OldTag>
+struct Epic::detail::UniqueAllocatorAdaptor<T, Epic::detail::GlobalAllocatorImpl<A, OldTag>, Tag>
+{	
 	using _unwrapped = typename detail::UnwrapGlobalAllocator<A>::Type;
-	using _affixed = Epic::AffixAllocator<_unwrapped, Epic::detail::STLAllocatorPrefix>;
-	
-	using Type = Epic::GlobalAllocator<_affixed, OldTag>;
+
+	using Type = Epic::GlobalAllocator<_unwrapped, OldTag>;
 };
 
 //////////////////////////////////////////////////////////////////////////////
 
 namespace Epic
 {
-	template<class Allocator, class Tag = detail::GlobalAllocatorTag>
-	using STLAllocatorAdapted = typename detail::STLAllocatorAdaptor<Allocator, Tag>::Type;
+	template<class T, class Allocator, class Tag = detail::GlobalAllocatorTag>
+	using UniqueAllocatorAdapted = typename detail::UniqueAllocatorAdaptor<T, Allocator, Tag>::Type;
 }

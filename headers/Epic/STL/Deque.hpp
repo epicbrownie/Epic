@@ -22,6 +22,6 @@
 namespace Epic
 {
 	/// STLDeque<T, A>
-	template<class T, class A = Epic::DefaultSTLAllocatorFor<T, eSTLType::STLDeque>>
+	template<class T, class A = Epic::DefaultAllocatorFor<T, eAllocatorFor::Deque>>
 	using STLDeque = std::deque<T, Epic::STLAllocator<T, A>>;
 }

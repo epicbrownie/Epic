@@ -51,7 +51,7 @@ struct Epic::detail::AffixConstructor
 	static void apply(void* pWhere)
 		noexcept(std::is_nothrow_default_constructible<Affix>::value)
 	{
-		new (pWhere) Affix{ };
+		::new (pWhere) Affix{ };
 	}
 };
 
@@ -82,7 +82,7 @@ struct Epic::detail::AffixBuffer<Affix, true>
 
 	void Restore(void* pWhere) noexcept
 	{
-		new (pWhere) Affix{ std::move(_Buffer) };
+		::new (pWhere) Affix{ std::move(_Buffer) };
 	}
 };
 

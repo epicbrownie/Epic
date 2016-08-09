@@ -38,7 +38,6 @@ namespace Epic
 		template<class Allocator, size_t BlkSz, size_t BlkCnt, size_t Align> class StaticHeapPolicy;
 		template<class Allocator, size_t BlkSz, size_t BlkCnt, size_t Align> class InternalLinearHeapPolicy;
 		template<class Allocator, size_t BlkSz, size_t BlkCnt, size_t Align> class ExternalLinearHeapPolicy;
-		template<class Allocator, size_t BlkSz, size_t BlkCnt, size_t Align> class BuddyHeapPolicy;
 
 		template<class StoragePolicy, class Allocator, size_t BlkSz, size_t BlkCnt, size_t Align> class LinearHeapPolicyImpl;
 		template<class Allocator, size_t BlkSz, size_t BlkCnt, size_t Align> class LinearHeapInternalStoragePolicy;
@@ -354,7 +353,7 @@ protected:
 		{
 			size_t blocksReq = (BitmapSize + BlkSz - 1) / BlkSz;
 
-			auto pBitmap = new (GetBitmapPointer()) BitmapType{};
+			auto pBitmap = ::new (GetBitmapPointer()) BitmapType{};
 			pBitmap->Reset();
 			pBitmap->Set(0, blocksReq, true);
 		}
@@ -437,7 +436,7 @@ protected:
 		if (blk)
 		{
 			m_Heap = { blk.Ptr, BlkSz * BlkCnt };
-			auto pBitmap = new (GetBitmapPointer()) BitmapType{};
+			auto pBitmap = ::new (GetBitmapPointer()) BitmapType{};
 			pBitmap->Reset();
 		}
 	}

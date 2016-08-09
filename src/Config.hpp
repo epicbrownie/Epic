@@ -13,15 +13,14 @@
 
 #pragma once
 
-#include <Epic/STL/Default.hpp>
-#include <Epic/STL/Allocator.hpp>
-#include <list>
+#include <type_traits>
 
 //////////////////////////////////////////////////////////////////////////////
 
 namespace Epic
 {
-	/// STLList<T, A>
-	template<class T, class A = Epic::DefaultAllocatorFor<T, eAllocatorFor::List>>
-	using STLList = std::list<T, Epic::STLAllocator<T, A>>;
+	template<bool UserDefined>
+	struct Config
+	{
+	};
 }

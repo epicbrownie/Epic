@@ -176,7 +176,7 @@ protected:
 			return nullptr;
 
 		// Place a new node into the block and add it to the list
-		auto pNode = new (blk.Ptr) NodeType{ blk.Size };
+		auto pNode = ::new (blk.Ptr) NodeType{ blk.Size };
 
 		pNode->m_pNext = m_pAllocNodes;
 		m_pAllocNodes = pNode;
@@ -313,7 +313,7 @@ protected:
 		node.m_AllocatedSize = blk.Size;
 
 		// Construct a new node into the block and move the stack node into it
-		auto pNode = new (blk.Ptr) NodeType{ std::move(node) };
+		auto pNode = ::new (blk.Ptr) NodeType{ std::move(node) };
 
 		// Add the new node to the list
 		pNode->m_pNext = m_pAllocNodes;

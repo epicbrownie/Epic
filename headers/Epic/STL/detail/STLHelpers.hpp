@@ -49,7 +49,7 @@ struct Epic::detail::STLAllocatorAdaptor<Epic::detail::GlobalAllocatorImpl<A, Ol
 {
 	using _unwrapped = typename detail::UnwrapGlobalAllocator<A>::Type;
 	using _affixed = Epic::AffixAllocator<_unwrapped, Epic::detail::STLAllocatorPrefix>;
-
+	
 	using Type = Epic::GlobalAllocator<_affixed, OldTag>;
 };
 

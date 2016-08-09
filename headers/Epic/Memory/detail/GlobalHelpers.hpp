@@ -13,6 +13,8 @@
 
 #pragma once
 
+#include <type_traits>
+
 //////////////////////////////////////////////////////////////////////////////
 
 namespace Epic
@@ -22,10 +24,29 @@ namespace Epic
 
 	namespace detail
 	{
+		template<class T>
+		struct IsGlobal;
+
 		template<class A> 
 		struct UnwrapGlobalAllocator;
 	}
 }
+
+//////////////////////////////////////////////////////////////////////////////
+
+/// IsGlobal<T>
+template<class T>
+struct Epic::detail::IsGlobal
+{
+private:
+	template<class U> 
+	static std::true_type HasAllocator(U*, decltype(T::Allocator())* = nullptr);
+	static std::false_type HasAllocator(...);
+
+public:
+	typedef decltype(HasAllocator((T*)(nullptr))) Return;
+	static constexpr bool value = Return::value;
+};
 
 //////////////////////////////////////////////////////////////////////////////
 

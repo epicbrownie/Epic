@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Epic", "Epic.vcxproj", "{809D2707-DFB7-4E11-9CF6-FBBC1BD99797}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestEpicEngine", "..\TestEpicEngine\TestEpicEngine.vcxproj", "{1A2EEC76-6D3D-472E-A5C9-B9FECDF9023D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{809D2707-DFB7-4E11-9CF6-FBBC1BD99797} = {809D2707-DFB7-4E11-9CF6-FBBC1BD99797}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
