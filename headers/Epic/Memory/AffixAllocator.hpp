@@ -36,7 +36,7 @@ namespace Epic
 template<class A, class Prefix, class Suffix>
 class Epic::AffixAllocator
 {
-	static_assert(std::is_default_constructible<A>::value, "The aligned allocator must be default-constructible.");
+	static_assert(std::is_default_constructible<A>::value, "The affix allocator must be default-constructible.");
 	
 public:
 	using Type = Epic::AffixAllocator<A, Prefix, Suffix>;
@@ -47,20 +47,28 @@ public:
 public:
 	static constexpr size_t Alignment = A::Alignment;
 	
+private:
 	static constexpr bool HasPrefix = !std::is_same<Prefix, void>::value;
 	static constexpr bool HasSuffix = !std::is_same<Suffix, void>::value;
 
-	static constexpr size_t PrefixSize = detail::RoundToAligned(detail::AffixSize<Prefix>::value, Alignment);
+	static constexpr size_t UnalignedPrefixSize = detail::AffixSize<Prefix>::value;
+	static constexpr size_t PrefixSize = detail::RoundToAligned(UnalignedPrefixSize, Alignment);
 	static constexpr size_t SuffixSize = detail::AffixSize<Suffix>::value;
-	static constexpr size_t AffixSize = PrefixSize + SuffixSize;
+	
+	using AlignmentMemento = uint16_t;
 
+private:
+	static constexpr size_t NonAllocSize = (PrefixSize + SuffixSize + sizeof(AlignmentMemento));
+
+public:
 	static constexpr size_t MinAllocSize = A::MinAllocSize;
-	static constexpr size_t MaxAllocSize = A::MaxAllocSize - AffixSize;
+	static constexpr size_t MaxAllocSize = A::MaxAllocSize - NonAllocSize;
 
 	static_assert(!HasPrefix || std::is_default_constructible<Prefix>::value, "The Prefix Type must be default-constructible.");
 	static_assert(!HasSuffix || std::is_default_constructible<Suffix>::value, "The Suffix Type must be default-constructible.");
 
-	static_assert(A::MaxAllocSize > AffixSize || MaxAllocSize > MinAllocSize, "The Affix sizes are too large for this Allocator.");
+	static_assert(A::MaxAllocSize > NonAllocSize && MaxAllocSize > MinAllocSize, 
+		"The affix sizes are too large for the backing Allocator.");
 
 private:
 	AllocatorType m_Allocator;
@@ -100,21 +108,21 @@ public:
 	}
 
 private:
-	static constexpr Blk ClientToAffixedBlock(const Blk& blk) noexcept
+	static constexpr Blk ClientToAffixedBlock(const Blk& blk, const AlignmentMemento& alignment) noexcept
 	{
 		return Blk
 		{
-			reinterpret_cast<char*>(blk.Ptr) - PrefixSize,
-			blk.Size + PrefixSize + SuffixSize
+			reinterpret_cast<char*>(blk.Ptr) - detail::RoundToAligned(UnalignedPrefixSize, alignment),
+			blk.Size + (detail::RoundToAligned(UnalignedPrefixSize, alignment) + SuffixSize + sizeof(AlignmentMemento))
 		};
 	}
 
-	static constexpr Blk AffixedToClientBlock(const Blk& blk) noexcept
+	static constexpr Blk AffixedToClientBlock(const Blk& blk, const AlignmentMemento& alignment) noexcept
 	{
 		return Blk
 		{
-			reinterpret_cast<char*>(blk.Ptr) + PrefixSize,
-			blk.Size - PrefixSize - SuffixSize
+			reinterpret_cast<char*>(blk.Ptr) + detail::RoundToAligned(UnalignedPrefixSize, alignment),
+			blk.Size - (detail::RoundToAligned(UnalignedPrefixSize, alignment) + SuffixSize + sizeof(AlignmentMemento))
 		};
 	}
 
@@ -128,21 +136,31 @@ private:
 		return static_cast<void*>(reinterpret_cast<char*>(blk.Ptr) + blk.Size - SuffixSize);
 	}
 
-	static constexpr void* ClientToPrefixPtr(const Blk& blk) noexcept
+	static constexpr AlignmentMemento* AffixedToAlignmentMementoPtr(const Blk& blk)
 	{
-		return static_cast<void*>(reinterpret_cast<char*>(blk.Ptr) - PrefixSize);
+		return reinterpret_cast<AlignmentMemento*>(reinterpret_cast<char*>(AffixedToSuffixPtr(blk)) - sizeof(AlignmentMemento));
+	}
+
+	static constexpr void* ClientToPrefixPtr(const Blk& blk, const AlignmentMemento& alignment) noexcept
+	{
+		return static_cast<void*>(reinterpret_cast<char*>(blk.Ptr) - detail::RoundToAligned(UnalignedPrefixSize, alignment));
 	}
 
 	static constexpr void* ClientToSuffixPtr(const Blk& blk) noexcept
 	{
-		return static_cast<void*>(reinterpret_cast<char*>(blk.Ptr) + blk.Size);
+		return static_cast<void*>(reinterpret_cast<char*>(blk.Ptr) + blk.Size + sizeof(AlignmentMemento));
+	}
+
+	static constexpr AlignmentMemento* ClientToAlignmentMementoPtr(const Blk& blk)
+	{
+		return reinterpret_cast<AlignmentMemento*>(reinterpret_cast<char*>(blk.Ptr) + blk.Size);
 	}
 
 public:
 	/* Returns whether or not this allocator is responsible for the block Blk. */
 	inline bool Owns(const Blk& blk) const noexcept
 	{
-		return m_Allocator.Owns(blk ? ClientToAffixedBlock(blk) : blk);
+		return blk ? m_Allocator.Owns(ClientToAffixedBlock(blk, *ClientToAlignmentMementoPtr(blk))) : false;
 	}
 
 public:
@@ -154,21 +172,58 @@ public:
 		// Verify that the requested size isn't zero.
 		if (sz == 0) return{ nullptr, 0 };
 		
-		size_t newsz = sz + AffixSize;
-
 		// Verify that the requested size is within our allowed bounds
-		if (newsz < MinAllocSize || newsz > MaxAllocSize)
+		if (sz < MinAllocSize || sz > MaxAllocSize)
 			return{ nullptr, 0 };
-
+		
 		// Allocate the block
-		auto blk = m_Allocator.Allocate(newsz);
+		auto blk = m_Allocator.Allocate(sz + NonAllocSize);
 		if (!blk) return{ nullptr, 0 };
 
 		// Construct the Prefix and Suffix objects
 		detail::AffixConstructor<Prefix>::apply(AffixedToPrefixPtr(blk));
 		detail::AffixConstructor<Suffix>::apply(AffixedToSuffixPtr(blk));
 
-		return AffixedToClientBlock(blk);
+		// Store alignment memento
+		auto memento = static_cast<AlignmentMemento>(Alignment);
+		*AffixedToAlignmentMementoPtr(blk) = memento;
+
+		return AffixedToClientBlock(blk, memento);
+	}
+
+	/* Returns a block of uninitialized memory (aligned to 'alignment').
+	   The memory will be surrounded by constructed Affix objects. */
+	template<typename = std::enable_if_t<detail::CanAllocateAligned<A>::value>>
+	Blk AllocateAligned(size_t sz, size_t alignment = Alignment) noexcept
+	{
+		// Verify that the alignment is acceptable
+		if (!detail::IsGoodAlignment(alignment))
+			return{ nullptr, 0 };
+
+		assert(alignment <= std::numeric_limits<AlignmentMemento>::max() &&
+			"AffixAllocator::AllocateAligned - Unsupported alignment value");
+
+		// Verify that the requested size isn't zero.
+		if (sz == 0) return{ nullptr, 0 };
+
+		// Verify that the requested size is within our allowed bounds
+		if (sz < MinAllocSize || sz > MaxAllocSize)
+			return{ nullptr, 0 };
+
+		// Allocate the block
+		size_t szNew = sz + detail::RoundToAligned(UnalignedPrefixSize, alignment) + sizeof(AlignmentMemento) + SuffixSize;
+		auto blk = m_Allocator.AllocateAligned(szNew, alignment);
+		if (!blk) return{ nullptr, 0 };
+
+		// Construct the Prefix and Suffix objects
+		detail::AffixConstructor<Prefix>::apply(AffixedToPrefixPtr(blk));
+		detail::AffixConstructor<Suffix>::apply(AffixedToSuffixPtr(blk));
+
+		// Store alignment memento
+		auto memento = static_cast<AlignmentMemento>(alignment);
+		*AffixedToAlignmentMementoPtr(blk) = memento;
+
+		return AffixedToClientBlock(blk, memento);
 	}
 
 	/* Attempts to reallocate the memory of blk to the new size sz.
@@ -195,10 +250,8 @@ public:
 			return detail::CanDeallocate<Type>::value;
 		}
 
-		size_t newsz = sz + AffixSize;
-
 		// Verify that the requested size is within our allowed bounds
-		if (newsz < MinAllocSize || newsz > MaxAllocSize)
+		if (sz < MinAllocSize || sz > MaxAllocSize)
 			return false;
 
 		// Move the Suffix object to the stack
@@ -206,17 +259,85 @@ public:
 		detail::AffixBuffer<Suffix> suffix{ pSuffix };
 
 		// Reallocate the block
-		Blk affixedBlk = ClientToAffixedBlock(blk);
+		Blk affixedBlk = ClientToAffixedBlock(blk, Alignment);
 
-		if (!m_Allocator.Reallocate(affixedBlk, newsz))
+		if (!m_Allocator.Reallocate(affixedBlk, sz + NonAllocSize))
 		{
 			suffix.Restore(pSuffix);
 			return false;
 		}
 
-		// Place the Suffix object and return
+		// Place the Suffix object and the alignment memento
 		suffix.Restore(AffixedToSuffixPtr(affixedBlk));
-		blk = AffixedToClientBlock(affixedBlk);
+		*AffixedToAlignmentMementoPtr(affixedBlk) = Alignment;
+		
+		blk = AffixedToClientBlock(affixedBlk, Alignment);
+
+		return true;
+	}
+
+	/* Attempts to reallocate the memory of blk to the new size 'sz' (aligned to 'alignment').
+	   It must have been allocated through AllocateAligned().
+	   The Affix objects will be moved as necessary. */
+	template<typename = std::enable_if_t<detail::CanReallocateAligned<A>::value && detail::AffixBuffer<Suffix>::CanStore>>
+	bool ReallocateAligned(Blk& blk, size_t sz, size_t alignment = Alignment)
+	{
+		// Verify that the alignment is acceptable
+		if (!detail::IsGoodAlignment(alignment))
+			return false;
+
+		assert(alignment <= std::numeric_limits<AlignmentMemento>::max() &&
+			"AffixAllocator::ReallocateAligned - Unsupported alignment value");
+
+		// If the block isn't valid, delegate to AllocateAligned
+		if (!blk)
+		{
+			blk = detail::AllocateAlignedIf<Type>::apply(*this, sz, alignment);
+			return (bool)blk;
+		}
+
+		// If the requested size is zero, delegate to DeallocateAligned
+		if (sz == 0)
+		{
+			if (detail::CanDeallocateAligned<Type>::value)
+			{
+				detail::DeallocateAlignedIf<Type>::apply(*this, blk);
+				blk = { nullptr, 0 };
+			}
+
+			return detail::CanDeallocate<Type>::value;
+		}
+
+		// Verify that the requested size is within our allowed bounds
+		if (sz < MinAllocSize || sz > MaxAllocSize)
+			return false;
+
+		// Verify alignment memento
+		AlignmentMemento memento = *ClientToAlignmentMementoPtr(blk);
+		assert(detail::IsGoodAlignment(memento) &&
+			"AffixAllocator::ReallocateAligned - Either this block was not allocated aligned or the heap has been corrupted");
+		assert(alignment == memento &&
+			"AffixAllocator::ReallocateAligned - Once allocated, the alignment of an allocated block cannot be changed");
+
+		// Move the Suffix object to the stack
+		auto pSuffix = GetSuffixObject(blk);
+		detail::AffixBuffer<Suffix> suffix{ pSuffix };
+
+		// Reallocate the block
+		Blk affixedBlk = ClientToAffixedBlock(blk, memento);
+		size_t szNew = sz + detail::RoundToAligned(UnalignedPrefixSize, alignment) + sizeof(AlignmentMemento) + SuffixSize;
+
+		if (!m_Allocator.ReallocateAligned(affixedBlk, szNew))
+		{
+			suffix.Restore(pSuffix);
+			return false;
+		}
+
+		// Place the Suffix object and the alignment memento
+		suffix.Restore(AffixedToSuffixPtr(affixedBlk));
+		*AffixedToAlignmentMementoPtr(affixedBlk) = memento;
+		
+		blk = AffixedToClientBlock(affixedBlk, memento);
 
 		return true;
 	}
@@ -235,13 +356,35 @@ public:
 		if (HasSuffix) GetSuffixObject(blk)->~Suffix();
 
 		// Deallocate the affixed block		
-		m_Allocator.Deallocate(ClientToAffixedBlock(blk));
+		m_Allocator.Deallocate(ClientToAffixedBlock(blk, static_cast<AlignmentMemento>(Alignment)));
+	}
+
+	/* Frees the memory for blk. It must have been allocated through AllocateAligned().
+	   The surrounding Affix objects will also be destroyed. */
+	template<typename = std::enable_if_t<detail::CanDeallocateAligned<A>::value>>
+	void DeallocateAligned(const Blk& blk)
+	{
+		if (!blk) return;
+		assert(Owns(blk) && "AffixAllocator::DeallocateAligned - Attempted to free a block that was not allocated by this allocator");
+		
+		// Verify alignment memento
+		assert(detail::IsGoodAlignment(*ClientToAlignmentMementoPtr(blk)) && 
+			"AffixAllocator::DeallocateAligned - Either this block was not allocated aligned or the heap has been corrupted");
+
+		// Deconstruct the affix objects
+		if (HasPrefix) GetPrefixObject(blk)->~Prefix();
+		if (HasSuffix) GetSuffixObject(blk)->~Suffix();
+
+		// Deallocate the affixed block
+		m_Allocator.DeallocateAligned(ClientToAffixedBlock(blk, *ClientToAlignmentMementoPtr(blk)));
 	}
 
 public:
-	static constexpr Prefix* GetPrefixObject(const Blk& blk) noexcept
+	static constexpr Prefix* GetPrefixObject(const Blk& blk, size_t alignment = Alignment) noexcept
 	{
-		return HasPrefix ? reinterpret_cast<Prefix*>(ClientToPrefixPtr(blk)) : nullptr;
+		return HasPrefix ? 
+			reinterpret_cast<Prefix*>(ClientToPrefixPtr(blk, static_cast<AlignmentMemento>(alignment))) : 
+			nullptr;
 	}
 
 	static constexpr Suffix* GetSuffixObject(const Blk& blk) noexcept
