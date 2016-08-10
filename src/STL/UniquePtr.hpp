@@ -14,9 +14,9 @@
 #pragma once
 
 #include <Epic/Memory/detail/AllocatorHelpers.hpp>
-#include <Epic/Memory/detail/GlobalHelpers.hpp>
+#include <Epic/Memory/Default.hpp>
+#include <Epic/Memory/GlobalAllocator.hpp>
 #include <Epic/STL/detail/UniqueHelpers.hpp>
-#include <Epic/STL/Default.hpp>
 #include <memory>
 #include <type_traits>
 
@@ -74,7 +74,7 @@ namespace Epic
 		std::unique_ptr<T, Epic::detail::Deleter>>
 	MakeUnique(Args&&... args)
 	{
-		using AllocatorType = UniqueAllocatorAdapted<T, A>;
+		using AllocatorType = GlobalAllocator<A>;
 
 		// Allocate memory
 		AllocatorType allocator;
@@ -128,7 +128,7 @@ namespace Epic
 	MakeUnique(size_t Count)
 	{
 		using Elem = std::remove_extent_t<T>;
-		using AllocatorType = UniqueAllocatorAdapted<Elem, A>;
+		using AllocatorType = GlobalAllocator<A>;
 
 		// Allocate memory
 		AllocatorType allocator;
