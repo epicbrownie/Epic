@@ -38,9 +38,6 @@
     <Filter Include="detail">
       <UniqueIdentifier>{a2497ab7-a614-472f-87bd-eb400c31db6b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Memory\Objects">
-      <UniqueIdentifier>{6e7264e9-223c-4f52-a12e-d4778d715376}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Singleton.hpp">
@@ -202,21 +199,16 @@
     <ClInclude Include="src\STL\UniquePtr.hpp">
       <Filter>STL</Filter>
     </ClInclude>
-    <ClInclude Include="src\Config.hpp">
-      <Filter>Utility</Filter>
-    </ClInclude>
     <ClInclude Include="src\detail\ReadConfig.hpp">
       <Filter>detail</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Memory\CustomAllocated.hpp">
-      <Filter>Memory\Objects</Filter>
     </ClInclude>
     <ClInclude Include="src\Memory\Default.hpp">
       <Filter>Memory</Filter>
     </ClInclude>
-    <ClInclude Include="src\Memory\DefaultAllocatorPolicy.hpp">
-      <Filter>Memory\Objects</Filter>
+    <ClInclude Include="src\Memory\CustomNew.hpp">
+      <Filter>Memory</Filter>
     </ClInclude>
+    <ClInclude Include="src\Config.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Memory\NedAllocator.cpp">

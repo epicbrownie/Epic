@@ -28,9 +28,8 @@
     <ClInclude Include="src\Memory\BinarySegregatorAllocator.hpp" />
     <ClInclude Include="src\Memory\CascadingAllocator.hpp" />
     <ClInclude Include="src\Memory\CorruptionGuardedAllocator.hpp" />
-    <ClInclude Include="src\Memory\CustomAllocated.hpp" />
     <ClInclude Include="src\Memory\Default.hpp" />
-    <ClInclude Include="src\Memory\DefaultAllocatorPolicy.hpp" />
+    <ClInclude Include="src\Memory\CustomNew.hpp" />
     <ClInclude Include="src\Memory\detail\AffixHelpers.hpp" />
     <ClInclude Include="src\Memory\detail\AllocatorHelpers.hpp" />
     <ClInclude Include="src\Memory\detail\AllocatorTraits.hpp" />
@@ -90,7 +89,7 @@
     <ProjectGuid>{809D2707-DFB7-4E11-9CF6-FBBC1BD99797}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Epic</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.10240.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.10586.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
