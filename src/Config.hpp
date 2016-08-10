@@ -19,8 +19,9 @@
 
 namespace Epic
 {
-	template<bool UserDefined>
+	template<bool IsUserDefined>
 	struct Config
 	{
+		/* */
 	};
 }

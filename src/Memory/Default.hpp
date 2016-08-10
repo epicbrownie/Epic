@@ -66,14 +66,12 @@ namespace Epic
 
 namespace Epic
 {
-	namespace detail
-	{
-		using DefaultAllocatorType = 
-				std::conditional_t<
-					std::is_same<void, typename GetConfigProperty<eConfigProperty::DefaultAllocator>::Type>::value,
-					AlignmentAllocator<AlignedNedAllocator, NedAllocator>,
-					typename GetConfigProperty<eConfigProperty::DefaultAllocator>::Type>;
-	}
+	/// The configured default allocator type for the entire system.
+	using DefaultAllocatorType = 
+			std::conditional_t<
+				std::is_same<void, typename detail::GetConfigProperty<detail::eConfigProperty::DefaultAllocator>::Type>::value,
+				AlignmentAllocator<AlignedNedAllocator, NedAllocator>,
+				typename detail::GetConfigProperty<detail::eConfigProperty::DefaultAllocator>::Type>;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -130,7 +128,7 @@ public:
 template<class T, Epic::eAllocatorFor ClassDefaultForType, bool Enabled>
 struct Epic::detail::GetClassDefaultAllocator
 {
-	using Type = detail::DefaultAllocatorType;
+	using Type = DefaultAllocatorType;
 };
 
 template<class T>
@@ -167,7 +165,7 @@ namespace Epic
 template<class T, Epic::eAllocatorFor DefaultForType>
 struct Epic::DefaultAllocator
 {
-	using Type = detail::DefaultAllocatorType;
+	using Type = DefaultAllocatorType;
 };
 
 template<class T>
