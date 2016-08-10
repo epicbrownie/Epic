@@ -15,6 +15,7 @@
 
 #include <Epic/Memory/Default.hpp>
 #include <Epic/STL/Allocator.hpp>
+#include <Epic/STL/UniquePtr.hpp>
 #include <memory>
 #include <type_traits>
 
@@ -52,5 +53,12 @@ namespace Epic
 		};
 
 		return std::shared_ptr<T>{ pObject, Deleter, allocator };
+	}
+
+	/// MakeShared<std::unique_ptr<T, D>>
+	template<class T, class D>
+	inline std::shared_ptr<T> MakeShared(std::unique_ptr<T, D>&& pUnique)
+	{
+		return std::shared_ptr<T>{ std::move(pUnique) };
 	}
 }
