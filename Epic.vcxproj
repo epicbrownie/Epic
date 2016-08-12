@@ -50,7 +50,6 @@
     <ClInclude Include="src\Memory\StackAllocator.hpp" />
     <ClInclude Include="src\Memory\NullAllocator.hpp" />
     <ClInclude Include="src\Memory\NedAllocator.hpp" />
-    <ClInclude Include="src\Memory\AlignedNedAllocator.hpp" />
     <ClInclude Include="src\Memory\AlignmentAllocator.hpp" />
     <ClInclude Include="src\Memory\SegregatorAllocator.hpp" />
     <ClInclude Include="src\Memory\FallbackAllocator.hpp" />
@@ -79,7 +78,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Memory\AlignedMallocator.cpp" />
-    <ClCompile Include="src\Memory\AlignedNedAllocator.cpp" />
     <ClCompile Include="src\Memory\detail\NedMalloc\nedmalloc.c" />
     <ClCompile Include="src\Memory\Mallocator.cpp" />
     <ClCompile Include="src\Memory\NedAllocator.cpp" />

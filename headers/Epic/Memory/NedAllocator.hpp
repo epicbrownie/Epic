@@ -59,11 +59,23 @@ public:
 	   If sz is zero, the returned block's pointer is null. */
 	Blk Allocate(size_t sz) const noexcept;
 
+	/* Returns a block of uninitialized memory.
+	If sz is zero, the returned block's pointer is null. */
+	Blk AllocateAligned(size_t sz, size_t alignment = Alignment) const noexcept;
+
+public:	
 	/* Attempts to reallocate the memory of blk to the new size sz.
 	   If the block's pointer is null, this is equivalent to calling Allocate(sz). */
 	bool Reallocate(Blk& blk, size_t sz) const;
 
+	/* Attempts to reallocate the memory of blk (aligned to alignment) to the new size sz.
+	If the block's pointer is null, this is equivalent to calling AllocateAligned(sz, alignment). */
+	bool ReallocateAligned(Blk& blk, size_t sz, size_t alignment = Alignment) const;
+
 public:
 	/* Frees the memory for blk (using std::free). */
 	void Deallocate(const Blk& blk) const;
+
+	/* Frees the memory for blk. */
+	void DeallocateAligned(const Blk& blk) const;
 };

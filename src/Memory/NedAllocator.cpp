@@ -12,6 +12,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include "NedAllocator.hpp"
+#include "detail/AllocatorHelpers.hpp"
 #include <cassert>
 #include <cstdlib>
 
@@ -42,6 +43,24 @@ Blk NedAllocator::Allocate(size_t sz) const noexcept
 	return{ p, sz };
 }
 
+Blk NedAllocator::AllocateAligned(size_t sz, size_t alignment) const noexcept
+{
+	// Verify that the alignment is acceptable
+	if (!Epic::detail::IsGoodAlignment(alignment))
+		return{ nullptr, 0 };
+
+	// Verify that the requested size is within our allowed bounds
+	if (sz == 0 || sz < MinAllocSize || sz > MaxAllocSize)
+		return{ nullptr, 0 };
+
+	// Delegate to _aligned_malloc
+	auto p = nedalloc::nedmemalign(alignment, sz);
+	if (!p)
+		return{ nullptr, 0 };
+
+	return{ p, sz };
+}
+
 bool NedAllocator::Reallocate(Blk& blk, size_t sz) const
 {
 	assert(Owns(blk) && "NedAllocator::Reallocate - Attempted to reallocate a block that was not allocated by this allocator");
@@ -61,10 +80,36 @@ bool NedAllocator::Reallocate(Blk& blk, size_t sz) const
 	return true;
 }
 
+bool NedAllocator::ReallocateAligned(Blk& blk, size_t sz, size_t alignment) const
+{
+	assert(Owns(blk) && "NedAllocator::ReallocateAligned - Attempted to reallocate a block that was not allocated by this allocator");
+
+	// If the size is 0, deallocate blk
+	if (sz == 0)
+	{
+		DeallocateAligned(blk);
+		return true;
+	}
+
+	// The reallocated size must still fall within our allocation size restrictions
+	if (sz < MinAllocSize || sz > MaxAllocSize)
+		return false;
+
+	return detail::AlignedReallocator<NedAllocator>::ReallocateViaCopy(*this, blk, sz, alignment);
+}
+
 void NedAllocator::Deallocate(const Blk& blk) const
 {
 	if (!blk) return;
 
 	assert(Owns(blk) && "NedAllocator::Deallocate - Attempted to free a block that was not allocated by this allocator");
+	nedalloc::nedfree(blk.Ptr);
+}
+
+void NedAllocator::DeallocateAligned(const Blk& blk) const
+{
+	if (!blk) return;
+
+	assert(Owns(blk) && "NedAllocator::DeallocateAligned - Attempted to free a block that was not allocated by this allocator");
 	nedalloc::nedfree(blk.Ptr);
 }

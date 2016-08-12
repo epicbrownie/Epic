@@ -76,9 +76,6 @@
     <ClInclude Include="src\Memory\StackAllocator.hpp">
       <Filter>Memory\Allocators - Simple</Filter>
     </ClInclude>
-    <ClInclude Include="src\Memory\AlignedNedAllocator.hpp">
-      <Filter>Memory\Allocators - Simple</Filter>
-    </ClInclude>
     <ClInclude Include="src\Memory\AlignedMallocator.hpp">
       <Filter>Memory\Allocators - Simple</Filter>
     </ClInclude>
@@ -218,9 +215,6 @@
       <Filter>Memory\Allocators - Simple</Filter>
     </ClCompile>
     <ClCompile Include="src\Memory\Mallocator.cpp">
-      <Filter>Memory\Allocators - Simple</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Memory\AlignedNedAllocator.cpp">
       <Filter>Memory\Allocators - Simple</Filter>
     </ClCompile>
     <ClCompile Include="src\Memory\AlignedMallocator.cpp">
