@@ -14,8 +14,7 @@
 #pragma once
 
 #include <Epic/detail/ReadConfig.hpp>
-#include <Epic/Memory/NedAllocator.hpp>
-#include <Epic/Memory/AlignedNedAllocator.hpp>
+#include <Epic/Memory/Mallocator.hpp>
 #include <Epic/Memory/AlignmentAllocator.hpp>
 #include <type_traits>
 
@@ -70,7 +69,7 @@ namespace Epic
 	using DefaultAllocatorType = 
 			std::conditional_t<
 				std::is_same<void, typename detail::GetConfigProperty<detail::eConfigProperty::DefaultAllocator>::Type>::value,
-				AlignmentAllocator<AlignedNedAllocator, NedAllocator>,
+				Mallocator,
 				typename detail::GetConfigProperty<detail::eConfigProperty::DefaultAllocator>::Type>;
 }
 

@@ -26,9 +26,6 @@
     <Filter Include="Memory\detail">
       <UniqueIdentifier>{91dcf5ca-27ea-480d-ab7b-4a99d54f4e5d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Memory\detail\NedMalloc">
-      <UniqueIdentifier>{9d0a942b-8882-40d0-bc88-9a3d897f4a1c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="STL">
       <UniqueIdentifier>{8e8cfefe-fc1b-41e3-9fa9-70bc45a55cc9}</UniqueIdentifier>
     </Filter>
@@ -63,9 +60,6 @@
     </ClInclude>
     <ClInclude Include="src\Memory\MemoryBlock.hpp">
       <Filter>Memory</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Memory\NedAllocator.hpp">
-      <Filter>Memory\Allocators - Simple</Filter>
     </ClInclude>
     <ClInclude Include="src\Memory\NullAllocator.hpp">
       <Filter>Memory\Allocators - Simple</Filter>
@@ -117,12 +111,6 @@
     </ClInclude>
     <ClInclude Include="src\Memory\detail\AllocatorTraits.hpp">
       <Filter>Memory\detail</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Memory\detail\NedMalloc\malloc.c.h">
-      <Filter>Memory\detail\NedMalloc</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Memory\detail\NedMalloc\nedmalloc.h">
-      <Filter>Memory\detail\NedMalloc</Filter>
     </ClInclude>
     <ClInclude Include="src\Memory\PatternGuard.hpp">
       <Filter>Memory</Filter>
@@ -208,9 +196,6 @@
     <ClInclude Include="src\Config.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Memory\NedAllocator.cpp">
-      <Filter>Memory\Allocators - Simple</Filter>
-    </ClCompile>
     <ClCompile Include="src\Memory\NullAllocator.cpp">
       <Filter>Memory\Allocators - Simple</Filter>
     </ClCompile>
@@ -219,9 +204,6 @@
     </ClCompile>
     <ClCompile Include="src\Memory\AlignedMallocator.cpp">
       <Filter>Memory\Allocators - Simple</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Memory\detail\NedMalloc\nedmalloc.c">
-      <Filter>Memory\detail\NedMalloc</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
