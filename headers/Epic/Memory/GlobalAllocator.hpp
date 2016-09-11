@@ -58,7 +58,7 @@ private:
 
 public:
 	constexpr GlobalAllocatorImpl() noexcept
-		: m_pAllocator{ &SingletonAllocatorType::Instance() } 
+		: m_pAllocator{ &Type::Allocator() } 
 	{ }
 
 	constexpr GlobalAllocatorImpl(const Type& obj) = default;
