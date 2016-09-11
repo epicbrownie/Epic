@@ -50,6 +50,7 @@
     <ClInclude Include="src\Memory\AlignmentAllocator.hpp" />
     <ClInclude Include="src\Memory\SegregatorAllocator.hpp" />
     <ClInclude Include="src\Memory\FallbackAllocator.hpp" />
+    <ClInclude Include="src\NullAtomic.hpp" />
     <ClInclude Include="src\NullMutex.hpp" />
     <ClInclude Include="src\Singleton.hpp" />
     <ClInclude Include="src\STL\Deque.hpp" />

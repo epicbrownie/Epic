@@ -45,6 +45,8 @@ namespace Epic
 template<class T>
 class Epic::detail::NullAtomicBase
 {
+	static_assert(std::is_trivially_copyable<T>::value, "Only trivially copyable types can be used in NullAtomic.");
+
 public:
 	using Type = Epic::detail::NullAtomicBase<T>;
 	using ValueType = T;

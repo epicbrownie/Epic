@@ -194,6 +194,9 @@
       <Filter>Memory</Filter>
     </ClInclude>
     <ClInclude Include="src\Config.hpp" />
+    <ClInclude Include="src\NullAtomic.hpp">
+      <Filter>Utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Memory\NullAllocator.cpp">
