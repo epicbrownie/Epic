@@ -17,10 +17,14 @@
 #include <Epic/Memory/detail/HeapHelpers.hpp>
 #include <Epic/Memory/detail/AllocatorTraits.hpp>
 #include <Epic/Memory/MemoryBlock.hpp>
+#include <Epic/NullMutex.hpp>
+#include <Epic/NullAtomic.hpp>
+#include <atomic>
 #include <cassert>
 #include <cstdint>
 #include <type_traits>
 #include <memory>
+#include <mutex>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -29,33 +33,34 @@ namespace Epic
 	namespace detail
 	{
 		template<class Allocator,
-				 template<class, size_t, size_t, size_t> class StoragePolicy,
+				 template<class, size_t, size_t, size_t, bool> class StoragePolicy,
 				 size_t BlkSz,
 				 size_t BlkCnt, 
-				 size_t Align> 
+				 size_t Align,
+				 bool IsShared> 
 		class HeapAllocatorImpl;
 
-		template<class Allocator, size_t BlkSz, size_t BlkCnt, size_t Align> class StaticHeapPolicy;
-		template<class Allocator, size_t BlkSz, size_t BlkCnt, size_t Align> class InternalLinearHeapPolicy;
-		template<class Allocator, size_t BlkSz, size_t BlkCnt, size_t Align> class ExternalLinearHeapPolicy;
+		template<class Allocator, size_t BlkSz, size_t BlkCnt, size_t Align, bool IsShared> class StaticHeapPolicy;
+		template<class Allocator, size_t BlkSz, size_t BlkCnt, size_t Align, bool IsShared> class InternalLinearHeapPolicy;
+		template<class Allocator, size_t BlkSz, size_t BlkCnt, size_t Align, bool IsShared> class ExternalLinearHeapPolicy;
 
-		template<class StoragePolicy, class Allocator, size_t BlkSz, size_t BlkCnt, size_t Align> class LinearHeapPolicyImpl;
-		template<class Allocator, size_t BlkSz, size_t BlkCnt, size_t Align> class LinearHeapInternalStoragePolicy;
-		template<class Allocator, size_t BlkSz, size_t BlkCnt, size_t Align> class LinearHeapExternalStoragePolicy;
+		template<class StoragePolicy, class Allocator, size_t BlkSz, size_t BlkCnt, size_t Align, bool IsShared> class LinearHeapPolicyImpl;
+		template<class Allocator, size_t BlkSz, size_t BlkCnt, size_t Align, bool IsShared> class LinearHeapInternalStoragePolicy;
+		template<class Allocator, size_t BlkSz, size_t BlkCnt, size_t Align, bool IsShared> class LinearHeapExternalStoragePolicy;
 	}
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// HeapAllocatorImpl<A, BlkSz, BlkCnt, Align, Policy>
-template<class A, template<class, size_t, size_t, size_t> class Policy, size_t BlkSz, size_t BlkCnt, size_t Align>
+/// HeapAllocatorImpl<A, BlkSz, BlkCnt, Align, Policy, IsShared>
+template<class A, template<class, size_t, size_t, size_t, bool> class Policy, size_t BlkSz, size_t BlkCnt, size_t Align, bool IsShared>
 class Epic::detail::HeapAllocatorImpl
-	: private Policy<A, BlkSz, BlkCnt, Align>
+	: private Policy<A, BlkSz, BlkCnt, Align, IsShared>
 {
 public:
 	using AllocatorType = A;
-	using PolicyType = Policy<A, BlkSz, BlkCnt, Align>;
-	using Type = Epic::detail::HeapAllocatorImpl<A, Policy, BlkSz, BlkCnt, Align>;
+	using PolicyType = Policy<A, BlkSz, BlkCnt, Align, IsShared>;
+	using Type = Epic::detail::HeapAllocatorImpl<A, Policy, BlkSz, BlkCnt, Align, IsShared>;
 
 	static_assert(std::is_default_constructible<PolicyType>::value, "The heap policy must be default-constructible.");
 
@@ -103,7 +108,7 @@ public:
 		return PolicyType::Allocate(sz);
 	}
 
-	///* Attempts to reallocate the memory of blk to the new size sz. */
+	/* Attempts to reallocate the memory of blk to the new size sz. */
 	template<typename = std::enable_if_t<detail::CanReallocate<PolicyType>::value>>
 	bool Reallocate(Blk& blk, size_t sz)
 	{
@@ -162,8 +167,8 @@ public:
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// StaticHeapPolicy<A, BlkSz, BlkCnt, Align>
-template<class A, size_t BlkSz, size_t BlkCnt, size_t Align>
+/// StaticHeapPolicy<A, BlkSz, BlkCnt, Align, IsShared>
+template<class A, size_t BlkSz, size_t BlkCnt, size_t Align, bool IsShared>
 class Epic::detail::StaticHeapPolicy
 {
 	static_assert(std::is_default_constructible<A>::value, "The heap backing allocator must be default-constructible.");
@@ -171,7 +176,7 @@ class Epic::detail::StaticHeapPolicy
 		"The heap backing allocator must be able to perform allocations.");
 	
 public:
-	using Type = Epic::detail::StaticHeapPolicy<A, BlkSz, BlkCnt, Align>;
+	using Type = Epic::detail::StaticHeapPolicy<A, BlkSz, BlkCnt, Align, IsShared>;
 	using AllocatorType = A;
 
 private:
@@ -189,9 +194,14 @@ public:
 		"A static heap can only align if its block size is a multiple of the alignment.");
 
 private:
+	using MutexType = std::conditional_t<IsShared, std::mutex, Epic::NullMutex>;
+	using BlocksType = std::conditional_t<IsShared, std::atomic<size_t>, Epic::NullAtomic<size_t>>;
+
+private:
 	A m_Allocator;
 	Blk m_Heap;
-	size_t m_BlocksAvailable;
+	BlocksType m_BlocksAvailable;
+	mutable MutexType m_HeapMutex;
 
 public:
 	StaticHeapPolicy() noexcept(std::is_nothrow_default_constructible<A>::value)
@@ -202,10 +212,14 @@ public:
 
 	template<typename = std::enable_if_t<std::is_move_constructible<A>::value>>
 	StaticHeapPolicy(Type&& obj) noexcept(std::is_nothrow_move_constructible<A>::value)
-		: m_Allocator{ std::move(obj.m_Allocator) }, m_Heap{ }, m_BlocksAvailable{ 0 }
+		: m_Allocator{ std::move(obj.m_Allocator) }, 
+		  m_Heap{ }, 
+		  m_BlocksAvailable{ obj.m_BlocksAvailable }
 	{
+		obj.m_BlocksAvailable = 0;
+
+		std::lock_guard<MutexType> lock(obj.m_HeapMutex);
 		std::swap(m_Heap, obj.m_Heap);
-		std::swap(m_BlocksAvailable, obj.m_BlocksAvailable);
 	}
 
 	StaticHeapPolicy& operator = (const Type&) = delete;
@@ -219,28 +233,48 @@ public:
 private:
 	void AllocateHeap()
 	{
+		std::lock_guard<MutexType> lock(m_HeapMutex);
+
+		// Return if the heap was created before this thread could lock the mutex
+		if (m_Heap) return; 
+
+		// Create the heap
 		if (IsAligned)
 			m_Heap = detail::AllocateAlignedIf<A>::apply(m_Allocator, BlkSz * BlkCnt, Alignment);
 		else
 			m_Heap = detail::AllocateIf<A>::apply(m_Allocator, BlkSz * BlkCnt);
 
-		m_BlocksAvailable = m_Heap ? BlkCnt : 0;
+		// Set the number of available blocks
+		m_BlocksAvailable.store(m_Heap ? BlkCnt : 0, std::memory_order_release);
 	}
 
 	void FreeHeap()
 	{
+		std::lock_guard<MutexType> lock(m_HeapMutex);
+
+		// Return if the heap was freed before this thread could lock the mutex
+		if (!m_Heap) return;
+
+		// Set the number of available blocks
+		m_BlocksAvailable.store(0, std::memory_order_release);
+
+		// Free the heap
 		if (IsAligned)
 			detail::DeallocateAlignedIf<A>::apply(m_Allocator, m_Heap);
 		else
 			detail::DeallocateIf<A>::apply(m_Allocator, m_Heap);
 
 		m_Heap = Blk{};
-		m_BlocksAvailable = 0;
 	}
 
 	void* GetBlockPointer() const noexcept
 	{
-		const size_t used = BlkCnt - m_BlocksAvailable;
+		return GetBlockPointer(m_BlocksAvailable.load(std::memory_order_acquire));
+	}
+
+	void* GetBlockPointer(const size_t freeBlocks) const noexcept
+	{
+		const size_t used = BlkCnt - freeBlocks;
 
 		return static_cast<void*>(reinterpret_cast<char*>(m_Heap.Ptr) + (BlkSz * used));
 	}
@@ -257,16 +291,20 @@ public:
 		if (!m_Heap) 
 			AllocateHeap();
 
-		// Verify there's enough free blocks remaining
-		size_t blocksReq = (sz + BlkSz - 1) / BlkSz;
-		if (blocksReq > m_BlocksAvailable)
-			return{ nullptr, 0 };
+		// Attempt to reserve memory
+		const size_t blocksReq = (sz + BlkSz - 1) / BlkSz;
+		size_t blocksAvail = m_BlocksAvailable.load(std::memory_order_acquire);
 
-		// Allocate the blocks
-		Blk blk{ GetBlockPointer(), sz };
-		m_BlocksAvailable -= blocksReq;
-
-		return blk;
+		while (blocksAvail >= blocksReq)
+		{
+			// If the CAS succeeds, the blocks have been reserved
+			// If the CAS fails, blocksAvail will have been updated
+			if (m_BlocksAvailable.compare_exchange_weak(blocksAvail, blocksAvail - blocksReq, std::memory_order_release, std::memory_order_acquire))
+				return{ GetBlockPointer(blocksAvail), sz };
+		}
+		
+		// Failed to reserve memory
+		return{ nullptr, 0 };
 	}
 
 	Blk AllocateAll() noexcept
@@ -275,35 +313,49 @@ public:
 		if (!m_Heap)
 			AllocateHeap();
 
-		// Verify there's free blocks remaining
-		if (m_BlocksAvailable == 0)
-			return{ nullptr, 0 };
+		// Attempt to reserve remaining memory
+		size_t blocksAvail = m_BlocksAvailable.load(std::memory_order_acquire);
 
-		// Allocate the blocks
-		Blk blk{ GetBlockPointer(), m_BlocksAvailable * BlkSz };
-		m_BlocksAvailable = 0;
+		while (blocksAvail > 0)
+		{
+			// If the CAS succeeds, all remaining blocks have been reserved
+			// If the CAS fails, blocksAvail will have been updated
+			if (m_BlocksAvailable.compare_exchange_weak(blocksAvail, 0, std::memory_order_release, std::memory_order_acquire))
+				return{ GetBlockPointer(blocksAvail), blocksAvail * BlkSz };
+		}
 
-		return blk;
+		// Failed to reserve memory
+		return{ nullptr, 0 };
 	}
 
 	void DeallocateAll() noexcept
 	{
+		// Interleaving this function with calls to Allocate() or AllocateAll() is NOT thread safe.
+
 		if (m_Heap)
-			m_BlocksAvailable = BlkCnt;
+		{
+			std::lock_guard<MutexType> lock(m_HeapMutex);
+
+			// Set the number of available blocks
+			// The heap must be checked again in case it was deallocated before the lock
+			// could be acquired.
+			if (m_Heap)
+				m_BlocksAvailable.store(BlkCnt, std::memory_order_release);
+		}
 	}
 };
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// LinearHeapInternalStoragePolicy<A, BlkSz, BlkCnt, Align>
-template<class A, size_t BlkSz, size_t BlkCnt, size_t Align>
+/// LinearHeapInternalStoragePolicy<A, BlkSz, BlkCnt, Align, IsShared>
+template<class A, size_t BlkSz, size_t BlkCnt, size_t Align, bool IsShared>
 class Epic::detail::LinearHeapInternalStoragePolicy
 {
 	static_assert(detail::CanAllocate<A>::value || detail::CanAllocateAligned<A>::value,
 		"The heap backing allocator must be able to perform allocations.");
 
 public:
-	using Type = Epic::detail::LinearHeapInternalStoragePolicy<A, BlkSz, BlkCnt, Align>;
+	using Type = Epic::detail::LinearHeapInternalStoragePolicy<A, BlkSz, BlkCnt, Align, IsShared>;
 
 protected:
 	static constexpr bool IsAligned = (Align != 0) && (Align != A::Alignment);
@@ -378,15 +430,15 @@ protected:
 	}
 };
 
-/// LinearHeapExternalStoragePolicy<A, BlkSz, BlkCnt, Align>
-template<class A, size_t BlkSz, size_t BlkCnt, size_t Align>
+/// LinearHeapExternalStoragePolicy<A, BlkSz, BlkCnt, Align, IsShared>
+template<class A, size_t BlkSz, size_t BlkCnt, size_t Align, bool IsShared>
 class Epic::detail::LinearHeapExternalStoragePolicy
 {
 	static_assert(detail::CanAllocate<A>::value || detail::CanAllocateAligned<A>::value,
 		"The heap backing allocator must be able to perform allocations.");
 
 public:
-	using Type = Epic::detail::LinearHeapExternalStoragePolicy<A, BlkSz, BlkCnt, Align>;
+	using Type = Epic::detail::LinearHeapExternalStoragePolicy<A, BlkSz, BlkCnt, Align, IsShared>;
 
 protected:
 	static constexpr bool IsAligned = (Align != 0) && (Align != A::Alignment);
@@ -460,15 +512,15 @@ protected:
 	}
 };
 
-/// LinearHeapPolicyImpl<StoragePolicy, A, BlkSz, BlkCnt, Align>
-template<class StoragePolicy, class A, size_t BlkSz, size_t BlkCnt, size_t Align>
+/// LinearHeapPolicyImpl<StoragePolicy, A, BlkSz, BlkCnt, Align, IsShared>
+template<class StoragePolicy, class A, size_t BlkSz, size_t BlkCnt, size_t Align, bool IsShared>
 class Epic::detail::LinearHeapPolicyImpl
 	: private StoragePolicy
 {
 	static_assert(std::is_default_constructible<A>::value, "The heap backing allocator must be default-constructible.");
 
 public:
-	using Type = Epic::detail::LinearHeapPolicyImpl<StoragePolicy, A, BlkSz, BlkCnt, Align>;
+	using Type = Epic::detail::LinearHeapPolicyImpl<StoragePolicy, A, BlkSz, BlkCnt, Align, IsShared>;
 	using AllocatorType = A;
 	using StoragePolicyType = StoragePolicy;
 
@@ -611,17 +663,19 @@ public:
 	}
 };
 
-/// InternalLinearHeapPolicy<A, BlkSz, BlkCnt, Align>
-template<class A, size_t BlkSz, size_t BlkCnt, size_t Align>
+/// InternalLinearHeapPolicy<A, BlkSz, BlkCnt, Align, IsShared>
+template<class A, size_t BlkSz, size_t BlkCnt, size_t Align, bool IsShared>
 class Epic::detail::InternalLinearHeapPolicy
-	: public Epic::detail::LinearHeapPolicyImpl<Epic::detail::LinearHeapInternalStoragePolicy<A, BlkSz, BlkCnt, Align>, A, BlkSz, BlkCnt, Align>
+	: public Epic::detail::LinearHeapPolicyImpl<
+				Epic::detail::LinearHeapInternalStoragePolicy<A, BlkSz, BlkCnt, Align, IsShared>, 
+				A, BlkSz, BlkCnt, Align, IsShared>
 {
 public:
-	using Type = Epic::detail::InternalLinearHeapPolicy<A, BlkSz, BlkCnt, Align>;
+	using Type = Epic::detail::InternalLinearHeapPolicy<A, BlkSz, BlkCnt, Align, IsShared>;
 
 private:
-	using StoragePolicyType = Epic::detail::LinearHeapInternalStoragePolicy<A, BlkSz, BlkCnt, Align>;
-	using base = Epic::detail::LinearHeapPolicyImpl<StoragePolicyType, A, BlkSz, BlkCnt, Align>;
+	using StoragePolicyType = Epic::detail::LinearHeapInternalStoragePolicy<A, BlkSz, BlkCnt, Align, IsShared>;
+	using base = Epic::detail::LinearHeapPolicyImpl<StoragePolicyType, A, BlkSz, BlkCnt, Align, IsShared>;
 
 public:
 	constexpr InternalLinearHeapPolicy() noexcept = default;
@@ -633,17 +687,19 @@ public:
 	InternalLinearHeapPolicy& operator = (Type&& obj) = delete;
 };
 
-/// ExternalLinearHeapPolicy<A, BlkSz, BlkCnt, Align>
-template<class A, size_t BlkSz, size_t BlkCnt, size_t Align>
+/// ExternalLinearHeapPolicy<A, BlkSz, BlkCnt, Align, IsShared>
+template<class A, size_t BlkSz, size_t BlkCnt, size_t Align, bool IsShared>
 class Epic::detail::ExternalLinearHeapPolicy
-	: public Epic::detail::LinearHeapPolicyImpl<Epic::detail::LinearHeapExternalStoragePolicy<A, BlkSz, BlkCnt, Align>, A, BlkSz, BlkCnt, Align>
+	: public Epic::detail::LinearHeapPolicyImpl<
+				Epic::detail::LinearHeapExternalStoragePolicy<A, BlkSz, BlkCnt, Align, IsShared>, 
+				A, BlkSz, BlkCnt, Align, IsShared>
 {
 public:
-	using Type = Epic::detail::ExternalLinearHeapPolicy<A, BlkSz, BlkCnt, Align>;
+	using Type = Epic::detail::ExternalLinearHeapPolicy<A, BlkSz, BlkCnt, Align, IsShared>;
 
 private:
-	using StoragePolicyType = Epic::detail::LinearHeapExternalStoragePolicy<A, BlkSz, BlkCnt, Align>;
-	using base = Epic::detail::LinearHeapPolicyImpl<StoragePolicyType, A, BlkSz, BlkCnt, Align>;
+	using StoragePolicyType = Epic::detail::LinearHeapExternalStoragePolicy<A, BlkSz, BlkCnt, Align, IsShared>;
+	using base = Epic::detail::LinearHeapPolicyImpl<StoragePolicyType, A, BlkSz, BlkCnt, Align, IsShared>;
 
 public:
 	constexpr ExternalLinearHeapPolicy() noexcept = default;
@@ -659,12 +715,24 @@ public:
 
 namespace Epic
 {
+	// Internal Linear Heap
 	template<size_t BlockSize, size_t BlockCount, class Allocator, size_t Alignment = 0>
-	using HeapAllocator = detail::HeapAllocatorImpl<Allocator, detail::InternalLinearHeapPolicy, BlockSize, BlockCount, Alignment>;
+	using HeapAllocator = detail::HeapAllocatorImpl<Allocator, detail::InternalLinearHeapPolicy, BlockSize, BlockCount, Alignment, false>;
 
 	template<size_t BlockSize, size_t BlockCount, class Allocator, size_t Alignment = 0>
-	using StrictHeapAllocator = detail::HeapAllocatorImpl<Allocator, detail::ExternalLinearHeapPolicy, BlockSize, BlockCount, Alignment>;
+	using SharedHeapAllocator = detail::HeapAllocatorImpl<Allocator, detail::InternalLinearHeapPolicy, BlockSize, BlockCount, Alignment, true>;
+
+	// External Linear Heap
+	template<size_t BlockSize, size_t BlockCount, class Allocator, size_t Alignment = 0>
+	using StrictHeapAllocator = detail::HeapAllocatorImpl<Allocator, detail::ExternalLinearHeapPolicy, BlockSize, BlockCount, Alignment, false>;
 
 	template<size_t BlockSize, size_t BlockCount, class Allocator, size_t Alignment = 0>
-	using StaticHeapAllocator = detail::HeapAllocatorImpl<Allocator, detail::StaticHeapPolicy, BlockSize, BlockCount, Alignment>;
+	using SharedStrictHeapAllocator = detail::HeapAllocatorImpl<Allocator, detail::ExternalLinearHeapPolicy, BlockSize, BlockCount, Alignment, true>;
+
+	// Static Heap
+	template<size_t BlockSize, size_t BlockCount, class Allocator, size_t Alignment = 0>
+	using StaticHeapAllocator = detail::HeapAllocatorImpl<Allocator, detail::StaticHeapPolicy, BlockSize, BlockCount, Alignment, false>;
+
+	template<size_t BlockSize, size_t BlockCount, class Allocator, size_t Alignment = 0>
+	using SharedStaticHeapAllocator = detail::HeapAllocatorImpl<Allocator, detail::StaticHeapPolicy, BlockSize, BlockCount, Alignment, true>;
 }
