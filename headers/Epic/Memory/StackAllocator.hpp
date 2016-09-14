@@ -40,6 +40,7 @@ public:
 	static constexpr size_t MinAllocSize = 0;
 	static constexpr size_t MaxAllocSize = S;
 	static constexpr size_t MemorySize = S;
+	static constexpr bool IsShareable = false;
 
 	static_assert(detail::IsGoodAlignment(Alignment), "Error: Invalid Alignment");
 

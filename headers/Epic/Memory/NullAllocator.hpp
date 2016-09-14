@@ -44,6 +44,7 @@ public:
 	static constexpr size_t Alignment = detail::DefaultAlignment; 
 	static constexpr size_t MinAllocSize = 0;
 	static constexpr size_t MaxAllocSize = SIZE_MAX;
+	static constexpr bool IsShareable = true;
 
 public:
 	inline bool Owns(const Blk blk) const noexcept

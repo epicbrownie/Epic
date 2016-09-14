@@ -68,6 +68,7 @@ public:
 	static constexpr size_t Alignment = PolicyType::Alignment;
 	static constexpr size_t MinAllocSize = PolicyType::MinAllocSize;
 	static constexpr size_t MaxAllocSize = PolicyType::MaxAllocSize;
+	static constexpr bool IsShareable = IsShared;
 
 	static constexpr size_t BlockSize = BlkSz;
 	static constexpr size_t BlockCount = BlkCnt;
@@ -108,7 +109,7 @@ public:
 		return PolicyType::Allocate(sz);
 	}
 
-	///* Attempts to reallocate the memory of blk to the new size sz. */
+	/* Attempts to reallocate the memory of blk to the new size sz. */
 	template<typename = std::enable_if_t<detail::CanReallocate<PolicyType>::value>>
 	bool Reallocate(Blk& blk, size_t sz)
 	{
@@ -174,7 +175,8 @@ class Epic::detail::StaticHeapPolicy
 	static_assert(std::is_default_constructible<A>::value, "The heap backing allocator must be default-constructible.");
 	static_assert(detail::CanAllocate<A>::value || detail::CanAllocateAligned<A>::value,
 		"The heap backing allocator must be able to perform allocations.");
-	
+	static_assert(!IsShared || (IsShared && A::IsShareable), "The heap backing allocator must be shareable.");
+
 public:
 	using Type = Epic::detail::StaticHeapPolicy<A, BlkSz, BlkCnt, Align, IsShared>;
 	using AllocatorType = A;
@@ -194,32 +196,34 @@ public:
 		"A static heap can only align if its block size is a multiple of the alignment.");
 
 private:
-	using MutexType = std::conditional_t<IsShared, std::mutex, Epic::NullMutex>;
-	using BlocksType = std::conditional_t<IsShared, std::atomic<size_t>, Epic::NullAtomic<size_t>>;
+	using BlocksAvailType = std::conditional_t<IsShared, std::atomic<size_t>, Epic::NullAtomic<size_t>>;
 
 private:
 	A m_Allocator;
 	Blk m_Heap;
-	BlocksType m_BlocksAvailable;
-	mutable MutexType m_HeapMutex;
+	BlocksAvailType m_BlocksAvailable;
 
 public:
 	StaticHeapPolicy() noexcept(std::is_nothrow_default_constructible<A>::value)
 		: m_Allocator{ }, m_Heap{ }, m_BlocksAvailable{ 0 } 
-	{ }
+	{
+		AllocateHeap();
+	}
 
 	StaticHeapPolicy(const Type&) = delete;
 
 	template<typename = std::enable_if_t<std::is_move_constructible<A>::value>>
 	StaticHeapPolicy(Type&& obj) noexcept(std::is_nothrow_move_constructible<A>::value)
 		: m_Allocator{ std::move(obj.m_Allocator) }, 
-		  m_Heap{ }, 
-		  m_BlocksAvailable{ obj.m_BlocksAvailable }
+		  m_Heap{ obj.m_Heap }, 
+		  m_BlocksAvailable{ 0 }
 	{
-		obj.m_BlocksAvailable = 0;
+		auto blocks = obj.m_BlocksAvailable.load(std::memory_order_acquire);
+		while (!obj.m_BlocksAvailable.compare_exchange_weak(blocks, 0));
 
-		std::lock_guard<MutexType> lock(obj.m_HeapMutex);
-		std::swap(m_Heap, obj.m_Heap);
+		obj.m_Heap = { nullptr, 0 };
+
+		m_BlocksAvailable = blocks;
 	}
 
 	StaticHeapPolicy& operator = (const Type&) = delete;
@@ -231,13 +235,8 @@ public:
 	}
 
 private:
-	void AllocateHeap()
+	void AllocateHeap() noexcept
 	{
-		std::lock_guard<MutexType> lock(m_HeapMutex);
-
-		// Return if the heap was created before this thread could lock the mutex
-		if (m_Heap) return; 
-
 		// Create the heap
 		if (IsAligned)
 			m_Heap = detail::AllocateAlignedIf<A>::apply(m_Allocator, BlkSz * BlkCnt, Alignment);
@@ -245,14 +244,12 @@ private:
 			m_Heap = detail::AllocateIf<A>::apply(m_Allocator, BlkSz * BlkCnt);
 
 		// Set the number of available blocks
-		m_BlocksAvailable.store(m_Heap ? BlkCnt : 0, std::memory_order_release);
+		if(m_Heap)
+			m_BlocksAvailable.store(BlkCnt, std::memory_order_release);
 	}
 
 	void FreeHeap()
 	{
-		std::lock_guard<MutexType> lock(m_HeapMutex);
-
-		// Return if the heap was freed before this thread could lock the mutex
 		if (!m_Heap) return;
 
 		// Set the number of available blocks
@@ -287,10 +284,6 @@ public:
 
 	Blk Allocate(size_t sz) noexcept
 	{
-		// Verify heap memory
-		if (!m_Heap) 
-			AllocateHeap();
-
 		// Attempt to reserve memory
 		const size_t blocksReq = (sz + BlkSz - 1) / BlkSz;
 		size_t blocksAvail = m_BlocksAvailable.load(std::memory_order_acquire);
@@ -299,7 +292,7 @@ public:
 		{
 			// If the CAS succeeds, the blocks have been reserved
 			// If the CAS fails, blocksAvail will have been updated
-			if (m_BlocksAvailable.compare_exchange_weak(blocksAvail, blocksAvail - blocksReq, std::memory_order_release, std::memory_order_acquire))
+			if (m_BlocksAvailable.compare_exchange_weak(blocksAvail, blocksAvail - blocksReq))
 				return{ GetBlockPointer(blocksAvail), sz };
 		}
 		
@@ -309,10 +302,6 @@ public:
 
 	Blk AllocateAll() noexcept
 	{
-		// Verify heap memory
-		if (!m_Heap)
-			AllocateHeap();
-
 		// Attempt to reserve remaining memory
 		size_t blocksAvail = m_BlocksAvailable.load(std::memory_order_acquire);
 
@@ -320,7 +309,7 @@ public:
 		{
 			// If the CAS succeeds, all remaining blocks have been reserved
 			// If the CAS fails, blocksAvail will have been updated
-			if (m_BlocksAvailable.compare_exchange_weak(blocksAvail, 0, std::memory_order_release, std::memory_order_acquire))
+			if (m_BlocksAvailable.compare_exchange_weak(blocksAvail, 0))
 				return{ GetBlockPointer(blocksAvail), blocksAvail * BlkSz };
 		}
 
@@ -330,18 +319,9 @@ public:
 
 	void DeallocateAll() noexcept
 	{
-		// Interleaving this function with calls to Allocate() or AllocateAll() is NOT thread safe.
-
-		if (m_Heap)
-		{
-			std::lock_guard<MutexType> lock(m_HeapMutex);
-
-			// Set the number of available blocks
-			// The heap must be checked again in case it was deallocated before the lock
-			// could be acquired.
-			if (m_Heap)
-				m_BlocksAvailable.store(BlkCnt, std::memory_order_release);
-		}
+		// Set the number of available blocks
+		if(m_Heap)
+			m_BlocksAvailable.store(BlkCnt, std::memory_order_release);
 	}
 };
 

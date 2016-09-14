@@ -97,6 +97,7 @@ class Epic::detail::CascadingAllocatorBase
 {
 	static_assert(std::is_default_constructible<A>::value, "The template allocator must be default-constructible.");
 	static_assert(std::is_default_constructible<NodeA>::value, "The node allocator must be default-constructible.");
+	static_assert(!IsShared || (IsShared && NodeA::IsShareable), "The node allocator must be shareable.");
 
 public:
 	using Type = Epic::detail::CascadingAllocatorBase<A, IsShared, NodeA>;
@@ -165,8 +166,6 @@ protected:
 
 	NodeType* CreateNode() noexcept
 	{
-		/* Thread safety is guaranteed against contending calls to CreateNode(). */
-
 		Blk blk;
 
 		// Allocate a block to place the new node		
@@ -195,6 +194,7 @@ protected:
 	void DestroyNodes()
 	{
 		/* Must not be called while thread safety is still required. */
+		
 		NodeType* pNode;
 
 		while ((pNode = m_pAllocNodes.load(std::memory_order_acquire)) != nullptr)
@@ -238,7 +238,7 @@ class Epic::detail::CascadingAllocatorBase<A, IsShared, void>
 {
 	static_assert(std::is_default_constructible<A>::value, "The template allocator must be default-constructible.");
 	static_assert(std::is_move_constructible<A>::value, "The template allocator must be move-constructible when not using a node allocator.");
-	
+
 public:
 	using Type = Epic::detail::CascadingAllocatorBase<A, IsShared, void>;
 
@@ -264,9 +264,12 @@ public:
 	constexpr CascadingAllocatorBase(const Type& obj) = delete;
 
 	constexpr CascadingAllocatorBase(Type&& obj) noexcept
-		: m_pAllocNodes{ obj.m_pAllocNodes }
-	{ 
-		obj.m_pAllocNodes = nullptr;
+		: m_pAllocNodes{ nullptr }
+	{
+		auto pAllocNodes = obj.m_pAllocNodes.load(std::memory_order_relaxed);
+		while (!obj.m_pAllocNodes.compare_exchange_weak(pAllocNodes, nullptr));
+
+		m_pAllocNodes.store(pAllocNodes);
 	}
 
 	CascadingAllocatorBase& operator = (const Type& obj) = delete;
@@ -300,8 +303,6 @@ protected:
 
 	NodeType* CreateNode() noexcept
 	{
-		/* Thread safety is guaranteed against contending calls to CreateNode(). */
-
 		// Create a node on the stack and use it to allocate 
 		// a storage block for the node.
 		NodeType node;
@@ -322,9 +323,6 @@ protected:
 		auto pNode = ::new (blk.Ptr) NodeType{ std::move(node) };
 
 		// Atomically add the new node to the allocator node list
-		// Critical Section
-		//   Unless a profiler reveals a notable performance bottleneck here, the default memory 
-		//   orderings will be used over release/relaxed for simplicity. 
 		pNode->m_pNext = m_pAllocNodes.load();
 		while (!m_pAllocNodes.compare_exchange_weak(pNode->m_pNext, pNode));
 
@@ -376,6 +374,9 @@ template<class A, bool IsShared, class NodeA>
 class Epic::detail::CascadingAllocatorImpl : public Epic::detail::CascadingAllocatorBase<A, IsShared, NodeA>
 {
 public:
+	static_assert(!IsShared || (IsShared && A::IsShareable), "The template allocator must be shareable.");
+
+public:
 	using Type = Epic::detail::CascadingAllocatorImpl<A, IsShared, NodeA>;
 	using base = Epic::detail::CascadingAllocatorBase<A, IsShared, NodeA>;
 	using AllocatorType = A;
@@ -385,6 +386,7 @@ public:
 	static constexpr size_t Alignment = A::Alignment;
 	static constexpr size_t MinAllocSize = A::MinAllocSize;
 	static constexpr size_t MaxAllocSize = A::MaxAllocSize;
+	static constexpr bool IsShareable = IsShared;
 
 public:
 	constexpr CascadingAllocatorImpl()

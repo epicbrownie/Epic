@@ -49,6 +49,7 @@ public:
 	static constexpr size_t Alignment = A::Alignment;
 	static constexpr size_t MinAllocSize = A::MinAllocSize;
 	static constexpr size_t MaxAllocSize = A::MaxAllocSize;
+	static constexpr bool IsShareable = A::IsShareable;
 
 private:
 	using SingletonAllocatorType = Epic::Singleton<A, Tag>;

@@ -37,6 +37,7 @@ public:
 	static constexpr size_t Alignment = alignof(std::max_align_t);
 	static constexpr size_t MinAllocSize = 0;
 	static constexpr size_t MaxAllocSize = _HEAP_MAXREQ;
+	static constexpr bool IsShareable = true;
 
 public:
 	constexpr AlignedMallocator() noexcept = default;
