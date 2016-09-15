@@ -357,15 +357,14 @@ protected:
 
 protected:
 	Blk m_Heap;
-
+	
 protected:
 	constexpr LinearHeapInternalStoragePolicy() noexcept = default;
 	LinearHeapInternalStoragePolicy(const Type&) = delete;
 
 	constexpr LinearHeapInternalStoragePolicy(Type&& obj) noexcept 
-		: m_Heap{ }
 	{
-		std::swap(m_Heap, obj.m_Heap);
+		/* m_Heap should be moved by derived type */
 	}
 	
 	LinearHeapInternalStoragePolicy& operator = (const Type&) = delete;
@@ -444,9 +443,8 @@ protected:
 	LinearHeapExternalStoragePolicy(const Type&) = delete;
 
 	constexpr LinearHeapExternalStoragePolicy(Type&& obj) noexcept
-		: m_Heap{ }
 	{
-		std::swap(m_Heap, obj.m_Heap);
+		/* m_Heap should be moved by derived type */
 	}
 
 	LinearHeapExternalStoragePolicy& operator = (const Type&) = delete;
@@ -508,21 +506,34 @@ public:
 	static constexpr size_t Alignment = StoragePolicy::Alignment;
 	static constexpr size_t MinAllocSize = 0;
 	static constexpr size_t MaxAllocSize = BlkSz * BlkCnt;
+	static constexpr bool IsShareable = IsShared;
+
+private:
+	using MutexType = std::conditional_t<IsShared, std::recursive_mutex, Epic::NullMutex>;
 
 private:
 	A m_Allocator;
+	mutable MutexType m_Mutex;
 
 protected:
 	LinearHeapPolicyImpl() noexcept(std::is_nothrow_default_constructible<A>::value)
 		: m_Allocator{ }, StoragePolicyType{ }
-	{ }
+	{ 
+		AllocateHeap(m_Allocator);
+	}
 
 	LinearHeapPolicyImpl(const Type&) = delete;
 
 	template<typename = std::enable_if_t<std::is_move_constructible<A>::value>>
 	LinearHeapPolicyImpl(Type&& obj) noexcept(std::is_nothrow_move_constructible<A>::value)
-		: m_Allocator{ std::move(obj.m_Allocator) }, StoragePolicyType{ std::move(obj) }
-	{ }
+		: m_Allocator{std::move(obj.m_Allocator)}, StoragePolicyType{ std::move(obj) }
+	{ 
+		/* m_Allocator can be moved without locking since it's only used for preallocation. */
+		/* m_Heap requires a lock to move to ensure the heap pointer is never torn during a read. */
+
+		std::lock_guard<MutexType> lock(obj.m_Mutex);
+		std::swap(m_Heap, obj.m_Heap);
+	}
 
 	LinearHeapPolicyImpl& operator = (const Type&) = delete;
 	LinearHeapPolicyImpl& operator = (Type&& obj) = delete;
@@ -556,90 +567,102 @@ public:
 
 	Blk Allocate(size_t sz) noexcept
 	{
-		// Verify heap memory
-		if (!m_Heap) AllocateHeap(m_Allocator);
-		if (!m_Heap) return{ nullptr, 0 };
+		std::lock_guard<MutexType> lock(m_Mutex);
+		{
+			// Verify heap memory
+			if (!m_Heap) return{ nullptr, 0 };
 
-		// Find a region of free blocks large enough to hold this allocation
-		auto pBitmap = GetBitmapPointer();
+			// Find a region of free blocks large enough to hold this allocation
+			auto pBitmap = GetBitmapPointer();
 
-		size_t blocksReq = BytesToBlockSize(sz);
-		size_t block = pBitmap->FindAvailable(blocksReq);
+			size_t blocksReq = BytesToBlockSize(sz);
+			size_t block = pBitmap->FindAvailable(blocksReq);
 
-		if (block >= BlkCnt) return{ nullptr, 0 };
+			if (block >= BlkCnt) return{ nullptr, 0 };
 
-		// Allocate the blocks
-		Blk blk{ GetBlockPointer(block), sz };
-		pBitmap->Set(block, blocksReq, true);
+			// Allocate the blocks
+			Blk blk{ GetBlockPointer(block), sz };
+			pBitmap->Set(block, blocksReq, true);
 
-		return blk;
+			return blk;
+		}
 	}
 
 	bool Reallocate(Blk& blk, size_t sz)
 	{
-		assert(Owns(blk) && "LinearHeapInternalStoragePolicy::Reallocate - Attempted to reallocate a block that was not allocated by this allocator");
-
-		auto pBitmap = GetBitmapPointer();
-		
-		size_t curBlock = GetBlock(blk.Ptr);
-		size_t curBlocksReq = BytesToBlockSize(blk.Size);
-		size_t newBlocksReq = BytesToBlockSize(sz);
-
-		// In-place reallocation
-		if (curBlocksReq == newBlocksReq)
+		std::lock_guard<MutexType> lock(m_Mutex);
 		{
-			blk.Size = sz;
-			return true;
-		}
+			assert(Owns(blk) && "LinearHeapInternalStoragePolicy::Reallocate - Attempted to reallocate a block that was not allocated by this allocator");
 
-		// Expand the allocation
-		if (sz > blk.Size)
-		{
-			// Try in-place expansion
-			size_t addBlocks = newBlocksReq - curBlocksReq;
-			if (pBitmap->HasAvailable(curBlock + curBlocksReq, addBlocks))
+			auto pBitmap = GetBitmapPointer();
+
+			size_t curBlock = GetBlock(blk.Ptr);
+			size_t curBlocksReq = BytesToBlockSize(blk.Size);
+			size_t newBlocksReq = BytesToBlockSize(sz);
+
+			// In-place reallocation
+			if (curBlocksReq == newBlocksReq)
 			{
 				blk.Size = sz;
-				pBitmap->Set(curBlock + curBlocksReq, addBlocks, true);
-
 				return true;
 			}
 
-			// Normal reallocation
-			return detail::Reallocator<Type>::ReallocateViaCopy(*this, blk, sz);
+			// Expand the allocation
+			if (sz > blk.Size)
+			{
+				// Try in-place expansion
+				size_t addBlocks = newBlocksReq - curBlocksReq;
+				if (pBitmap->HasAvailable(curBlock + curBlocksReq, addBlocks))
+				{
+					blk.Size = sz;
+					pBitmap->Set(curBlock + curBlocksReq, addBlocks, true);
+
+					return true;
+				}
+
+				// Normal reallocation
+				return detail::Reallocator<Type>::ReallocateViaCopy(*this, blk, sz);
+			}
+
+			// Shrink the allocation
+			size_t remBlocks = curBlocksReq - newBlocksReq;
+			blk.Size = sz;
+			pBitmap->Unset(curBlock + newBlocksReq, remBlocks);
+
+			return true;
 		}
-
-		// Shrink the allocation
-		size_t remBlocks = curBlocksReq - newBlocksReq;
-		blk.Size = sz;
-		pBitmap->Unset(curBlock + newBlocksReq, remBlocks);
-
-		return true;
 	}
 
 public:
 	void Deallocate(const Blk& blk)
 	{
 		if (!blk) return;
-		assert(Owns(blk) && "LinearHeapInternalStoragePolicy::Deallocate - Attempted to free a block that was not allocated by this allocator");
 
-		if (!m_Heap) return;
+		std::lock_guard<MutexType> lock(m_Mutex);
+		{
+			if (!m_Heap) return;
 
-		auto pBitmap = GetBitmapPointer();
-		size_t block = GetBlock(blk.Ptr);
-		size_t blocksReq = BytesToBlockSize(blk.Size);
+			assert(Owns(blk) && "LinearHeapInternalStoragePolicy::Deallocate - Attempted to free a block that was not allocated by this allocator");
 
-		pBitmap->Unset(block, blocksReq);
+			auto pBitmap = GetBitmapPointer();
+			size_t block = GetBlock(blk.Ptr);
+			size_t blocksReq = BytesToBlockSize(blk.Size);
+
+			pBitmap->Unset(block, blocksReq);
+		}
 	}
 
 	void DeallocateAll() noexcept
 	{
-		if (!m_Heap) return;
+		std::lock_guard<MutexType> lock(m_Mutex);
+		{
+			if (!m_Heap) return;
 
-		auto pBitmap = GetBitmapPointer();
-		size_t bitmapBlocks = BytesToBlockSize(BitmapSize);
+			auto pBitmap = GetBitmapPointer();
+			size_t bitmapBlocks = BytesToBlockSize(BitmapSize);
 
-		pBitmap->Unset(bitmapBlocks, BlkCnt - bitmapBlocks);
+			pBitmap->Unset(bitmapBlocks, BlkCnt - bitmapBlocks);
+		}
 	}
 };
 
@@ -695,14 +718,14 @@ public:
 
 namespace Epic
 {
-	// Internal Linear Heap
+	// Linear Heap (Internal Storage)
 	template<size_t BlockSize, size_t BlockCount, class Allocator, size_t Alignment = 0>
 	using HeapAllocator = detail::HeapAllocatorImpl<Allocator, detail::InternalLinearHeapPolicy, BlockSize, BlockCount, Alignment, false>;
 
 	template<size_t BlockSize, size_t BlockCount, class Allocator, size_t Alignment = 0>
 	using SharedHeapAllocator = detail::HeapAllocatorImpl<Allocator, detail::InternalLinearHeapPolicy, BlockSize, BlockCount, Alignment, true>;
 
-	// External Linear Heap
+	// Linear Heap (External Storage)
 	template<size_t BlockSize, size_t BlockCount, class Allocator, size_t Alignment = 0>
 	using StrictHeapAllocator = detail::HeapAllocatorImpl<Allocator, detail::ExternalLinearHeapPolicy, BlockSize, BlockCount, Alignment, false>;
 
