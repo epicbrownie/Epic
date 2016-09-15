@@ -46,6 +46,7 @@ public:
 	static constexpr size_t Alignment{ std::min(P::Alignment, F::Alignment) };
 	static constexpr size_t MinAllocSize = std::min(P::MinAllocSize, F::MinAllocSize);
 	static constexpr size_t MaxAllocSize = std::max(P::MaxAllocSize, F::MaxAllocSize);
+	static constexpr bool IsShareable = P::IsShareable && F::IsShareable;
 
 private:
 	PrimaryAllocatorType m_PAllocator;

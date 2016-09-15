@@ -49,6 +49,7 @@ public:
 	static constexpr size_t Alignment = ForcedAlignment;
 	static constexpr size_t MinAllocSize = A::MinAllocSize;
 	static constexpr size_t MaxAllocSize = A::MaxAllocSize;
+	static constexpr bool IsShareable = A::IsShareable;
 
 	static_assert(detail::IsGoodAlignment(Alignment), "ForceAlignAllocator still requires a valid alignment value.");
 
