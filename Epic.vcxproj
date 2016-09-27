@@ -71,6 +71,7 @@
     <ClInclude Include="src\StringHashAlgorithm.hpp" />
     <ClInclude Include="src\TMP\List.hpp" />
     <ClInclude Include="src\TMP\PowerOf2.hpp" />
+    <ClInclude Include="src\TMP\TypeTraits.hpp" />
     <ClInclude Include="src\TMP\Utility.hpp" />
     <ClInclude Include="src\TMP\VariadicContains.hpp" />
   </ItemGroup>

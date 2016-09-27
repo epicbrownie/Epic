@@ -197,6 +197,9 @@
     <ClInclude Include="src\NullAtomic.hpp">
       <Filter>Utility</Filter>
     </ClInclude>
+    <ClInclude Include="src\TMP\TypeTraits.hpp">
+      <Filter>Utility\TMP</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Memory\NullAllocator.cpp">
