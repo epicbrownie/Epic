@@ -330,7 +330,7 @@ void (*sysfree)(void *);
 size_t (*sysblksize)(void *);
 #endif
 
-static FORCEINLINE NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void *CallMalloc(void *RESTRICT mspace, size_t size, size_t alignment, unsigned flags) THROWSPEC
+static FORCEINLINE NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void *CallMalloc(void *RESTRICT mspace, size_t size, size_t alignment, unsigned flags) THROWSPEC
 {
 	void *RESTRICT ret=0;
 #if USE_MAGIC_HEADERS
@@ -379,7 +379,7 @@ static FORCEINLINE NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void *CallMalloc(void *
 	return ret;
 }
 
-static FORCEINLINE NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void *CallRealloc(void *RESTRICT mspace, void *RESTRICT mem, int isforeign, size_t oldsize, size_t newsize, size_t alignment, unsigned flags) THROWSPEC
+static FORCEINLINE NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void *CallRealloc(void *RESTRICT mspace, void *RESTRICT mem, int isforeign, size_t oldsize, size_t newsize, size_t alignment, unsigned flags) THROWSPEC
 {
 	void *RESTRICT ret=0;
 #if USE_MAGIC_HEADERS
@@ -643,21 +643,21 @@ NEDMALLOCNOALIASATTR size_t nedblksize(int *RESTRICT isforeign, void *RESTRICT m
 NEDMALLOCNOALIASATTR size_t nedmemsize(void *RESTRICT mem) THROWSPEC { return nedblksize(0, mem, 0); }
 
 NEDMALLOCNOALIASATTR void nedsetvalue(void *v) THROWSPEC																		{ nedpsetvalue((nedpool *) 0, v); }
-NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedmalloc(size_t size) THROWSPEC													{ return nedpmalloc((nedpool *) 0, size); }
-NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedcalloc(size_t no, size_t size) THROWSPEC										{ return nedpcalloc((nedpool *) 0, no, size); }
-NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedrealloc(void *mem, size_t size) THROWSPEC										{ return nedprealloc((nedpool *) 0, mem, size); }
+NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedmalloc(size_t size) THROWSPEC								{ return nedpmalloc((nedpool *) 0, size); }
+NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedcalloc(size_t no, size_t size) THROWSPEC						{ return nedpcalloc((nedpool *) 0, no, size); }
+NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedrealloc(void *mem, size_t size) THROWSPEC					{ return nedprealloc((nedpool *) 0, mem, size); }
 NEDMALLOCNOALIASATTR void   nedfree(void *mem) THROWSPEC																		{ nedpfree((nedpool *) 0, mem); }
-NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedmemalign(size_t alignment, size_t bytes) THROWSPEC								{ return nedpmemalign((nedpool *) 0, alignment, bytes); }
-NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedmalloc2(size_t size, size_t alignment, unsigned flags) THROWSPEC				{ return nedpmalloc2((nedpool *) 0, size, alignment, flags); }
-NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedrealloc2(void *mem, size_t size, size_t alignment, unsigned flags) THROWSPEC	{ return nedprealloc2((nedpool *) 0, mem, size, alignment, flags); }
+NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedmemalign(size_t alignment, size_t bytes) THROWSPEC								{ return nedpmemalign((nedpool *) 0, alignment, bytes); }
+NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedmalloc2(size_t size, size_t alignment, unsigned flags) THROWSPEC				{ return nedpmalloc2((nedpool *) 0, size, alignment, flags); }
+NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedrealloc2(void *mem, size_t size, size_t alignment, unsigned flags) THROWSPEC	{ return nedprealloc2((nedpool *) 0, mem, size, alignment, flags); }
 NEDMALLOCNOALIASATTR void   nedfree2(void *mem, unsigned flags) THROWSPEC														{ nedpfree2((nedpool *) 0, mem, flags); }
 NEDMALLOCNOALIASATTR struct nedmallinfo nedmallinfo(void) THROWSPEC																{ return nedpmallinfo((nedpool *) 0); }
 NEDMALLOCNOALIASATTR int    nedmallopt(int parno, int value) THROWSPEC															{ return nedpmallopt((nedpool *) 0, parno, value); }
 NEDMALLOCNOALIASATTR int    nedmalloc_trim(size_t pad) THROWSPEC																{ return nedpmalloc_trim((nedpool *) 0, pad); }
 void   nedmalloc_stats() THROWSPEC																								{ nedpmalloc_stats((nedpool *) 0); }
 NEDMALLOCNOALIASATTR size_t nedmalloc_footprint() THROWSPEC																		{ return nedpmalloc_footprint((nedpool *) 0); }
-NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void **nedindependent_calloc(size_t elemsno, size_t elemsize, void **chunks) THROWSPEC	{ return nedpindependent_calloc((nedpool *) 0, elemsno, elemsize, chunks); }
-NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void **nedindependent_comalloc(size_t elems, size_t *sizes, void **chunks) THROWSPEC		{ return nedpindependent_comalloc((nedpool *) 0, elems, sizes, chunks); }
+NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void **nedindependent_calloc(size_t elemsno, size_t elemsize, void **chunks) THROWSPEC	{ return nedpindependent_calloc((nedpool *) 0, elemsno, elemsize, chunks); }
+NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void **nedindependent_comalloc(size_t elems, size_t *sizes, void **chunks) THROWSPEC		{ return nedpindependent_comalloc((nedpool *) 0, elems, sizes, chunks); }
 
 #ifdef WIN32
 typedef unsigned __int64 timeCount;
@@ -1293,7 +1293,7 @@ static void DestroyCaches(nedpool *RESTRICT p) THROWSPEC
 	}
 }
 
-static NOINLINE threadcache *AllocCache(nedpool *RESTRICT p) THROWSPEC
+static NOINLINE NEDMALLOCALLOCATOR threadcache *AllocCache(nedpool *RESTRICT p) THROWSPEC
 {
 	threadcache *tc=0;
 	int n, end;
@@ -1352,7 +1352,7 @@ static NOINLINE threadcache *AllocCache(nedpool *RESTRICT p) THROWSPEC
 	return tc;
 }
 
-static void *threadcache_malloc(nedpool *RESTRICT p, threadcache *RESTRICT tc, size_t *RESTRICT _size) THROWSPEC
+static NEDMALLOCALLOCATOR void *threadcache_malloc(nedpool *RESTRICT p, threadcache *RESTRICT tc, size_t *RESTRICT _size) THROWSPEC
 {
 	void *RESTRICT ret=0;
 	size_t size=*_size, blksize=0;
@@ -1639,7 +1639,7 @@ typedef struct PoolList_t
 static MLOCK_T poollistlock;
 #endif
 static PoolList *poollist;
-NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR nedpool *nedcreatepool(size_t capacity, int threads) THROWSPEC
+NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR nedpool *nedcreatepool(size_t capacity, int threads) THROWSPEC
 {
 	nedpool *ret=0;
 	if(!poollist)
@@ -1900,7 +1900,7 @@ static FORCEINLINE void GetThreadCache(nedpool *RESTRICT *RESTRICT p, threadcach
 #endif
 }
 
-NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedpmalloc2(nedpool *p, size_t size, size_t alignment, unsigned flags) THROWSPEC
+NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedpmalloc2(nedpool *p, size_t size, size_t alignment, unsigned flags) THROWSPEC
 {
 	void *ret=0;
 	threadcache *tc;
@@ -1927,7 +1927,7 @@ NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedpmalloc2(nedpool *p, size_t size
 	LogOperation(tc, p, LOGENTRY_MALLOC, mymspace, size, 0, alignment, flags, ret);
 	return ret;
 }
-NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedprealloc2(nedpool *p, void *mem, size_t size, size_t alignment, unsigned flags) THROWSPEC
+NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedprealloc2(nedpool *p, void *mem, size_t size, size_t alignment, unsigned flags) THROWSPEC
 {
 	void *ret=0;
 	threadcache *tc;
@@ -2025,12 +2025,12 @@ NEDMALLOCNOALIASATTR void   nedpfree2(nedpool *p, void *mem, unsigned flags) THR
 	}
 	LogOperation(tc, p, LOGENTRY_FREE, mymspace, memsize, mem, 0, 0, 0);
 }
-NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedpmalloc(nedpool *p, size_t size) THROWSPEC
+NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedpmalloc(nedpool *p, size_t size) THROWSPEC
 {
 	unsigned flags=NEDMALLOC_FORCERESERVE(p, 0, size);
 	return nedpmalloc2(p, size, 0, flags);
 }
-NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedpcalloc(nedpool *p, size_t no, size_t size) THROWSPEC
+NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedpcalloc(nedpool *p, size_t no, size_t size) THROWSPEC
 {
 	size_t bytes=no*size;
 	unsigned flags=NEDMALLOC_FORCERESERVE(p, 0, bytes);
@@ -2038,7 +2038,7 @@ NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedpcalloc(nedpool *p, size_t no, s
 	if(size && no!=bytes/size) return 0;
 	return nedpmalloc2(p, bytes, 0, M2_ZERO_MEMORY|flags);
 }
-NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedprealloc(nedpool *p, void *mem, size_t size) THROWSPEC
+NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedprealloc(nedpool *p, void *mem, size_t size) THROWSPEC
 {
 	unsigned flags=NEDMALLOC_FORCERESERVE(p, mem, size);
 #if ENABLE_USERMODEPAGEALLOCATOR
@@ -2052,7 +2052,7 @@ NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedprealloc(nedpool *p, void *mem, 
 	}
 	return nedprealloc2(p, mem, size, 0, flags);
 }
-NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedpmemalign(nedpool *p, size_t alignment, size_t bytes) THROWSPEC
+NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedpmemalign(nedpool *p, size_t alignment, size_t bytes) THROWSPEC
 {
 	unsigned flags=NEDMALLOC_FORCERESERVE(p, 0, bytes);
 	return nedpmalloc2(p, bytes, alignment, flags);
@@ -2138,7 +2138,7 @@ size_t nedpmalloc_footprint(nedpool *p) THROWSPEC
 	}
 	return ret;
 }
-NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void **nedpindependent_calloc(nedpool *p, size_t elemsno, size_t elemsize, void **chunks) THROWSPEC
+NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void **nedpindependent_calloc(nedpool *p, size_t elemsno, size_t elemsize, void **chunks) THROWSPEC
 {
 	void **ret;
 	threadcache *tc;
@@ -2163,7 +2163,7 @@ NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void **nedpindependent_calloc(nedpool *p, 
 #endif
 	return ret;
 }
-NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void **nedpindependent_comalloc(nedpool *p, size_t elems, size_t *sizes, void **chunks) THROWSPEC
+NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void **nedpindependent_comalloc(nedpool *p, size_t elems, size_t *sizes, void **chunks) THROWSPEC
 {
 	void **ret;
 	threadcache *tc;

@@ -13,31 +13,11 @@
 
 #pragma once
 
-#include <Epic/STL/Default.hpp>
+#include <Epic/Memory/Default.hpp>
 #include <Epic/STL/Allocator.hpp>
+#include <Epic/STL/UniquePtr.hpp>
 #include <memory>
-
-//////////////////////////////////////////////////////////////////////////////
-
-namespace Epic::detail
-{
-	template<class T, class A>
-	struct MakeSharedPtrSTLAllocator;
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
-template<class T, class A>
-struct Epic::detail::MakeSharedPtrSTLAllocator
-{
-	using Type = Epic::STLAllocator<T, A>;
-};
-
-template<class T, class A>
-struct Epic::detail::MakeSharedPtrSTLAllocator<T, Epic::detail::STLAllocatorImpl<T, A>>
-{
-	using Type = A;
-};
+#include <type_traits>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -47,8 +27,8 @@ namespace Epic
 	template<class T, class A = Epic::DefaultAllocatorFor<T, Epic::eAllocatorFor::SharedPtr>, class... Args>
 	inline std::shared_ptr<T> MakeShared(Args&&... args)
 	{
-		using AdaptedAllocator = typename detail::MakeSharedPtrSTLAllocator<T, A>::Type;
-		AdaptedAllocator allocator;
+		using AllocatorType = Epic::STLAllocator<T, A>;
+		AllocatorType allocator;
 
 		// Use the allocator to create a T
 		T* pObject = allocator.allocate(1);
@@ -67,11 +47,18 @@ namespace Epic
 		// Create a Deleter
 		auto Deleter = [=] (auto p) -> void
 		{
-			AdaptedAllocator alloc;
+			AllocatorType alloc;
 			alloc.destroy(p); 
 			alloc.deallocate(p, 1); 
 		};
 
 		return std::shared_ptr<T>{ pObject, Deleter, allocator };
+	}
+
+	/// MakeShared<std::unique_ptr<T, D>>
+	template<class T, class D>
+	inline std::shared_ptr<T> MakeShared(std::unique_ptr<T, D>&& pUnique)
+	{
+		return std::shared_ptr<T>{ std::move(pUnique) };
 	}
 }

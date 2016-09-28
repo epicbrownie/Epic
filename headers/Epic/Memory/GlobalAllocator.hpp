@@ -25,6 +25,9 @@ namespace Epic::detail
 {
 	struct GlobalAllocatorTag;
 
+	template<class A, class Tag>
+	struct GlobalAllocatorAdaptor;
+
 	template<class Allocator, class Tag>
 	class GlobalAllocatorImpl;
 }
@@ -46,6 +49,7 @@ public:
 	static constexpr size_t Alignment = A::Alignment;
 	static constexpr size_t MinAllocSize = A::MinAllocSize;
 	static constexpr size_t MaxAllocSize = A::MaxAllocSize;
+	static constexpr bool IsShareable = A::IsShareable;
 
 private:
 	using SingletonAllocatorType = Epic::Singleton<A, Tag>;
@@ -55,7 +59,7 @@ private:
 
 public:
 	constexpr GlobalAllocatorImpl() noexcept
-		: m_pAllocator{ &SingletonAllocatorType::Instance() } 
+		: m_pAllocator{ &Type::Allocator() } 
 	{ }
 
 	constexpr GlobalAllocatorImpl(const Type& obj) = default;
@@ -136,10 +140,27 @@ public:
 	}
 };
 
+
+//////////////////////////////////////////////////////////////////////////////
+
+template<class A, class Tag>
+struct Epic::detail::GlobalAllocatorAdaptor
+{
+	using Type = detail::GlobalAllocatorImpl<A, Tag>;
+};
+
+template<class A, class Tag, class OldTag>
+struct Epic::detail::GlobalAllocatorAdaptor<Epic::detail::GlobalAllocatorImpl<A, OldTag>, Tag>
+{
+	using _unwrapped = typename detail::UnwrapGlobalAllocator<A>::Type;
+
+	using Type = Epic::GlobalAllocatorImpl<_unwrapped, OldTag>;
+};
+
 //////////////////////////////////////////////////////////////////////////////
 
 namespace Epic
 {
 	template<class Allocator, class Tag = Epic::detail::GlobalAllocatorTag>
-	using GlobalAllocator = detail::GlobalAllocatorImpl<typename detail::UnwrapGlobalAllocator<Allocator>::Type, Tag>;
+	using GlobalAllocator = typename detail::GlobalAllocatorAdaptor<Allocator, Tag>::Type;
 }

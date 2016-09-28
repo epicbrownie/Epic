@@ -14,8 +14,7 @@
 #pragma once
 
 #include <Epic/detail/ReadConfig.hpp>
-#include <Epic/Memory/NedAllocator.hpp>
-#include <Epic/Memory/AlignedNedAllocator.hpp>
+#include <Epic/Memory/Mallocator.hpp>
 #include <Epic/Memory/AlignmentAllocator.hpp>
 #include <type_traits>
 
@@ -25,6 +24,8 @@ namespace Epic
 {
 	enum class eAllocatorFor
 	{
+		New, UniquePtr, SharedPtr,
+
 		String, WString,
 
 		List,
@@ -39,9 +40,7 @@ namespace Epic
 		UnorderedSet,
 
 		StringStream, IStringStream, OStringStream,
-		WStringStream, WIStringStream, WOStringStream,
-
-		UniquePtr, SharedPtr
+		WStringStream, WIStringStream, WOStringStream
 	};
 }
 
@@ -66,14 +65,12 @@ namespace Epic
 
 namespace Epic
 {
-	namespace detail
-	{
-		using DefaultAllocatorType = std::conditional_t<
-				std::is_same<void, typename GetConfigProperty<eConfigProperty::DefaultAllocator>::Type>::value,
-				AlignmentAllocator<AlignedNedAllocator, NedAllocator>,
-				typename GetConfigProperty<eConfigProperty::DefaultAllocator>::Type
-			  >;
-	}
+	/// The configured default allocator type for the entire system.
+	using DefaultAllocatorType = 
+			std::conditional_t<
+				std::is_same<void, typename detail::GetConfigProperty<detail::eConfigProperty::DefaultAllocator>::Type>::value,
+				Mallocator,
+				typename detail::GetConfigProperty<detail::eConfigProperty::DefaultAllocator>::Type>;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -82,6 +79,20 @@ template<class T, Epic::eAllocatorFor DefaultForType>
 struct Epic::detail::HasClassDefaultAllocator
 {
 	static constexpr bool value = false;
+};
+
+template<class T>
+struct Epic::detail::HasClassDefaultAllocator<T, Epic::eAllocatorFor::New>
+{
+private:
+	template<class U>
+	static std::true_type HasDefault(U*, decltype(T::DefaultAllocator())* = nullptr);
+	static std::false_type HasDefault(...);
+
+	using Return = decltype(HasDefault((T*)(nullptr)));
+
+public:
+	static constexpr bool value = Return::value;
 };
 
 template<class T>
@@ -116,7 +127,13 @@ public:
 template<class T, Epic::eAllocatorFor ClassDefaultForType, bool Enabled>
 struct Epic::detail::GetClassDefaultAllocator
 {
-	using Type = detail::DefaultAllocatorType;
+	using Type = DefaultAllocatorType;
+};
+
+template<class T>
+struct Epic::detail::GetClassDefaultAllocator<T, Epic::eAllocatorFor::New, true>
+{
+	using Type = typename T::DefaultAllocator;
 };
 
 template<class T>
@@ -147,7 +164,31 @@ namespace Epic
 template<class T, Epic::eAllocatorFor DefaultForType>
 struct Epic::DefaultAllocator
 {
-	using Type = detail::DefaultAllocatorType;
+	using Type = DefaultAllocatorType;
+};
+
+template<class T>
+struct Epic::DefaultAllocator<T, Epic::eAllocatorFor::New>
+{
+	/*
+		operator new for all T's cannot be specialized.
+		Either specialize on a specific T, or add a DefaultAllocator typedef to the T class.
+	*/
+
+	using U = std::remove_pointer_t<std::decay_t<T>>;
+	using Type = detail::ClassDefaultAllocator<U, Epic::eAllocatorFor::New>;
+};
+
+template<class T>
+struct Epic::DefaultAllocator<T[], Epic::eAllocatorFor::New>
+{
+	/*
+		operator new[] for all T's cannot be specialized.
+		Either specialize on a specific T[], or add a DefaultAllocator typedef to the T class.
+	*/
+
+	using U = std::remove_pointer_t<std::decay_t<T>>;
+	using Type = detail::ClassDefaultAllocator<U, Epic::eAllocatorFor::New>;
 };
 
 template<class T>
@@ -166,8 +207,8 @@ template<class T>
 struct Epic::DefaultAllocator<T[], Epic::eAllocatorFor::UniquePtr>
 {
 	/*
-	std::unique_ptr<T[]> for all T's cannot be specialized.
-	Either specialize on a specific T[], or add a DefaultAllocator typedef to the T class.
+		std::unique_ptr<T[]> for all T's cannot be specialized.
+		Either specialize on a specific T[], or add a DefaultAllocator typedef to the T class.
 	*/
 
 	using U = std::remove_pointer_t<std::decay_t<T>>;

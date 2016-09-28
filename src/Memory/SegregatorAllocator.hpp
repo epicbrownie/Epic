@@ -51,6 +51,8 @@ public:
 	static constexpr size_t MinAllocSize = S::MinAllocSize;
 	static constexpr size_t MaxAllocSize = L::MaxAllocSize;
 	static constexpr size_t Threshold{ T };
+	static constexpr bool IsShareable = S::IsShareable && L::IsShareable;
+
 
 	static_assert(MinAllocSize < Threshold, "Threshold must be greater than the small allocator's minimum allocation size.");
 	static_assert(MaxAllocSize >= Threshold, "Threshold must be less than or equal to the large allocator's maximum allocation size.");

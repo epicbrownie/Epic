@@ -43,16 +43,17 @@ class Epic::ForceAlignAllocator
 
 public:
 	using Type = Epic::ForceAlignAllocator<A, ForcedAlignment>;
+	using AllocatorType = A;
 	
 public:
 	static constexpr size_t Alignment = ForcedAlignment;
 	static constexpr size_t MinAllocSize = A::MinAllocSize;
 	static constexpr size_t MaxAllocSize = A::MaxAllocSize;
+	static constexpr bool IsShareable = A::IsShareable;
 
 	static_assert(detail::IsGoodAlignment(Alignment), "ForceAlignAllocator still requires a valid alignment value.");
 
 private:
-	using AllocatorType = A;
 	AllocatorType m_Allocator;
 
 public:

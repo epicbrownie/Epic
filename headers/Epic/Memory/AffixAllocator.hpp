@@ -63,6 +63,7 @@ private:
 public:
 	static constexpr size_t MinAllocSize = A::MinAllocSize;
 	static constexpr size_t MaxAllocSize = A::MaxAllocSize - NonAllocSize;
+	static constexpr bool IsShareable = A::IsShareable;
 
 	static_assert(!HasPrefix || std::is_default_constructible<Prefix>::value, "The Prefix Type must be default-constructible.");
 	static_assert(!HasSuffix || std::is_default_constructible<Suffix>::value, "The Suffix Type must be default-constructible.");

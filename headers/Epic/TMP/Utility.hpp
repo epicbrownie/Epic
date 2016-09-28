@@ -88,3 +88,14 @@ namespace Epic::TMP
 		static constexpr size_t value = (V1 > StaticMax<Vs...>::value) ? V1 : StaticMax<Vs...>::value;
 	};
 }
+
+//////////////////////////////////////////////////////////////////////////////
+
+namespace Epic::TMP
+{
+	template<typename T, T N>
+	using Literal = std::integral_constant<T, N>;
+
+	template<size_t N>
+	using Sz = Literal<size_t, N>;
+}

@@ -110,6 +110,15 @@ indicates a C++0x compiler, otherwise you'll need to set it yourself.
 
 #include <stddef.h>   /* for size_t */
 
+
+/*! \def NEDMALLOCALLOCATOR
+\brief Tags the function as an allocator for memory diagnostic tools 
+*/
+#if defined(_MSC_VER) && _MSC_VER>=1900
+  #define NEDMALLOCALLOCATOR __declspec(allocator)
+#endif
+
+
 /*! \def NEDMALLOCEXTSPEC
 \brief Defines how nedalloc's API is to be made visible.
 
@@ -463,29 +472,29 @@ NEDMALLOCEXTSPEC NEDMALLOCNOALIASATTR size_t nedmemsize(void *RESTRICT mem) THRO
 NEDMALLOCEXTSPEC NEDMALLOCNOALIASATTR void nedsetvalue(void *v) THROWSPEC;
 
 /*! \brief Equivalent to nedpmalloc2((nedpool *) 0, size, 0, 0) */
-NEDMALLOCEXTSPEC NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedmalloc(size_t size) THROWSPEC;
+NEDMALLOCEXTSPEC NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedmalloc(size_t size) THROWSPEC;
 /*! \brief Equivalent to nedpmalloc2((nedpool *) 0, no*size, 0, M2_ZERO_MEMORY) */
-NEDMALLOCEXTSPEC NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedcalloc(size_t no, size_t size) THROWSPEC;
+NEDMALLOCEXTSPEC NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedcalloc(size_t no, size_t size) THROWSPEC;
 /*! \brief Equivalent to nedprealloc2((nedpool *) 0, size, mem, size, 0, M2_RESERVE_MULT(8)) */
-NEDMALLOCEXTSPEC NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedrealloc(void *mem, size_t size) THROWSPEC;
+NEDMALLOCEXTSPEC NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedrealloc(void *mem, size_t size) THROWSPEC;
 /*! \brief Equivalent to nedpfree2((nedpool *) 0, mem, 0) */
 NEDMALLOCEXTSPEC NEDMALLOCNOALIASATTR void   nedfree(void *mem) THROWSPEC;
 /*! \brief Equivalent to nedpmalloc2((nedpool *) 0, size, alignment, 0) */
-NEDMALLOCEXTSPEC NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedmemalign(size_t alignment, size_t bytes) THROWSPEC;
+NEDMALLOCEXTSPEC NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedmemalign(size_t alignment, size_t bytes) THROWSPEC;
 
 #if defined(__cplusplus)
 /*! \ingroup v2malloc
 \brief Equivalent to nedpmalloc2((nedpool *) 0, size, alignment, flags) */
-NEDMALLOCDEPRECATED NEDMALLOCEXTSPEC NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedmalloc2(size_t size, size_t alignment=0, unsigned flags=0) THROWSPEC;
+NEDMALLOCDEPRECATED NEDMALLOCEXTSPEC NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedmalloc2(size_t size, size_t alignment=0, unsigned flags=0) THROWSPEC;
 /*! \ingroup v2malloc
 \brief Equivalent to nedprealloc2((nedpool *) 0, mem, size, alignment, flags) */
-NEDMALLOCDEPRECATED NEDMALLOCEXTSPEC NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedrealloc2(void *mem, size_t size, size_t alignment=0, unsigned flags=0) THROWSPEC;
+NEDMALLOCDEPRECATED NEDMALLOCEXTSPEC NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedrealloc2(void *mem, size_t size, size_t alignment=0, unsigned flags=0) THROWSPEC;
 /*! \ingroup v2malloc
 \brief Equivalent to nedpfree2((nedpool *) 0, mem, flags) */
 NEDMALLOCDEPRECATED NEDMALLOCEXTSPEC NEDMALLOCNOALIASATTR void nedfree2(void *mem, unsigned flags=0) THROWSPEC;
 #else
-NEDMALLOCDEPRECATED NEDMALLOCEXTSPEC NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedmalloc2(size_t size, size_t alignment, unsigned flags) THROWSPEC;
-NEDMALLOCDEPRECATED NEDMALLOCEXTSPEC NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedrealloc2(void *mem, size_t size, size_t alignment, unsigned flags) THROWSPEC;
+NEDMALLOCDEPRECATED NEDMALLOCEXTSPEC NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedmalloc2(size_t size, size_t alignment, unsigned flags) THROWSPEC;
+NEDMALLOCDEPRECATED NEDMALLOCEXTSPEC NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedrealloc2(void *mem, size_t size, size_t alignment, unsigned flags) THROWSPEC;
 NEDMALLOCDEPRECATED NEDMALLOCEXTSPEC NEDMALLOCNOALIASATTR void nedfree2(void *mem, unsigned flags) THROWSPEC;
 #endif
 
@@ -502,9 +511,9 @@ NEDMALLOCEXTSPEC void   nedmalloc_stats(void) THROWSPEC;
 /*! \brief Equivalent to nedpmalloc_footprint((nedpool *) 0) */
 NEDMALLOCEXTSPEC NEDMALLOCNOALIASATTR size_t nedmalloc_footprint(void) THROWSPEC;
 /*! \brief Equivalent to nedpindependent_calloc((nedpool *) 0, elemsno, elemsize, chunks) */
-NEDMALLOCEXTSPEC NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void **nedindependent_calloc(size_t elemsno, size_t elemsize, void **chunks) THROWSPEC;
+NEDMALLOCEXTSPEC NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void **nedindependent_calloc(size_t elemsno, size_t elemsize, void **chunks) THROWSPEC;
 /*! \brief Equivalent to nedpindependent_comalloc((nedpool *) 0, elems, sizes, chunks) */
-NEDMALLOCEXTSPEC NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void **nedindependent_comalloc(size_t elems, size_t *sizes, void **chunks) THROWSPEC;
+NEDMALLOCEXTSPEC NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void **nedindependent_comalloc(size_t elems, size_t *sizes, void **chunks) THROWSPEC;
 
 /*! \brief Destroys the system memory pool used by the functions above.
 
@@ -527,7 +536,7 @@ will *normally* be accessing the pool concurrently. Setting this to zero means i
 extends on demand, but be careful of this as it can rapidly consume system resources
 where bursts of concurrent threads use a pool at once.
 */
-NEDMALLOCEXTSPEC NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR nedpool *nedcreatepool(size_t capacity, int threads) THROWSPEC;
+NEDMALLOCEXTSPEC NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR nedpool *nedcreatepool(size_t capacity, int threads) THROWSPEC;
 
 /*! \brief Destroys a memory pool previously created by nedcreatepool().
 */
@@ -582,29 +591,29 @@ NEDMALLOCEXTSPEC size_t nedflushlogs(nedpool *p, char *filepath) THROWSPEC;
 
 
 /*! \brief Equivalent to nedpmalloc2(p, size, 0, 0) */
-NEDMALLOCEXTSPEC NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedpmalloc(nedpool *p, size_t size) THROWSPEC;
+NEDMALLOCEXTSPEC NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedpmalloc(nedpool *p, size_t size) THROWSPEC;
 /*! \brief Equivalent to nedpmalloc2(p, no*size, 0, M2_ZERO_MEMORY) */
-NEDMALLOCEXTSPEC NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedpcalloc(nedpool *p, size_t no, size_t size) THROWSPEC;
+NEDMALLOCEXTSPEC NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedpcalloc(nedpool *p, size_t no, size_t size) THROWSPEC;
 /*! \brief Equivalent to nedprealloc2(p, mem, size, 0, M2_RESERVE_MULT(8)) */
-NEDMALLOCEXTSPEC NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedprealloc(nedpool *p, void *mem, size_t size) THROWSPEC;
+NEDMALLOCEXTSPEC NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedprealloc(nedpool *p, void *mem, size_t size) THROWSPEC;
 /*! \brief Equivalent to nedpfree2(p, mem, 0) */
 NEDMALLOCEXTSPEC NEDMALLOCNOALIASATTR void   nedpfree(nedpool *p, void *mem) THROWSPEC;
 /*! \brief Equivalent to nedpmalloc2(p, bytes, alignment, 0) */
-NEDMALLOCEXTSPEC NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedpmemalign(nedpool *p, size_t alignment, size_t bytes) THROWSPEC;
+NEDMALLOCEXTSPEC NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedpmemalign(nedpool *p, size_t alignment, size_t bytes) THROWSPEC;
 #if defined(__cplusplus)
 /*! \ingroup v2malloc
 \brief Allocates a block of memory sized \em size from pool \em p, aligned to \em alignment and according to the flags \em flags.
 */
-NEDMALLOCDEPRECATED NEDMALLOCEXTSPEC NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedpmalloc2(nedpool *p, size_t size, size_t alignment=0, unsigned flags=0) THROWSPEC;
+NEDMALLOCDEPRECATED NEDMALLOCEXTSPEC NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedpmalloc2(nedpool *p, size_t size, size_t alignment=0, unsigned flags=0) THROWSPEC;
 /*! \ingroup v2malloc
 \brief Resizes the block of memory at \em mem in pool \em p to size \em size, aligned to \em alignment and according to the flags \em flags.
 */
-NEDMALLOCDEPRECATED NEDMALLOCEXTSPEC NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedprealloc2(nedpool *p, void *mem, size_t size, size_t alignment=0, unsigned flags=0) THROWSPEC;
+NEDMALLOCDEPRECATED NEDMALLOCEXTSPEC NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedprealloc2(nedpool *p, void *mem, size_t size, size_t alignment=0, unsigned flags=0) THROWSPEC;
 /*! \brief Frees the block \em mem from the pool \em p according to flags \em flags. */
 NEDMALLOCDEPRECATED NEDMALLOCEXTSPEC NEDMALLOCNOALIASATTR void   nedpfree2(nedpool *p, void *mem, unsigned flags=0) THROWSPEC;
 #else
-NEDMALLOCDEPRECATED NEDMALLOCEXTSPEC NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedpmalloc2(nedpool *p, size_t size, size_t alignment, unsigned flags) THROWSPEC;
-NEDMALLOCDEPRECATED NEDMALLOCEXTSPEC NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedprealloc2(nedpool *p, void *mem, size_t size, size_t alignment, unsigned flags) THROWSPEC;
+NEDMALLOCDEPRECATED NEDMALLOCEXTSPEC NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedpmalloc2(nedpool *p, size_t size, size_t alignment, unsigned flags) THROWSPEC;
+NEDMALLOCDEPRECATED NEDMALLOCEXTSPEC NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void * nedprealloc2(nedpool *p, void *mem, size_t size, size_t alignment, unsigned flags) THROWSPEC;
 NEDMALLOCDEPRECATED NEDMALLOCEXTSPEC NEDMALLOCNOALIASATTR void   nedpfree2(nedpool *p, void *mem, unsigned flags) THROWSPEC;
 #endif
 /*! \brief Returns information about the memory pool */
@@ -668,7 +677,7 @@ NEDMALLOCEXTSPEC size_t nedpmalloc_footprint(nedpool *p) THROWSPEC;
     return first;
   }
 */
-NEDMALLOCEXTSPEC NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void **nedpindependent_calloc(nedpool *p, size_t elemsno, size_t elemsize, void **chunks) THROWSPEC;
+NEDMALLOCEXTSPEC NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void **nedpindependent_calloc(nedpool *p, size_t elemsno, size_t elemsize, void **chunks) THROWSPEC;
 /*! \brief Returns a series of guaranteed consecutive allocations.
 
   independent_comalloc allocates, all at once, a set of n_elements
@@ -727,7 +736,7 @@ NEDMALLOCEXTSPEC NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void **nedpindependent_ca
   since it cannot reuse existing noncontiguous small chunks that
   might be available for some of the elements.
 */
-NEDMALLOCEXTSPEC NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void **nedpindependent_comalloc(nedpool *p, size_t elems, size_t *sizes, void **chunks) THROWSPEC;
+NEDMALLOCEXTSPEC NEDMALLOCALLOCATOR NEDMALLOCNOALIASATTR NEDMALLOCPTRATTR void **nedpindependent_comalloc(nedpool *p, size_t elems, size_t *sizes, void **chunks) THROWSPEC;
 
 #if defined(__cplusplus)
 } /* namespace or extern "C" */
@@ -1038,7 +1047,7 @@ policies...
 #endif
 		> &) { }
 
-		T *allocate(const size_t n) const {
+		NEDMALLOCALLOCATOR T *allocate(const size_t n) const {
 			// Leave these spelled out to aid debugging
 			const size_t t_size = sizeof(T);
 			size_t size = _this()->policy_granularity(n*t_size);
@@ -1053,7 +1062,7 @@ policies...
 		void deallocate(T *p, const size_t n) const {
 			nedpfree(0/*not needed*/, p);
 		}
-		template<typename U> T *allocate(const size_t n, const U * /* hint */) const {
+		template<typename U> NEDMALLOCALLOCATOR T *allocate(const size_t n, const U * /* hint */) const {
 			return allocate(n);
 		}
 	private:
@@ -1396,13 +1405,13 @@ template<typename T, class allocator> inline T *New()
 }
 #ifndef HAVE_CPP0XVARIADICTEMPLATES
 // Extremely annoying not to have default template arguments for functions pre-C++0x
-template<typename T> inline T *New()
+template<typename T> inline NEDMALLOCALLOCATOR T *New()
 {
 	return New<T, nedallocator<T> >();
 }
 // Also, it's painful to replicate function overloads :(
 #define NEDMALLOC_NEWIMPL \
-template<typename T, class allocator, NEDMALLOC_NEWIMPLTYPES> inline T *New(NEDMALLOC_NEWIMPLPARSDEFS) \
+template<typename T, class allocator, NEDMALLOC_NEWIMPLTYPES> inline NEDMALLOCALLOCATOR T *New(NEDMALLOC_NEWIMPLPARSDEFS) \
 { \
 	allocator &a=nedallocatorI::StaticAllocator<allocator>::get(); \
 	nedallocatorI::PtrHolder<T, allocator> ret(a.allocate(sizeof(T))); \
@@ -1412,7 +1421,7 @@ template<typename T, class allocator, NEDMALLOC_NEWIMPLTYPES> inline T *New(NEDM
 	} \
 	return ret.release(); \
 } \
-template<typename T, NEDMALLOC_NEWIMPLTYPES> inline T *New(NEDMALLOC_NEWIMPLPARSDEFS)\
+template<typename T, NEDMALLOC_NEWIMPLTYPES> inline NEDMALLOCALLOCATOR T *New(NEDMALLOC_NEWIMPLPARSDEFS)\
 { \
 	return New<T, nedallocator<T> >(NEDMALLOC_NEWIMPLPARS); \
 }

@@ -777,6 +777,17 @@ struct mallinfo {
 #endif /* NO_MALLINFO */
 
 /*
+  Tag functions as allocators for memory diagnostic tools
+*/
+#ifndef DECLSPEC_ALLOCATOR
+#if (_MSC_VER >= 1900)
+#define DECLSPEC_ALLOCATOR __declspec(allocator)
+#else
+#define DECLSPEC_ALLOCATOR
+#endif
+#endif
+
+/*
   Try to persuade compilers to inline. The most critical functions for
   inlining are defined as macros, so these aren't used for them.
 */
@@ -846,7 +857,7 @@ extern "C" {
   maximum supported value of n differs across systems, but is in all
   cases less than the maximum representable value of a size_t.
 */
-void* dlmalloc(size_t);
+DECLSPEC_ALLOCATOR void* dlmalloc(size_t);
 
 /*
   free(void* p)
@@ -862,7 +873,7 @@ void  dlfree(void*);
   Returns a pointer to n_elements * element_size bytes, with all locations
   set to zero.
 */
-void* dlcalloc(size_t, size_t);
+DECLSPEC_ALLOCATOR void* dlcalloc(size_t, size_t);
 
 /*
   realloc(void* p, size_t n)
@@ -887,7 +898,7 @@ void* dlcalloc(size_t, size_t);
   to be used as an argument to realloc is not supported.
 */
 
-void* dlrealloc(void*, size_t);
+DECLSPEC_ALLOCATOR void* dlrealloc(void*, size_t);
 
 /*
   memalign(size_t alignment, size_t n);
@@ -901,14 +912,14 @@ void* dlrealloc(void*, size_t);
 
   Overreliance on memalign is a sure way to fragment space.
 */
-void* dlmemalign(size_t, size_t);
+DECLSPEC_ALLOCATOR void* dlmemalign(size_t, size_t);
 
 /*
   valloc(size_t n);
   Equivalent to memalign(pagesize, n), where pagesize is the page
   size of the system. If the pagesize is unknown, 4096 is used.
 */
-void* dlvalloc(size_t);
+DECLSPEC_ALLOCATOR void* dlvalloc(size_t);
 
 /*
   mallopt(int parameter_number, int parameter_value)
@@ -1036,7 +1047,7 @@ struct mallinfo dlmallinfo(void);
     return first;
   }
 */
-void** dlindependent_calloc(size_t, size_t, void**);
+DECLSPEC_ALLOCATOR void** dlindependent_calloc(size_t, size_t, void**);
 
 /*
   independent_comalloc(size_t n_elements, size_t sizes[], void* chunks[]);
@@ -1097,7 +1108,7 @@ void** dlindependent_calloc(size_t, size_t, void**);
   since it cannot reuse existing noncontiguous small chunks that
   might be available for some of the elements.
 */
-void** dlindependent_comalloc(size_t, size_t*, void**);
+DECLSPEC_ALLOCATOR void** dlindependent_comalloc(size_t, size_t*, void**);
 
 
 /*
@@ -1105,7 +1116,7 @@ void** dlindependent_comalloc(size_t, size_t*, void**);
   Equivalent to valloc(minimum-page-that-holds(n)), that is,
   round up n to nearest pagesize.
  */
-void*  dlpvalloc(size_t);
+DECLSPEC_ALLOCATOR void*  dlpvalloc(size_t);
 
 /*
   malloc_trim(size_t pad);
@@ -1228,7 +1239,7 @@ int mspace_track_large_chunks(mspace msp, int enable);
   mspace_malloc behaves as malloc, but operates within
   the given space.
 */
-void* mspace_malloc(mspace msp, size_t bytes);
+DECLSPEC_ALLOCATOR void* mspace_malloc(mspace msp, size_t bytes);
 
 /*
   mspace_free behaves as free, but operates within
@@ -1249,32 +1260,32 @@ void mspace_free(mspace msp, void* mem);
   realloced chunks from any space are handled by their originating
   spaces.
 */
-void* mspace_realloc(mspace msp, void* mem, size_t newsize);
+DECLSPEC_ALLOCATOR void* mspace_realloc(mspace msp, void* mem, size_t newsize);
 
 /*
   mspace_calloc behaves as calloc, but operates within
   the given space.
 */
-void* mspace_calloc(mspace msp, size_t n_elements, size_t elem_size);
+DECLSPEC_ALLOCATOR void* mspace_calloc(mspace msp, size_t n_elements, size_t elem_size);
 
 /*
   mspace_memalign behaves as memalign, but operates within
   the given space.
 */
-void* mspace_memalign(mspace msp, size_t alignment, size_t bytes);
+DECLSPEC_ALLOCATOR void* mspace_memalign(mspace msp, size_t alignment, size_t bytes);
 
 /*
   mspace_independent_calloc behaves as independent_calloc, but
   operates within the given space.
 */
-void** mspace_independent_calloc(mspace msp, size_t n_elements,
+DECLSPEC_ALLOCATOR void** mspace_independent_calloc(mspace msp, size_t n_elements,
                                  size_t elem_size, void* chunks[]);
 
 /*
   mspace_independent_comalloc behaves as independent_comalloc, but
   operates within the given space.
 */
-void** mspace_independent_comalloc(mspace msp, size_t n_elements,
+DECLSPEC_ALLOCATOR void** mspace_independent_comalloc(mspace msp, size_t n_elements,
                                    size_t sizes[], void* chunks[]);
 
 /*
@@ -1297,7 +1308,7 @@ void** mspace_independent_comalloc(mspace msp, size_t n_elements,
   Windows this costs 2Kb of kernel memory per Mb reserved, and as on
   x86 kernel memory is not abundant you should not be excessive.
 */
-void* mspace_malloc2(mspace msp, size_t bytes, size_t alignment, unsigned flags);
+DECLSPEC_ALLOCATOR void* mspace_malloc2(mspace msp, size_t bytes, size_t alignment, unsigned flags);
 
 /*
   mspace_realloc2 behaves as mspace_realloc, but provides additional
@@ -1331,7 +1342,7 @@ void* mspace_malloc2(mspace msp, size_t bytes, size_t alignment, unsigned flags)
   mmapped chunk has exceeded its reservation space and a new
   reservation space needs to be created.
 */
-void* mspace_realloc2(mspace msp, void* mem, size_t newsize, size_t alignment, unsigned flags);
+DECLSPEC_ALLOCATOR void* mspace_realloc2(mspace msp, void* mem, size_t newsize, size_t alignment, unsigned flags);
 
 /*
   mspace_footprint() returns the number of bytes obtained from the
@@ -4080,7 +4091,7 @@ static void* mspace_malloc_implementation(mstate ms, size_t bytes, unsigned flag
 */
 
 /* Malloc using mmap */
-static void* mmap_alloc(mstate m, size_t nb, unsigned flags) {
+static DECLSPEC_ALLOCATOR void* mmap_alloc(mstate m, size_t nb, unsigned flags) {
   size_t mmsize = mmap_align_size(nb + SEVEN_SIZE_T_SIZES + CHUNK_ALIGN_MASK);
   if (mmsize > nb) {     /* Check for wrap around 0 */
     void* mmaph = 0;
@@ -4109,7 +4120,7 @@ static void* mmap_alloc(mstate m, size_t nb, unsigned flags) {
 }
 
 /* Realloc using mmap */
-static mchunkptr mmap_resize(mstate m, mchunkptr oldp, size_t nb, unsigned flags) {
+static mchunkptr DECLSPEC_ALLOCATOR mmap_resize(mstate m, mchunkptr oldp, size_t nb, unsigned flags) {
   size_t oldsize = chunksize(oldp);
   if (is_small(nb)) /* Can't shrink mmap regions below small size */
     return 0;
@@ -4191,7 +4202,7 @@ static void reset_on_error(mstate m) {
 #endif /* PROCEED_ON_ERROR */
 
 /* Allocate chunk and prepend remainder with chunk in successor base. */
-static void* prepend_alloc(mstate m, char* newbase, char* oldbase,
+static DECLSPEC_ALLOCATOR void* prepend_alloc(mstate m, char* newbase, char* oldbase,
                            size_t nb) {
   mchunkptr p = align_as_chunk(newbase);
   mchunkptr oldfirst = align_as_chunk(oldbase);
@@ -4288,7 +4299,7 @@ static void add_segment(mstate m, char* tbase, size_t tsize, flag_t mmapped) {
 /* -------------------------- System allocation -------------------------- */
 
 /* Get memory from system using MORECORE or MMAP */
-static void* sys_alloc(mstate m, size_t nb, unsigned flags) {
+static DECLSPEC_ALLOCATOR void* sys_alloc(mstate m, size_t nb, unsigned flags) {
   char* tbase = CMFAIL;
   size_t tsize = 0;
   flag_t mmap_flag = 0;
@@ -4606,7 +4617,7 @@ static int sys_trim(mstate m, size_t pad) {
 /* ---------------------------- malloc support --------------------------- */
 
 /* allocate a large request from the best fitting chunk in a treebin */
-static void* tmalloc_large(mstate m, size_t nb) {
+static DECLSPEC_ALLOCATOR void* tmalloc_large(mstate m, size_t nb) {
   tchunkptr v = 0;
   size_t rsize = -nb; /* Unsigned negation */
   tchunkptr t;
@@ -4677,7 +4688,7 @@ static void* tmalloc_large(mstate m, size_t nb) {
 }
 
 /* allocate a small request from the best fitting chunk in a treebin */
-static void* tmalloc_small(mstate m, size_t nb) {
+static DECLSPEC_ALLOCATOR void* tmalloc_small(mstate m, size_t nb) {
   tchunkptr t, v;
   size_t rsize;
   bindex_t i;
@@ -4715,9 +4726,9 @@ static void* tmalloc_small(mstate m, size_t nb) {
 }
 
 /* --------------------------- realloc support --------------------------- */
-static void* internal_memalign(mstate m, size_t alignment, size_t bytes, unsigned flags);
+static DECLSPEC_ALLOCATOR void* internal_memalign(mstate m, size_t alignment, size_t bytes, unsigned flags);
 
-static void* internal_realloc(mstate m, void* oldmem, size_t bytes, size_t alignment, unsigned flags) {
+static DECLSPEC_ALLOCATOR void* internal_realloc(mstate m, void* oldmem, size_t bytes, size_t alignment, unsigned flags) {
   if (bytes >= MAX_REQUEST) {
     MALLOC_FAILURE_ACTION;
     return 0;
@@ -4794,7 +4805,7 @@ static void* internal_realloc(mstate m, void* oldmem, size_t bytes, size_t align
 
 /* --------------------------- memalign support -------------------------- */
 
-static void* internal_memalign(mstate m, size_t alignment, size_t bytes, unsigned flags) {
+static DECLSPEC_ALLOCATOR void* internal_memalign(mstate m, size_t alignment, size_t bytes, unsigned flags) {
   if (alignment <= MALLOC_ALIGNMENT)    /* Can just use malloc */
     return internal_malloc(m, bytes, flags);
   if (alignment <  MIN_CHUNK_SIZE) /* must be at least a minimum chunk size */
@@ -4881,7 +4892,7 @@ static void* internal_memalign(mstate m, size_t alignment, size_t bytes, unsigne
 
 /* ------------------------ comalloc/coalloc support --------------------- */
 
-static void** ialloc(mstate m,
+static DECLSPEC_ALLOCATOR void** ialloc(mstate m,
                      size_t n_elements,
                      size_t* sizes,
                      int opts,
@@ -5013,7 +5024,7 @@ static void** ialloc(mstate m,
 
 #if !ONLY_MSPACES
 
-void* dlmalloc(size_t bytes) {
+DECLSPEC_ALLOCATOR void* dlmalloc(size_t bytes) {
   /*
      Basic algorithm:
      If a small request (< 256 bytes minus per-chunk overhead):
@@ -5259,7 +5270,7 @@ void dlfree(void* mem) {
 #endif /* FOOTERS */
 }
 
-void* dlcalloc(size_t n_elements, size_t elem_size) {
+DECLSPEC_ALLOCATOR void* dlcalloc(size_t n_elements, size_t elem_size) {
   void* mem;
   size_t req = 0;
   if (n_elements != 0) {
@@ -5274,7 +5285,7 @@ void* dlcalloc(size_t n_elements, size_t elem_size) {
   return mem;
 }
 
-void* dlrealloc(void* oldmem, size_t bytes) {
+DECLSPEC_ALLOCATOR void* dlrealloc(void* oldmem, size_t bytes) {
   if (oldmem == 0)
     return dlmalloc(bytes);
 #ifdef REALLOC_ZERO_BYTES_FREES
@@ -5297,29 +5308,29 @@ void* dlrealloc(void* oldmem, size_t bytes) {
   }
 }
 
-void* dlmemalign(size_t alignment, size_t bytes) {
+DECLSPEC_ALLOCATOR void* dlmemalign(size_t alignment, size_t bytes) {
   return internal_memalign(gm, alignment, bytes);
 }
 
-void** dlindependent_calloc(size_t n_elements, size_t elem_size,
+DECLSPEC_ALLOCATOR void** dlindependent_calloc(size_t n_elements, size_t elem_size,
                                  void* chunks[]) {
   size_t sz = elem_size; /* serves as 1-element array */
   return ialloc(gm, n_elements, &sz, 3, chunks);
 }
 
-void** dlindependent_comalloc(size_t n_elements, size_t sizes[],
+DECLSPEC_ALLOCATOR void** dlindependent_comalloc(size_t n_elements, size_t sizes[],
                                    void* chunks[]) {
   return ialloc(gm, n_elements, sizes, 0, chunks);
 }
 
-void* dlvalloc(size_t bytes) {
+DECLSPEC_ALLOCATOR void* dlvalloc(size_t bytes) {
   size_t pagesz;
   ensure_initialization();
   pagesz = mparams.page_size;
   return dlmemalign(pagesz, bytes);
 }
 
-void* dlpvalloc(size_t bytes) {
+DECLSPEC_ALLOCATOR void* dlpvalloc(size_t bytes) {
   size_t pagesz;
   ensure_initialization();
   pagesz = mparams.page_size;
@@ -5471,7 +5482,7 @@ size_t destroy_mspace(mspace msp) {
   versions. This is not so nice but better than the alternatives.
 */
 
-static FORCEINLINE void* mspace_malloc_implementation(mstate ms, size_t bytes, unsigned flags) {
+static FORCEINLINE DECLSPEC_ALLOCATOR void* mspace_malloc_implementation(mstate ms, size_t bytes, unsigned flags) {
   if (!PREACTION(ms)) {
     void* mem;
     size_t nb = bytes;
@@ -5581,7 +5592,7 @@ static FORCEINLINE void* mspace_malloc_implementation(mstate ms, size_t bytes, u
 
   return 0;
 }
-void* mspace_malloc(mspace msp, size_t bytes) {
+DECLSPEC_ALLOCATOR void* mspace_malloc(mspace msp, size_t bytes) {
   mstate ms = (mstate)msp;
   if (!ok_magic(ms)) {
     USAGE_ERROR_ACTION(ms,ms);
@@ -5589,7 +5600,7 @@ void* mspace_malloc(mspace msp, size_t bytes) {
   }
   return mspace_malloc_implementation(ms, bytes, 0);
 }
-void* mspace_malloc2(mspace msp, size_t bytes, size_t alignment, unsigned flags) {
+DECLSPEC_ALLOCATOR void* mspace_malloc2(mspace msp, size_t bytes, size_t alignment, unsigned flags) {
   void* mem;
   mstate ms = (mstate)msp;
   if (!ok_magic(ms)) {
@@ -5710,7 +5721,7 @@ void mspace_free(mspace msp, void* mem) {
   }
 }
 
-void* mspace_calloc(mspace msp, size_t n_elements, size_t elem_size) {
+DECLSPEC_ALLOCATOR void* mspace_calloc(mspace msp, size_t n_elements, size_t elem_size) {
   void* mem;
   size_t req = 0;
   mstate ms = (mstate)msp;
@@ -5733,7 +5744,7 @@ void* mspace_calloc(mspace msp, size_t n_elements, size_t elem_size) {
   return mem;
 }
 
-void* mspace_realloc2(mspace msp, void* oldmem, size_t bytes, size_t alignment, unsigned flags) {
+DECLSPEC_ALLOCATOR void* mspace_realloc2(mspace msp, void* oldmem, size_t bytes, size_t alignment, unsigned flags) {
   if (oldmem == 0)
     return mspace_malloc2(msp, bytes, alignment, flags);
 #ifdef REALLOC_ZERO_BYTES_FREES
@@ -5766,11 +5777,11 @@ void* mspace_realloc2(mspace msp, void* oldmem, size_t bytes, size_t alignment, 
     return mem;
   }
 }
-void* mspace_realloc(mspace msp, void* oldmem, size_t bytes) {
+DECLSPEC_ALLOCATOR void* mspace_realloc(mspace msp, void* oldmem, size_t bytes) {
   return mspace_realloc2(msp, oldmem, bytes, 0, 0);
 }
 
-void* mspace_memalign(mspace msp, size_t alignment, size_t bytes) {
+DECLSPEC_ALLOCATOR void* mspace_memalign(mspace msp, size_t alignment, size_t bytes) {
   mstate ms = (mstate)msp;
   if (!ok_magic(ms)) {
     USAGE_ERROR_ACTION(ms,ms);
@@ -5779,7 +5790,7 @@ void* mspace_memalign(mspace msp, size_t alignment, size_t bytes) {
   return internal_memalign(ms, alignment, bytes, 0);
 }
 
-void** mspace_independent_calloc(mspace msp, size_t n_elements,
+DECLSPEC_ALLOCATOR void** mspace_independent_calloc(mspace msp, size_t n_elements,
                                  size_t elem_size, void* chunks[]) {
   size_t sz = elem_size; /* serves as 1-element array */
   mstate ms = (mstate)msp;
@@ -5790,7 +5801,7 @@ void** mspace_independent_calloc(mspace msp, size_t n_elements,
   return ialloc(ms, n_elements, &sz, 3, chunks);
 }
 
-void** mspace_independent_comalloc(mspace msp, size_t n_elements,
+DECLSPEC_ALLOCATOR void** mspace_independent_comalloc(mspace msp, size_t n_elements,
                                    size_t sizes[], void* chunks[]) {
   mstate ms = (mstate)msp;
   if (!ok_magic(ms)) {
