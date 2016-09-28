@@ -39,7 +39,7 @@ namespace Epic
 	}
 
 	using DefaultGuardPattern = 
-		std::integral_constant<size_t,
+		TMP::Literal<size_t,
 			(sizeof(size_t) == 2) ? 0xDEAD :
 			(sizeof(size_t) == 4) ? 0xDEADC0DE : 
 									0xDEADC0DEDEADC0DE

@@ -30,16 +30,16 @@ namespace Epic::TMP
 	/// FloorPowerOf2<N> : value = the largest power of 2 that is <= N
 	template<size_t N>
 	struct FloorPowerOf2
-		: std::integral_constant<size_t, FloorPowerOf2<N / 2>::value * 2> { };
+		: TMP::Literal<size_t, FloorPowerOf2<N / 2>::value * 2> { };
 
-	template<> struct FloorPowerOf2<1> : std::integral_constant<size_t, 1> { };
-	template<> struct FloorPowerOf2<0> : std::integral_constant<size_t, 0> { };
+	template<> struct FloorPowerOf2<1> : TMP::Literal<size_t, 1> { };
+	template<> struct FloorPowerOf2<0> : TMP::Literal<size_t, 0> { };
 
 
 	/// CeilPowerOf2<N> : value = the smallest power of 2 that is >= N
 	template<size_t N>
 	struct CeilPowerOf2
-		: std::integral_constant<size_t, IsPowerOf2<N>::value ? N : FloorPowerOf2<N>::value * 2> { };
+		: TMP::Literal<size_t, IsPowerOf2<N>::value ? N : FloorPowerOf2<N>::value * 2> { };
 
-	template<> struct CeilPowerOf2<0> : std::integral_constant<size_t, 1> { };
+	template<> struct CeilPowerOf2<0> : TMP::Literal<size_t, 1> { };
 }

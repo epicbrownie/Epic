@@ -15,6 +15,7 @@
 
 #include <Epic/Memory/SegregatorAllocator.hpp>
 #include <Epic/Memory/SegregatorBucket.hpp>
+#include <Epic/TMP/Utility.hpp>
 #include <type_traits>
 
 //////////////////////////////////////////////////////////////////////////////
@@ -25,13 +26,13 @@ namespace Epic::detail
 	struct LinearSegregatorAllocatorBuilder;
 
 	template<size_t T, class S, class L>
-	struct LinearSegregatorAllocatorBuilder<std::integral_constant<size_t, T>, S, L>
+	struct LinearSegregatorAllocatorBuilder<TMP::Literal<size_t, T>, S, L>
 	{
 		using Type = typename Epic::SegregatorAllocator<T, S, L>;
 	};
 
 	template<size_t T, class S, typename... Args>
-	struct LinearSegregatorAllocatorBuilder<std::integral_constant<size_t, T>, S, Args...>
+	struct LinearSegregatorAllocatorBuilder<TMP::Literal<size_t, T>, S, Args...>
 	{
 		using Type = typename Epic::SegregatorAllocator<T, S, typename LinearSegregatorAllocatorBuilder<Args...>::Type>;
 	};
