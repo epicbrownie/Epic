@@ -531,8 +531,11 @@ protected:
 		/* m_Allocator can be moved without locking since it's only used for preallocation. */
 		/* m_Heap requires a lock to move to ensure the heap pointer is never torn during a read. */
 
-		std::lock_guard<MutexType> lock(obj.m_Mutex);
-		std::swap(m_Heap, obj.m_Heap);
+		{	/* CS */
+			std::lock_guard<MutexType> lock(obj.m_Mutex);
+
+			std::swap(m_Heap, obj.m_Heap);
+		}
 	}
 
 	LinearHeapPolicyImpl& operator = (const Type&) = delete;
@@ -562,13 +565,15 @@ protected:
 public:
 	constexpr bool Owns(const Blk& blk) const noexcept
 	{
+		/* m_Heap is never changed in a shared context, so no lock is required. */
 		return m_Heap && (blk.Ptr >= m_Heap.Ptr && blk.Ptr < GetBlockPointer(BlkCnt));
 	}
 
 	Blk Allocate(size_t sz) noexcept
 	{
-		std::lock_guard<MutexType> lock(m_Mutex);
-		{
+		{	/* CS */
+			std::lock_guard<MutexType> lock(m_Mutex);
+			
 			// Verify heap memory
 			if (!m_Heap) return{ nullptr, 0 };
 
@@ -590,8 +595,9 @@ public:
 
 	bool Reallocate(Blk& blk, size_t sz)
 	{
-		std::lock_guard<MutexType> lock(m_Mutex);
-		{
+		{	/* CS */
+			std::lock_guard<MutexType> lock(m_Mutex);
+			
 			assert(Owns(blk) && "LinearHeapInternalStoragePolicy::Reallocate - Attempted to reallocate a block that was not allocated by this allocator");
 
 			auto pBitmap = GetBitmapPointer();
@@ -638,8 +644,9 @@ public:
 	{
 		if (!blk) return;
 
-		std::lock_guard<MutexType> lock(m_Mutex);
-		{
+		{	/* CS */
+			std::lock_guard<MutexType> lock(m_Mutex);
+			
 			if (!m_Heap) return;
 
 			assert(Owns(blk) && "LinearHeapInternalStoragePolicy::Deallocate - Attempted to free a block that was not allocated by this allocator");
@@ -654,8 +661,9 @@ public:
 
 	void DeallocateAll() noexcept
 	{
-		std::lock_guard<MutexType> lock(m_Mutex);
-		{
+		{	/* CS */
+			std::lock_guard<MutexType> lock(m_Mutex);
+		
 			if (!m_Heap) return;
 
 			auto pBitmap = GetBitmapPointer();

@@ -49,6 +49,8 @@ namespace Epic::detail
 
 namespace Epic::detail
 {
+	//	TODO: 'if constexpr' should eventually remove MOST uses of these.
+	
 	template<class T, bool Enabled = Epic::detail::CanAllocate<T>::value>
 	struct AllocateIf;
 
