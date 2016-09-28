@@ -27,7 +27,7 @@ namespace Epic::detail
 {
 	// Bucket List Filter
 	template<template<typename> class Pred, typename T, typename U>
-	using SegBucketListFilterHelper = typename std::conditional<Pred<U>::value, TMP::List<T>, TMP::List<>>::Type;
+	using SegBucketListFilterHelper = typename std::conditional<Pred<U>::value, TMP::List<T>, TMP::List<>>::type;
 
 	template<template<typename> class Pred, typename Is, typename... Ts>
 	struct SegBucketListFilter;
