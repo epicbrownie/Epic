@@ -34,17 +34,25 @@ namespace Epic::TMP
 
 namespace Epic::TMP
 {
-	/// GenIndexSequence<I> - Generates a List<> containing std::integral_constant<size_t> types from 0..I.
+	template<typename T, T N>
+	using Literal = std::integral_constant<T, N>;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+namespace Epic::TMP
+{
+	/// GenIndexSequence<I> - Generates a List<> containing Literal<size_t> types from 0..I.
 	template<size_t I>
 	struct GenIndexSequence
 	{
-		using Type = typename Concat<typename GenIndexSequence<I - 1>::Type, List<std::integral_constant<size_t, I>>>::Type;
+		using Type = typename Concat<typename GenIndexSequence<I - 1>::Type, List<TMP::Literal<size_t, I>>>::Type;
 	};
 
 	template<> 
 	struct GenIndexSequence<0>
 	{
-		using Type = List<std::integral_constant<size_t, 0>>;
+		using Type = List<TMP::Literal<size_t, 0>>;
 	};
 	
 
@@ -87,15 +95,4 @@ namespace Epic::TMP
 	{
 		static constexpr size_t value = (V1 > StaticMax<Vs...>::value) ? V1 : StaticMax<Vs...>::value;
 	};
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
-namespace Epic::TMP
-{
-	template<typename T, T N>
-	using Literal = std::integral_constant<T, N>;
-
-	template<size_t N>
-	using Sz = Literal<size_t, N>;
 }
