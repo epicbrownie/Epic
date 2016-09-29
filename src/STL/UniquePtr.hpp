@@ -38,7 +38,7 @@ struct Epic::detail::Deleter
 	Deleter(size_t extent) noexcept
 		: m_Extent{ extent } { }
 	
-	template<typename T>
+	template<class T>
 	void operator() (T* p)
 	{
 		if (m_Extent == 0) return;
@@ -60,8 +60,8 @@ namespace Epic
 {
 	/// MakeUnique<T, A, Args...>
 	template<class T, class A = Epic::DefaultAllocatorFor<T, Epic::eAllocatorFor::UniquePtr>, class... Args>
-	inline typename std::enable_if_t<!std::is_array<T>::value, 
-		std::unique_ptr<T, Epic::detail::Deleter<A>>>
+	inline typename std::enable_if<!std::is_array<T>::value, 
+		std::unique_ptr<T, Epic::detail::Deleter<A>>>::type
 	MakeUnique(Args&&... args)
 	{
 		using AllocatorType = Epic::STLAllocator<T, A>;
@@ -87,8 +87,8 @@ namespace Epic
 
 	/// MakeUnique<T[], A>
 	template<class T, class A = Epic::DefaultAllocatorFor<T, Epic::eAllocatorFor::UniquePtr>> 
-	inline typename std::enable_if_t<std::is_array<T>::value && std::extent<T>::value == 0, 
-		std::unique_ptr<T, Epic::detail::Deleter<A>>>
+	inline typename std::enable_if<std::is_array<T>::value && std::extent<T>::value == 0, 
+		std::unique_ptr<T, Epic::detail::Deleter<A>>>::type
 	MakeUnique(size_t Count)
 	{
 		using Elem = std::remove_extent_t<T>;
@@ -121,6 +121,38 @@ namespace Epic
 
 	/// MakeUnique<T, Types...>
 	template<class T, class... Types>
-	typename std::enable_if_t<std::extent<T>::value != 0, struct MakeUnique_Cannot_Create_Array_With_Extent>
+	typename std::enable_if<std::extent<T>::value != 0, struct MakeUnique_Cannot_Create_Array_With_Extent>::type
 	MakeUnique(Types...) = delete;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+namespace Epic
+{
+	/// MakeImpl<B, D, A, Args...>
+	template<class B, class D, class A = Epic::DefaultAllocatorFor<D, Epic::eAllocatorFor::UniquePtr>, class... Args>
+	inline typename std::enable_if<!std::is_array<B>::value, 
+		std::unique_ptr<B, Epic::detail::Deleter<A>>>::type
+	MakeImpl(Args&&... args)
+	{
+		using AllocatorType = Epic::STLAllocator<D, A>;
+		AllocatorType allocator;
+
+		// Use the allocator to create a D
+		D* pObject = allocator.allocate(1);
+
+		// Attempt to construct the D
+		try
+		{
+			allocator.construct(pObject, std::forward<Args>(args)...);
+		}
+		catch (...)
+		{
+			allocator.deallocate(pObject, 1);
+			throw;
+		}
+
+		// Construct the unique_ptr
+		return std::unique_ptr<B, detail::Deleter<A>>{ pObject, { 1 } };
+	}
 }
