@@ -119,7 +119,7 @@ namespace Epic::detail
 	};
 
 	template<size_t T, class A, typename... Args>
-	struct MakeSegregatorBucketList<std::integral_constant<size_t, T>, A, Args...>
+	struct MakeSegregatorBucketList<TMP::Literal<size_t, T>, A, Args...>
 	{
 		using Type = typename TMP::Concat<
 			TMP::List<SegregatorBucket<T, A>>, 
