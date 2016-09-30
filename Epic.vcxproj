@@ -19,6 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\AutoList.hpp" />
+    <ClInclude Include="src\AutoMap.hpp" />
     <ClInclude Include="src\Config.hpp" />
     <ClInclude Include="src\detail\ReadConfig.hpp" />
     <ClInclude Include="src\Ext\Erase.hpp" />
