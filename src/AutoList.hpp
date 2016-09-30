@@ -107,13 +107,13 @@ public:
 		}
 	}
 
-	// Acquire an iterator to the beginning of the instance list.
+	// Acquire an iterator to the beginning of the instance list. (Unsynchronized) 
 	static inline auto InstancesBegin() noexcept
 	{
 		return ListStore::Begin();
 	}
 
-	// Acquire an iterator to one element past the end of the instance list.
+	// Acquire an iterator to one element past the end of the instance list. (Unsynchronized)
 	static inline auto InstancesEnd() noexcept
 	{
 		return ListStore::End();
