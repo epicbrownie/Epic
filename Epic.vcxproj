@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\AppLock.h" />
     <ClInclude Include="src\AutoList.hpp" />
     <ClInclude Include="src\AutoMap.hpp" />
     <ClInclude Include="src\Config.hpp" />
@@ -78,6 +79,7 @@
     <ClInclude Include="src\TMP\VariadicContains.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\AppLock.cpp" />
     <ClCompile Include="src\Memory\AlignedMallocator.cpp" />
     <ClCompile Include="src\Memory\Mallocator.cpp" />
     <ClCompile Include="src\Memory\NullAllocator.cpp" />

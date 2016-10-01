@@ -206,6 +206,9 @@
     <ClInclude Include="src\AutoList.hpp">
       <Filter>Utility</Filter>
     </ClInclude>
+    <ClInclude Include="src\AppLock.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Memory\NullAllocator.cpp">
@@ -216,6 +219,9 @@
     </ClCompile>
     <ClCompile Include="src\Memory\AlignedMallocator.cpp">
       <Filter>Memory\Allocators - Simple</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AppLock.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

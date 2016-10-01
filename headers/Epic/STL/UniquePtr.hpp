@@ -28,12 +28,21 @@ namespace Epic::detail
 
 //////////////////////////////////////////////////////////////////////////////
 
+namespace Epic
+{
+	template<class T, class A = Epic::DefaultAllocatorFor<T, Epic::eAllocatorFor::UniquePtr>>
+	using UniquePtr = std::unique_ptr<T, Epic::detail::Deleter<A>>;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
 template<class A>
 struct Epic::detail::Deleter
 {
 	size_t m_Extent;
 
-	Deleter() = delete;
+	Deleter() noexcept
+		: m_Extent{ 0 } { }
 
 	Deleter(size_t extent) noexcept
 		: m_Extent{ extent } { }
@@ -41,7 +50,7 @@ struct Epic::detail::Deleter
 	template<class T>
 	void operator() (T* p)
 	{
-		if (m_Extent == 0) return;
+		assert(m_Extent > 0);
 
 		Epic::STLAllocator<T, A> allocator;
 		
@@ -61,7 +70,7 @@ namespace Epic
 	/// MakeUnique<T, A, Args...>
 	template<class T, class A = Epic::DefaultAllocatorFor<T, Epic::eAllocatorFor::UniquePtr>, class... Args>
 	inline typename std::enable_if<!std::is_array<T>::value, 
-		std::unique_ptr<T, Epic::detail::Deleter<A>>>::type
+		Epic::UniquePtr<T, A>>::type
 	MakeUnique(Args&&... args)
 	{
 		using AllocatorType = Epic::STLAllocator<T, A>;
@@ -88,7 +97,7 @@ namespace Epic
 	/// MakeUnique<T[], A>
 	template<class T, class A = Epic::DefaultAllocatorFor<T, Epic::eAllocatorFor::UniquePtr>> 
 	inline typename std::enable_if<std::is_array<T>::value && std::extent<T>::value == 0, 
-		std::unique_ptr<T, Epic::detail::Deleter<A>>>::type
+		Epic::UniquePtr<T, A>>::type
 	MakeUnique(size_t Count)
 	{
 		using Elem = std::remove_extent_t<T>;
@@ -132,7 +141,7 @@ namespace Epic
 	/// MakeImpl<B, D, A, Args...>
 	template<class B, class D, class A = Epic::DefaultAllocatorFor<D, Epic::eAllocatorFor::UniquePtr>, class... Args>
 	inline typename std::enable_if<!std::is_array<B>::value, 
-		std::unique_ptr<B, Epic::detail::Deleter<A>>>::type
+		Epic::UniquePtr<B, A>>::type
 	MakeImpl(Args&&... args)
 	{
 		using AllocatorType = Epic::STLAllocator<D, A>;
