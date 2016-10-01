@@ -26,7 +26,7 @@ namespace Epic
 	{
 		New, UniquePtr, SharedPtr,
 
-		String, WString,
+		String,
 
 		List,
 		ForwardList,
@@ -39,8 +39,7 @@ namespace Epic
 		MultiSet,
 		UnorderedSet,
 
-		StringStream, IStringStream, OStringStream,
-		WStringStream, WIStringStream, WOStringStream
+		StringStream, IStringStream, OStringStream
 	};
 }
 
