@@ -177,9 +177,9 @@ public:
 	}
 
 public:
-	Type select_on_container_copy_construction()
+	Type select_on_container_copy_construction() const
 	{
-		return m_Allocator;
+		return Type();
 	}
 };
 
