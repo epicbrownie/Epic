@@ -277,9 +277,13 @@ private:
 	}
 
 public:
-	constexpr bool Owns(const Blk& blk) const noexcept
+	const bool Owns(const Blk& blk) const noexcept
 	{
-		return m_Allocator.Owns(blk);
+		const char* pBlk = reinterpret_cast<const char*>(blk.Ptr);
+		const char* pHeapStart = reinterpret_cast<const char*>(m_Heap.Ptr);
+		const char* pHeapEnd = reinterpret_cast<const char*>(GetBlockPointer(0));
+
+		return (pBlk >= pHeapStart) && (pBlk < pHeapEnd);
 	}
 
 	Blk Allocate(size_t sz) noexcept
@@ -563,10 +567,14 @@ protected:
 	}
 
 public:
-	constexpr bool Owns(const Blk& blk) const noexcept
+	const bool Owns(const Blk& blk) const noexcept
 	{
 		/* m_Heap is never changed in a shared context, so no lock is required. */
-		return m_Heap && (blk.Ptr >= m_Heap.Ptr && blk.Ptr < GetBlockPointer(BlkCnt));
+		const char* pBlk = reinterpret_cast<const char*>(blk.Ptr);
+		const char* pHeapStart = reinterpret_cast<const char*>(m_Heap.Ptr);
+		const char* pHeapEnd = reinterpret_cast<const char*>(GetBlockPointer(BlkCnt));
+
+		return (pBlk >= pHeapStart) && (pBlk < pHeapEnd);
 	}
 
 	Blk Allocate(size_t sz) noexcept
