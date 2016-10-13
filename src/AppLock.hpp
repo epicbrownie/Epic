@@ -26,8 +26,15 @@ namespace Epic
 {
 	class AppLock;
 
-	struct SemaphoreCreationFailed;
+	struct SemaphoreCreationFailedException;
 }
+
+//////////////////////////////////////////////////////////////////////////////
+
+struct Epic::SemaphoreCreationFailedException : public std::runtime_error
+{
+	using std::runtime_error::runtime_error;
+};
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -36,12 +43,49 @@ class Epic::AppLock
 {
 public:
 	AppLock() = delete;
-	AppLock(const char* name, unsigned int allowedInstances = 1);
-
 	AppLock(const AppLock&) = delete;
 	AppLock(AppLock&&) = delete;
 
-	~AppLock();
+public:
+	AppLock(const char* name, unsigned int allowedInstances = 1) 
+	try : m_IOService{ },
+			m_Signals{ m_IOService },
+			m_IsLocked{ false },
+			m_Semaphore{ boost::interprocess::open_or_create, name, allowedInstances }
+	{
+		if (m_IsLocked = m_Semaphore.try_wait())
+		{
+			m_Signals.add(SIGINT);
+			m_Signals.add(SIGTERM);
+			m_Signals.add(SIGABRT_COMPAT);
+		
+			m_Signals.async_wait(
+				[&] (boost::system::error_code, int)
+				{
+					m_Semaphore.post();
+				});
+
+			m_pSignalListener = Epic::MakeUnique<std::thread>([&] { m_IOService.run(); });
+		}
+	}
+	catch (boost::interprocess::interprocess_exception&)
+	{
+		throw Epic::SemaphoreCreationFailedException("Failed to construct named semaphore.");
+	}
+	
+	~AppLock()
+	{
+		if (m_IsLocked)
+		{
+			m_IOService.post([&] { m_Signals.cancel(); });
+
+			if (m_pSignalListener)
+			{
+				m_pSignalListener->join();
+				m_pSignalListener.reset();
+			}
+		}
+	}
 
 	AppLock& operator = (const AppLock&) = delete;
 	AppLock& operator = (AppLock&&) = delete;
@@ -60,13 +104,3 @@ private:
 	bool m_IsLocked;
 };
 
-//////////////////////////////////////////////////////////////////////////////
-
-struct Epic::SemaphoreCreationFailed : public std::runtime_error
-{
-	explicit SemaphoreCreationFailed(const Epic::STLString<>& what) 
-		: std::runtime_error{ what.c_str() } { };
-	
-	explicit SemaphoreCreationFailed(const char* what) 
-		: std::runtime_error{ what } { };
-};
