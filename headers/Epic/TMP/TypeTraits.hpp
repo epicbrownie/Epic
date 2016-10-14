@@ -18,26 +18,25 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// HasMemberFn<>
 namespace Epic::TMP
 {
-	/*
-		IsValidExpr is used to determine whether or not Expr<T> is valid and evaluates to
-		the type R.
-	*/
+	/*	Derives from std::true_type if Expr<T> is valid and evaluates to the type R.  
+		Derives from std::false_type otherwise. */
 	
 	template<typename T, class R, template <typename> class Expr, typename = void>
-	struct IsValidExpr: std::false_type { };
+	struct IsValidExpr : std::false_type { };
 
 	template<typename T, class R, template <typename> class Expr>
 	struct IsValidExpr<T, R, Expr, std::void_t<Expr<T>>>
 		: std::is_same<R, Expr<T>> { };
+}
 
+//////////////////////////////////////////////////////////////////////////////
 
-	/*
-		Derives from std::true_type if Function(Args...) could be called and would result in
-		a type that is implicitly convertible to ReturnType.
-	*/
+namespace Epic::TMP
+{
+	/*	Derives from std::true_type if Function(Args...) could be called and would result in
+		a type that is implicitly convertible to ReturnType.  Derives from std::false_type otherwise. */
 
 	template<class Function, class Return, class Enable = void>
 	struct IsCallable : std::false_type { };
@@ -47,16 +46,19 @@ namespace Epic::TMP
 		std::void_t< decltype(std::declval<Function>() (std::declval<Ts>()...))> >
 		: std::is_convertible<decltype(std::declval<Function>() (std::declval<Ts>()...)), Return>
 	{ };
+}
 
+//////////////////////////////////////////////////////////////////////////////
 
-	/*
-		determines whether or not type U is explicitly convertible to T.
-		True if T(U&) is valid, but an implicit conversion to T from U is not.
-	*/
+namespace Epic::TMP
+{
+	/*	Derives from std::true_type if type U is explicitly convertible to T.
+		That is, if T(U&) is valid, but an implicit conversion to T from U is not.
+		Derives from std::false_type otherwise. */
 
 	template <class U, class T>
-	struct IsExplicitlyConvertible
-	{
-		static constexpr bool value = std::is_constructible<T, U>::value && !std::is_convertible<U, T>::value;
-	};
+	struct IsExplicitlyConvertible :
+		std::conditional_t<std::is_constructible<T, U>::value && !std::is_convertible<U, T>::value, 
+						   std::true_type, std::false_type>
+	{ };
 }

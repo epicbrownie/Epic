@@ -29,11 +29,14 @@
     <Filter Include="STL">
       <UniqueIdentifier>{8e8cfefe-fc1b-41e3-9fa9-70bc45a55cc9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="STL\detail">
-      <UniqueIdentifier>{876eeaa8-6834-4e80-81b5-c92c48141a6c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="detail">
       <UniqueIdentifier>{a2497ab7-a614-472f-87bd-eb400c31db6b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\EON">
+      <UniqueIdentifier>{84601a4c-a12d-447a-a463-b2c0e1372e18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\EON\detail">
+      <UniqueIdentifier>{5579b32b-784f-4af0-a23b-1d4d6288c11f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -142,9 +145,6 @@
     <ClInclude Include="src\Memory\detail\ForceAlignHelpers.hpp">
       <Filter>Memory\detail</Filter>
     </ClInclude>
-    <ClInclude Include="src\STL\detail\STLHelpers.hpp">
-      <Filter>STL\detail</Filter>
-    </ClInclude>
     <ClInclude Include="src\STL\Allocator.hpp">
       <Filter>STL</Filter>
     </ClInclude>
@@ -206,8 +206,32 @@
     <ClInclude Include="src\AutoList.hpp">
       <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="src\AppLock.h">
+    <ClInclude Include="src\EON\Types.hpp">
+      <Filter>Utility\EON</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\Grammar.hpp">
+      <Filter>Utility\EON</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\Bin.hpp">
+      <Filter>Utility\EON</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AppLock.hpp">
       <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\Convert.hpp">
+      <Filter>Utility\EON</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\Bind.hpp">
+      <Filter>Utility\EON</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\detail\Assign.hpp">
+      <Filter>Utility\EON\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\detail\Utility.hpp">
+      <Filter>Utility\EON\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\Selector.hpp">
+      <Filter>Utility\EON</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -219,9 +243,6 @@
     </ClCompile>
     <ClCompile Include="src\Memory\AlignedMallocator.cpp">
       <Filter>Memory\Allocators - Simple</Filter>
-    </ClCompile>
-    <ClCompile Include="src\AppLock.cpp">
-      <Filter>Utility</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

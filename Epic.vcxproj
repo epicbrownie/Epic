@@ -19,11 +19,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\AppLock.h" />
+    <ClInclude Include="src\AppLock.hpp" />
     <ClInclude Include="src\AutoList.hpp" />
     <ClInclude Include="src\AutoMap.hpp" />
     <ClInclude Include="src\Config.hpp" />
     <ClInclude Include="src\detail\ReadConfig.hpp" />
+    <ClInclude Include="src\EON\Bin.hpp" />
+    <ClInclude Include="src\EON\Bind.hpp" />
+    <ClInclude Include="src\EON\Convert.hpp" />
+    <ClInclude Include="src\EON\detail\Assign.hpp" />
+    <ClInclude Include="src\EON\detail\Utility.hpp" />
+    <ClInclude Include="src\EON\Grammar.hpp" />
+    <ClInclude Include="src\EON\Selector.hpp" />
+    <ClInclude Include="src\EON\Types.hpp" />
     <ClInclude Include="src\Ext\Erase.hpp" />
     <ClInclude Include="src\Memory\AffixAllocator.hpp" />
     <ClInclude Include="src\Memory\AlignedMallocator.hpp" />
@@ -57,7 +65,6 @@
     <ClInclude Include="src\NullMutex.hpp" />
     <ClInclude Include="src\Singleton.hpp" />
     <ClInclude Include="src\STL\Deque.hpp" />
-    <ClInclude Include="src\STL\detail\STLHelpers.hpp" />
     <ClInclude Include="src\STL\Allocator.hpp" />
     <ClInclude Include="src\STL\ForwardList.hpp" />
     <ClInclude Include="src\STL\List.hpp" />
@@ -79,7 +86,6 @@
     <ClInclude Include="src\TMP\VariadicContains.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\AppLock.cpp" />
     <ClCompile Include="src\Memory\AlignedMallocator.cpp" />
     <ClCompile Include="src\Memory\Mallocator.cpp" />
     <ClCompile Include="src\Memory\NullAllocator.cpp" />
