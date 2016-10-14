@@ -23,7 +23,7 @@
 
 namespace Epic::detail
 {
-	struct GlobalAllocatorTag;
+	struct GTag;
 
 	template<class A, class Tag>
 	struct GlobalAllocatorAdaptor;
@@ -140,7 +140,6 @@ public:
 	}
 };
 
-
 //////////////////////////////////////////////////////////////////////////////
 
 template<class A, class Tag>
@@ -161,6 +160,11 @@ struct Epic::detail::GlobalAllocatorAdaptor<Epic::detail::GlobalAllocatorImpl<A,
 
 namespace Epic
 {
+	namespace detail
+	{
+		using GlobalAllocatorTag = GTag;
+	}
+
 	template<class Allocator, class Tag = Epic::detail::GlobalAllocatorTag>
 	using GlobalAllocator = typename detail::GlobalAllocatorAdaptor<Allocator, Tag>::Type;
 }

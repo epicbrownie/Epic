@@ -15,8 +15,8 @@
 
 #include <Epic/Memory/detail/AllocatorTraits.hpp>
 #include <Epic/Memory/detail/AllocatorHelpers.hpp>
-#include <Epic/STL/detail/STLHelpers.hpp>
 #include <Epic/Memory/Default.hpp>
+#include <Epic/STL/Allocator.hpp>
 #include <cassert>
 #include <cstdint>
 #include <memory>

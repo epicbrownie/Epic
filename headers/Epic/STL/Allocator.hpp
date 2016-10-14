@@ -13,30 +13,43 @@
 
 #pragma once
 
+#include <Epic/Memory/GlobalAllocator.hpp>
+#include <Epic/Memory/AffixAllocator.hpp>
+#include <Epic/Memory/MemoryBlock.hpp>
 #include <Epic/Memory/detail/AllocatorHelpers.hpp>
-#include <Epic/STL/detail/STLHelpers.hpp>
 #include <cassert>
 #include <memory>
 #include <type_traits>
 
 //////////////////////////////////////////////////////////////////////////////
 
-namespace Epic::detail
+namespace Epic
 {
-	template<class T, class A>
-	class STLAllocatorImpl;
+	namespace detail
+	{
+		template<class T, class A>
+		class AllocI;
+
+		template<class A, class Tag>
+		struct AllocA;
+
+		struct AllocPre;
+	}
+
+	template<class Allocator, class Tag = detail::GlobalAllocatorTag>
+	struct AllocAdapted;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// STLAllocatorImpl<T, A>
+/// AllocI<T, A>
 template<class T, class A>
-class Epic::detail::STLAllocatorImpl
+class Epic::detail::AllocI
 {
 	static_assert(!std::is_const<T>::value, "The C++ Standard forbids containers of const elements.");
 	
 public:
-	using Type = Epic::detail::STLAllocatorImpl<T, A>;
+	using Type = Epic::detail::AllocI<T, A>;
 	using AllocatorType = A;
 
 public:
@@ -61,20 +74,20 @@ public:
 	template<class U>
 	struct rebind
 	{
-		using other = Epic::detail::STLAllocatorImpl<U, A>;
+		using other = Epic::detail::AllocI<U, A>;
 	};
 
 public:
-	STLAllocatorImpl() noexcept { }
+	AllocI() noexcept { }
 
-	STLAllocatorImpl(const Type& obj) noexcept { }
+	AllocI(const Type& obj) noexcept { }
 
 	template<class U>
-	STLAllocatorImpl(const STLAllocatorImpl<U, A>&) noexcept
+	AllocI(const AllocI<U, A>&) noexcept
 	{ /* m_Allocator should not be copied */ }
 
 	template<class U>
-	STLAllocatorImpl<T, A>& operator = (const STLAllocatorImpl<U, A>&) noexcept
+	AllocI<T, A>& operator = (const AllocI<U, A>&) noexcept
 	{
 		/* m_Allocator should not be copied */
 		return (*this);
@@ -183,12 +196,12 @@ public:
 	}
 };
 
-/// STLAllocatorImpl<void, A>
+/// AllocI<void, A>
 template<class A>
-class Epic::detail::STLAllocatorImpl<void, A>
+class Epic::detail::AllocI<void, A>
 {
 public:
-	using Type = Epic::detail::STLAllocatorImpl<void, A>;
+	using Type = Epic::detail::AllocI<void, A>;
 
 public:
 	using value_type = void;
@@ -199,18 +212,18 @@ public:
 	template<class U>
 	struct rebind
 	{
-		using other = Epic::detail::STLAllocatorImpl<U, A>;
+		using other = Epic::detail::AllocI<U, A>;
 	};
 
 public:
-	STLAllocatorImpl() noexcept = default;
-	STLAllocatorImpl(const Type&) noexcept = default;
+	AllocI() noexcept = default;
+	AllocI(const Type&) noexcept = default;
 
 	template<class U>
-	STLAllocatorImpl(const STLAllocatorImpl<U, A>&) noexcept { }
+	AllocI(const AllocI<U, A>&) noexcept { }
 
 	template<class U>
-	STLAllocatorImpl<void, A>& operator = (const STLAllocatorImpl<U, A>&)
+	AllocI<void, A>& operator = (const AllocI<U, A>&)
 	{
 		return (*this);
 	}
@@ -218,28 +231,29 @@ public:
 
 //////////////////////////////////////////////////////////////////////////////
 
+// Comparison operators
 namespace Epic
 {
 	template<class T, class U, class A>
-	inline bool operator == (const detail::STLAllocatorImpl<T, A>&, const detail::STLAllocatorImpl<U, A>&) noexcept
+	inline bool operator == (const detail::AllocI<T, A>&, const detail::AllocI<U, A>&) noexcept
 	{
 		return true;
 	}
 
 	template<class T, class U, class Ta, class Ua>
-	inline bool operator == (const detail::STLAllocatorImpl<T, Ta>&, const detail::STLAllocatorImpl<U, Ua>&) noexcept
+	inline bool operator == (const detail::AllocI<T, Ta>&, const detail::AllocI<U, Ua>&) noexcept
 	{
 		return false;
 	}
 
 	template<class T, class U, class A>
-	inline bool operator != (const detail::STLAllocatorImpl<T, A>&, const detail::STLAllocatorImpl<U, A>&) noexcept
+	inline bool operator != (const detail::AllocI<T, A>&, const detail::AllocI<U, A>&) noexcept
 	{
 		return false;
 	}
 
 	template<class T, class U, class Ta, class Ua>
-	inline bool operator != (const detail::STLAllocatorImpl<T, Ta>&, const detail::STLAllocatorImpl<U, Ua>&) noexcept
+	inline bool operator != (const detail::AllocI<T, Ta>&, const detail::AllocI<U, Ua>&) noexcept
 	{
 		return true;
 	}
@@ -249,9 +263,9 @@ namespace Epic
 
 /// std::allocator_traits<T, A>
 template<class T, class A>
-struct std::allocator_traits<Epic::detail::STLAllocatorImpl<T, A>>
+struct std::allocator_traits<Epic::detail::AllocI<T, A>>
 {
-	using allocator_type = Epic::detail::STLAllocatorImpl<T, A>;
+	using allocator_type = Epic::detail::AllocI<T, A>;
 
 	using value_type = T;
 	using pointer = value_type*;
@@ -268,10 +282,10 @@ struct std::allocator_traits<Epic::detail::STLAllocatorImpl<T, A>>
 	using is_always_equal = std::false_type;
 
 	template<class U>
-	using rebind_alloc = Epic::detail::STLAllocatorImpl<U, A>;
+	using rebind_alloc = Epic::detail::AllocI<U, A>;
 
 	template<class U>
-	using rebind_traits = allocator_traits<Epic::detail::STLAllocatorImpl<U, A> >;
+	using rebind_traits = allocator_traits<Epic::detail::AllocI<U, A> >;
 
 	static _declspec(allocator) pointer allocate(allocator_type& allocator, size_type n)
 	{  return (allocator.allocate(n));  }
@@ -299,8 +313,64 @@ struct std::allocator_traits<Epic::detail::STLAllocatorImpl<T, A>>
 
 //////////////////////////////////////////////////////////////////////////////
 
+struct Epic::detail::AllocPre
+{
+	Epic::MemoryBlock::size_type Size;
+};
+
+//////////////////////////////////////////////////////////////////////////////
+
+template<class A, class Tag>
+struct Epic::detail::AllocA
+{
+	using _affixed = Epic::AffixAllocator<A, Epic::detail::AllocPre>;
+
+	using Type = Epic::GlobalAllocator<_affixed, Tag>;
+};
+
+template<class A, class Tag, class OldTag>
+struct Epic::detail::AllocA<Epic::detail::GlobalAllocatorImpl<A, OldTag>, Tag>
+{
+	using _unwrapped = typename detail::UnwrapGlobalAllocator<A>::Type;
+	using _affixed = Epic::AffixAllocator<_unwrapped, Epic::detail::AllocPre>;
+
+	using Type = Epic::GlobalAllocator<_affixed, OldTag>;
+};
+
+template<class A, class Tag, class T>
+struct Epic::detail::AllocA<Epic::detail::AllocI<T, A>, Tag>
+{
+	using Type = Epic::GlobalAllocator<typename A::AllocatorType, typename A::Tag>;
+};
+
+//////////////////////////////////////////////////////////////////////////////
+
+template<class A, class Tag>
+struct Epic::AllocAdapted : public Epic::detail::AllocA<A, Tag>::Type
+{
+	using Base = typename Epic::detail::AllocA<A, Tag>::Type;
+
+	using Base::Base;
+};
+
+//////////////////////////////////////////////////////////////////////////////
+
 namespace Epic
 {
+	namespace detail
+	{
+		using STLAllocatorPrefix = AllocPre;
+
+		template<class A, class Tag>
+		using STLAllocatorAdaptor = AllocA<A, Tag>;
+
+		template<class T, class A>
+		using STLAllocatorImpl = AllocI<T, A>;
+	}
+
+	template<class A, class Tag>
+	using STLAllocatorAdapted = AllocAdapted<A, Tag>;
+
 	template<class T, class Allocator, class Tag = Epic::detail::GlobalAllocatorTag>
 	using STLAllocator = detail::STLAllocatorImpl<T, STLAllocatorAdapted<Allocator, Tag>>;
 }
