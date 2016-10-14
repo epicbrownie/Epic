@@ -694,7 +694,7 @@ public:
 
 private:
 	using StoragePolicyType = Epic::detail::LinearHeapInternalStoragePolicy<A, BlkSz, BlkCnt, Align, IsShared>;
-	using base = Epic::detail::LinearHeapPolicyImpl<StoragePolicyType, A, BlkSz, BlkCnt, Align, IsShared>;
+	using Base = Epic::detail::LinearHeapPolicyImpl<StoragePolicyType, A, BlkSz, BlkCnt, Align, IsShared>;
 
 public:
 	constexpr InternalLinearHeapPolicy() noexcept = default;
@@ -718,7 +718,7 @@ public:
 
 private:
 	using StoragePolicyType = Epic::detail::LinearHeapExternalStoragePolicy<A, BlkSz, BlkCnt, Align, IsShared>;
-	using base = Epic::detail::LinearHeapPolicyImpl<StoragePolicyType, A, BlkSz, BlkCnt, Align, IsShared>;
+	using Base = Epic::detail::LinearHeapPolicyImpl<StoragePolicyType, A, BlkSz, BlkCnt, Align, IsShared>;
 
 public:
 	constexpr ExternalLinearHeapPolicy() noexcept = default;

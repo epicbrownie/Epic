@@ -26,18 +26,18 @@
 
 namespace Epic
 {
-	template<class T>
+	template<class CRTP>
 	class CustomNew;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// CustomNew<T>
-template<class T>
+/// CustomNew<CRTP>
+template<class CRTP>
 class Epic::CustomNew
 {
 public:
-	using Type = Epic::CustomNew<T>;
+	using Type = Epic::CustomNew<CRTP>;
 
 public:
 	CustomNew() = default;
@@ -45,10 +45,10 @@ public:
 private:
 	inline static void* _Allocate(size_t sz)
 	{
-		using AllocatorType = Epic::STLAllocatorAdapted<Epic::DefaultAllocatorFor<T, eAllocatorFor::New>>;
+		using AllocatorType = Epic::STLAllocatorAdapted<Epic::DefaultAllocatorFor<CRTP, eAllocatorFor::New>>;
 
 		const bool aligned = !detail::CanAllocate<AllocatorType>::value || 
-							 (AllocatorType::Alignment % alignof(T)) != 0;
+							 (AllocatorType::Alignment % alignof(CRTP)) != 0;
 
 		Blk blk;
 		size_t alignment;
@@ -59,9 +59,9 @@ private:
 			// Attempt to allocate aligned memory via AllocateAligned()
 			assert(detail::CanAllocateAligned<AllocatorType>::value &&
 				"CustomNew::_Allocate - This type requires an allocator that is capable of "
-				"performing allocations aligned to T");
+				"performing allocations aligned to CRTP");
 
-			alignment = alignof(T);
+			alignment = alignof(CRTP);
 			blk = detail::AllocateAlignedIf<AllocatorType>::apply(allocator, sz, alignment);
 		}
 		else
@@ -83,10 +83,10 @@ private:
 
 	inline static void _Deallocate(void* p)
 	{
-		using AllocatorType = Epic::STLAllocatorAdapted<Epic::DefaultAllocatorFor<T, eAllocatorFor::New>>;
+		using AllocatorType = Epic::STLAllocatorAdapted<Epic::DefaultAllocatorFor<CRTP, eAllocatorFor::New>>;
 
 		const bool aligned = !detail::CanAllocate<AllocatorType>::value || 
-							 (AllocatorType::Alignment % alignof(T)) != 0;
+							 (AllocatorType::Alignment % alignof(CRTP)) != 0;
 
 		AllocatorType allocator;
 
@@ -97,7 +97,7 @@ private:
 		if (aligned)
 		{
 			// AllocateAligned was used
-			auto pPrefix = allocator.Allocator().GetPrefixObject(blk, alignof(T));
+			auto pPrefix = allocator.Allocator().GetPrefixObject(blk, alignof(CRTP));
 			blk.Size = pPrefix->Size;
 
 			detail::DeallocateAlignedIf<AllocatorType>::apply(allocator, blk);
