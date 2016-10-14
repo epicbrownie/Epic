@@ -22,12 +22,8 @@
 namespace Epic
 {
 	/// STLString<Char, A>
-	template<class Char = std::string::value_type, class A = Epic::DefaultAllocatorFor<Char, eAllocatorFor::String>>
+	template<class Char = char, class A = Epic::DefaultAllocatorFor<Char, eAllocatorFor::String>>
 	using STLString = std::basic_string<Char, std::char_traits<Char>, Epic::STLAllocator<Char, A>>;
-
-	/// STLWString<Char, A>
-	template<class WChar = std::wstring::value_type, class A = Epic::DefaultAllocatorFor<WChar, eAllocatorFor::WString>>
-	using STLWString = std::basic_string<WChar, std::char_traits<WChar>, Epic::STLAllocator<WChar, A>>;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -36,8 +32,8 @@ namespace Epic
 
 namespace Epic
 {
-	using String = STLString<>;
-	using WString = STLWString<>;
+	using String = STLString<char>;
+	using WString = STLString<wchar_t>;
 }
 
 #endif

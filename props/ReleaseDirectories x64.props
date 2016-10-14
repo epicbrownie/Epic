@@ -3,8 +3,8 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <IncludePath>$(HeadersDir);M:\boost\boost_1_56_0;$(IncludePath)</IncludePath>
-    <LibraryPath>M:\boost\boost_1_56_0\lib64-msvc-12.0;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(HeadersDir);C:\C++ Libraries\boost_1_61_0;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\C++ Libraries\boost_1_61_0\lib64-msvc-14.0;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup />
   <ItemGroup />
