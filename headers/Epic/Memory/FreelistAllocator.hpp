@@ -220,9 +220,30 @@ private:
 
 public:
 	/* Returns whether or not this allocator is responsible for the block Blk. */
-	constexpr bool Owns(const Blk& blk) const noexcept
+	bool Owns(const Blk& blk) const noexcept
 	{
-		return m_Allocator.Owns(blk);
+		/* CS */
+		std::lock_guard<MutexType> lock(m_Mutex);
+		return _Owns(blk);
+	}
+
+private:
+	/* Non-locking Owns */
+	bool _Owns(const Blk& blk) const noexcept
+	{
+		const PoolChunk* pChunk = m_pChunks;
+
+		while (pChunk)
+		{
+			const void* pEnd = static_cast<const void*>(reinterpret_cast<const char*>(pChunk->Mem.Ptr) + pChunk->Mem.Size));
+
+			if (blk.Ptr >= pChunk->Mem.Ptr && blk.Ptr < pEnd)
+				return true;
+
+			pChunk = pChunk->pNext;
+		}
+
+		return false;
 	}
 
 public:
@@ -304,7 +325,7 @@ public:
 		{	/* CS */
 			std::lock_guard<MutexType> lock(m_Mutex);
 
-			assert(Owns(blk) && "FreelistAllocator::Deallocate - Attempted to free a block that was not allocated by this allocator");
+			assert(_Owns(blk) && "FreelistAllocator::Deallocate - Attempted to free a block that was not allocated by this allocator");
 			PushBlock(blk);
 		}
 	}
@@ -317,7 +338,7 @@ public:
 		{	/* CS */
 			std::lock_guard<MutexType> lock(m_Mutex);
 
-			assert(Owns(blk) && "FreelistAllocator::DeallocateAligned - Attempted to free a block that was not allocated by this allocator");
+			assert(_Owns(blk) && "FreelistAllocator::DeallocateAligned - Attempted to free a block that was not allocated by this allocator");
 			PushBlock(blk);
 		}
 	}
