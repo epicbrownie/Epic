@@ -368,7 +368,7 @@ namespace Epic
 		using STLAllocatorImpl = AllocI<T, A>;
 	}
 
-	template<class A, class Tag>
+	template<class A, class Tag = Epic::detail::GlobalAllocatorTag>
 	using STLAllocatorAdapted = AllocAdapted<A, Tag>;
 
 	template<class T, class Allocator, class Tag = Epic::detail::GlobalAllocatorTag>
