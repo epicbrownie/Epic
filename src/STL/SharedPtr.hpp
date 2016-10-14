@@ -28,19 +28,21 @@ namespace Epic
 	inline std::shared_ptr<T> MakeShared(Args&&... args)
 	{
 		using AllocatorType = Epic::STLAllocator<T, A>;
+		using AllocatorTraits = std::allocator_traits<AllocatorType>;
+
 		AllocatorType allocator;
 
 		// Use the allocator to create a T
-		T* pObject = allocator.allocate(1);
+		T* pObject = AllocatorTraits::allocate(allocator, 1);
 
 		// Attempt to construct the T
 		try
 		{
-			allocator.construct(pObject, std::forward<Args>(args)...);
+			AllocatorTraits::construct(allocator, pObject, std::forward<Args>(args)...);
 		}
 		catch (...)
 		{
-			allocator.deallocate(pObject, 1);
+			AllocatorTraits::deallocate(allocator, pObject, 1);
 			throw;
 		}
 
@@ -48,8 +50,8 @@ namespace Epic
 		auto Deleter = [=] (auto p) -> void
 		{
 			AllocatorType alloc;
-			alloc.destroy(p); 
-			alloc.deallocate(p, 1); 
+			AllocatorTraits::destroy(alloc, p); 
+			AllocatorTraits::deallocate(alloc, p, 1); 
 		};
 
 		return std::shared_ptr<T>{ pObject, Deleter, allocator };

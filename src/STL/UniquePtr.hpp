@@ -52,14 +52,17 @@ struct Epic::detail::Deleter
 	{
 		assert(m_Extent > 0);
 
-		Epic::STLAllocator<T, A> allocator;
+		using AllocatorType = Epic::STLAllocator<T, A>;
+		using AllocatorTraits = std::allocator_traits<AllocatorType>;
+
+		AllocatorType allocator;
 		
 		// Destroy pObject(s)
 		for (size_t i = 0; i < m_Extent; ++i)
-			allocator.destroy(&p[i]);
+			AllocatorTraits::destroy(allocator, &p[i]);
 
 		// Deallocate memory block
-		allocator.deallocate(p, m_Extent);
+		AllocatorTraits::deallocate(allocator, p, m_Extent);
 	}
 };
 
@@ -74,19 +77,21 @@ namespace Epic
 	MakeUnique(Args&&... args)
 	{
 		using AllocatorType = Epic::STLAllocator<T, A>;
+		using AllocatorTraits = std::allocator_traits<AllocatorType>;
+
 		AllocatorType allocator;
 
 		// Use the allocator to create a T
-		T* pObject = allocator.allocate(1);
+		T* pObject = AllocatorTraits::allocate(allocator, 1);
 
 		// Attempt to construct the T
 		try
 		{
-			allocator.construct(pObject, std::forward<Args>(args)...);
+			AllocatorTraits::construct(allocator, pObject, std::forward<Args>(args)...);
 		}
 		catch (...)
 		{
-			allocator.deallocate(pObject, 1);
+			AllocatorTraits::deallocate(allocator, pObject, 1);
 			throw;
 		}
 
@@ -102,7 +107,8 @@ namespace Epic
 	{
 		using Elem = std::remove_extent_t<T>;
 		using AllocatorType = Epic::STLAllocator<Elem, A>;
-		
+		using AllocatorTraits = std::allocator_traits<AllocatorType>;
+
 		// Check for empty array
 		if (Count == 0)
 			return std::unique_ptr<Elem[], detail::Deleter<A>>{ ((Elem*)nullptr), (detail::Deleter<A>{ 0 }) };
@@ -110,17 +116,17 @@ namespace Epic
 		AllocatorType allocator;
 
 		// Use the allocator to create the object array
-		Elem* pObjects = allocator.allocate(Count);
+		Elem* pObjects = AllocatorTraits::allocate(allocator, Count);
 
 		// Attempt to construct the objects
 		try
 		{
 			for (size_t i = 0; i < Count; ++i)
-				allocator.construct(&pObjects[i]);
+				AllocatorTraits::construct(allocator, &pObjects[i]);
 		}
 		catch (...)
 		{
-			allocator.deallocate(pObjects, Count);
+			AllocatorTraits::deallocate(allocator, pObjects, Count);
 			throw;
 		}
 
@@ -145,19 +151,21 @@ namespace Epic
 	MakeImpl(Args&&... args)
 	{
 		using AllocatorType = Epic::STLAllocator<D, A>;
+		using AllocatorTraits = std::allocator_traits<AllocatorType>;
+
 		AllocatorType allocator;
 
 		// Use the allocator to create a D
-		D* pObject = allocator.allocate(1);
+		D* pObject = AllocatorTraits::allocate(allocator, 1);
 
 		// Attempt to construct the D
 		try
 		{
-			allocator.construct(pObject, std::forward<Args>(args)...);
+			AllocatorTraits::construct(allocator, pObject, std::forward<Args>(args)...);
 		}
 		catch (...)
 		{
-			allocator.deallocate(pObject, 1);
+			AllocatorTraits::deallocate(allocator, pObject, 1);
 			throw;
 		}
 
