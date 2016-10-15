@@ -105,7 +105,7 @@ public:
 	   The small allocator is used if sz is less than the threshold.
 	   Otherwise, the large allocator is used. */
 	template<typename = std::enable_if_t<detail::CanAllocate<S>::value || detail::CanAllocate<L>::value>>
-	Blk Allocate(size_t sz) noexcept
+	Blk Allocate(const size_t sz) noexcept
 	{
 		return (sz < T) ? 
 			detail::AllocateIf<S>::apply(m_SAllocator, sz) : 
@@ -116,7 +116,7 @@ public:
 	   The small allocator is used if sz is less than the threshold.
 	   Otherwise, the large allocator is used. */
 	template<typename = std::enable_if_t<detail::CanAllocateAligned<S>::value || detail::CanAllocateAligned<L>::value>>
-	Blk AllocateAligned(size_t sz, size_t alignment = 0) noexcept
+	Blk AllocateAligned(const size_t sz, const size_t alignment = 0) noexcept
 	{
 		if (sz < T)
 			return detail::AllocateAlignedIf<S>::apply(m_SAllocator, sz, (alignment == 0) ? S::Alignment : alignment);
@@ -126,7 +126,7 @@ public:
 
 	/* Attempts to reallocate the memory of blk to the new size sz.
 	   This might result in a change of allocator for blk. */
-	bool Reallocate(Blk& blk, size_t sz)
+	bool Reallocate(Blk& blk, const size_t sz)
 	{
 		if (sz < T)
 		{
@@ -178,7 +178,7 @@ public:
 
 	/* Attempts to reallocate the memory of blk (aligned to alignment) to the new size sz. 
 	   This might result in a change of allocator for blk. */
-	bool ReallocateAligned(Blk& blk, size_t sz, size_t alignment = 0)
+	bool ReallocateAligned(Blk& blk, const size_t sz, const size_t alignment = 0)
 	{
 		if (sz < T)
 		{

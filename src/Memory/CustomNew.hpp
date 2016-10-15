@@ -43,7 +43,7 @@ public:
 	CustomNew() = default;
 
 private:
-	inline static void* _Allocate(size_t sz)
+	inline static void* _Allocate(const size_t sz)
 	{
 		using AllocatorType = Epic::STLAllocatorAdapted<Epic::DefaultAllocatorFor<CRTP, eAllocatorFor::New>>;
 
@@ -81,7 +81,7 @@ private:
 		return blk.Ptr;
 	}
 
-	inline static void _Deallocate(void* p)
+	inline static void _Deallocate(void* __restrict p)
 	{
 		using AllocatorType = Epic::STLAllocatorAdapted<Epic::DefaultAllocatorFor<CRTP, eAllocatorFor::New>>;
 
@@ -97,7 +97,7 @@ private:
 		if (aligned)
 		{
 			// AllocateAligned was used
-			auto pPrefix = allocator.Allocator().GetPrefixObject(blk, alignof(CRTP));
+			const auto pPrefix = allocator.Allocator().GetPrefixObject(blk, alignof(CRTP));
 			blk.Size = pPrefix->Size;
 
 			detail::DeallocateAlignedIf<AllocatorType>::apply(allocator, blk);
@@ -105,7 +105,7 @@ private:
 		else
 		{
 			// Allocate was used
-			auto pPrefix = allocator.Allocator().GetPrefixObject(blk);
+			const auto pPrefix = allocator.Allocator().GetPrefixObject(blk);
 			blk.Size = pPrefix->Size;
 
 			detail::DeallocateIf<AllocatorType>::apply(allocator, blk);

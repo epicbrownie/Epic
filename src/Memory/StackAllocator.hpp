@@ -44,6 +44,10 @@ public:
 
 	static_assert(detail::IsGoodAlignment(Alignment), "Error: Invalid Alignment");
 
+private:
+	char* _pCursor;
+	alignas(Alignment) char _Memory[MemorySize];
+
 public:
 	constexpr StackAllocator() noexcept 
 		: _pCursor{ _Memory }, _Memory{ } 
@@ -86,7 +90,7 @@ public:
 public:
 	/* Returns a block of uninitialized memory.
 	   If sz is zero, the returned block's pointer is null. */
-	Blk Allocate(size_t sz) noexcept
+	Blk Allocate(const size_t sz) noexcept
 	{
 		// Verify that the requested size is within our allowed bounds
 		if (sz == 0 || sz < MinAllocSize || sz > MaxAllocSize)
@@ -94,8 +98,8 @@ public:
 
 		// Round the requested size up so that subsequent allocations remain aligned
 		// unless the requested size is all of the remaining memory
-		auto szrem = _Remaining();
-		auto sznew = (sz == szrem) ? szrem : detail::RoundToAligned(sz, Alignment);
+		const auto szrem = _Remaining();
+		const auto sznew = (sz == szrem) ? szrem : detail::RoundToAligned(sz, Alignment);
 		
 		// Verify that the request is not larger than available memory
 		if (sznew > szrem)
@@ -113,7 +117,7 @@ public:
 	Blk AllocateAll() noexcept
 	{
 		// Calculate remaining space
-		size_t sz = _Remaining();
+		const size_t sz = _Remaining();
 		
 		// Verify that there's memory left to allocate
 		if (sz == 0) 
@@ -143,7 +147,7 @@ public:
 		}
 
 		// Calculate the actual size of the block
-		size_t sz = detail::RoundToAligned(blk.Size, Alignment);
+		const size_t sz = detail::RoundToAligned(blk.Size, Alignment);
 
 		// If this block was the last allocated block, free it
 		if (reinterpret_cast<char*>(blk.Ptr) + sz == _pCursor)
@@ -161,8 +165,4 @@ private:
 	void* operator new[] (size_t) noexcept = delete;
 	void operator delete (void*) noexcept = delete;
 	void operator delete[] (void*) noexcept = delete;
-
-private:
-	char* _pCursor;
-	alignas(Alignment) char _Memory[MemorySize];
 };

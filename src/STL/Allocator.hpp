@@ -129,7 +129,6 @@ public:
 			// Store size in prefix object
 			auto pPrefix = m_Allocator.Allocator().GetPrefixObject(blk, alignof(T));
 			pPrefix->Size = blk.Size;
-
 		}
 		else
 		{
@@ -161,7 +160,7 @@ public:
 		if (!detail::CanAllocate<AllocatorType>::value || (AllocatorType::Alignment % alignof(T)) != 0)
 		{
 			// AllocateAligned was used
-			auto pPrefix = m_Allocator.Allocator().GetPrefixObject(blk, alignof(T));
+			const auto pPrefix = m_Allocator.Allocator().GetPrefixObject(blk, alignof(T));
 			blk.Size = pPrefix->Size;
 
 			detail::DeallocateAlignedIf<AllocatorType>::apply(m_Allocator, blk);
@@ -169,7 +168,7 @@ public:
 		else
 		{
 			// Allocate was used
-			auto pPrefix = m_Allocator.Allocator().GetPrefixObject(blk);
+			const auto pPrefix = m_Allocator.Allocator().GetPrefixObject(blk);
 			blk.Size = pPrefix->Size;
 
 			detail::DeallocateIf<AllocatorType>::apply(m_Allocator, blk);
@@ -235,25 +234,25 @@ public:
 namespace Epic
 {
 	template<class T, class U, class A>
-	inline bool operator == (const detail::AllocI<T, A>&, const detail::AllocI<U, A>&) noexcept
+	constexpr bool operator == (const detail::AllocI<T, A>&, const detail::AllocI<U, A>&) noexcept
 	{
 		return true;
 	}
 
 	template<class T, class U, class Ta, class Ua>
-	inline bool operator == (const detail::AllocI<T, Ta>&, const detail::AllocI<U, Ua>&) noexcept
+	constexpr bool operator == (const detail::AllocI<T, Ta>&, const detail::AllocI<U, Ua>&) noexcept
 	{
 		return false;
 	}
 
 	template<class T, class U, class A>
-	inline bool operator != (const detail::AllocI<T, A>&, const detail::AllocI<U, A>&) noexcept
+	constexpr bool operator != (const detail::AllocI<T, A>&, const detail::AllocI<U, A>&) noexcept
 	{
 		return false;
 	}
 
 	template<class T, class U, class Ta, class Ua>
-	inline bool operator != (const detail::AllocI<T, Ta>&, const detail::AllocI<U, Ua>&) noexcept
+	constexpr bool operator != (const detail::AllocI<T, Ta>&, const detail::AllocI<U, Ua>&) noexcept
 	{
 		return true;
 	}
@@ -315,7 +314,7 @@ struct std::allocator_traits<Epic::detail::AllocI<T, A>>
 
 struct Epic::detail::AllocPre
 {
-	Epic::MemoryBlock::size_type Size;
+	Epic::MemoryBlock::SizeType Size;
 };
 
 //////////////////////////////////////////////////////////////////////////////

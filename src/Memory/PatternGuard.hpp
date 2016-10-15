@@ -60,7 +60,7 @@ public:
 /// GuardResponseIgnore
 struct Epic::GuardResponseIgnore
 {
-	constexpr bool CheckGuard(size_t Expected, size_t Obtained) const noexcept 
+	constexpr bool CheckGuard(const size_t Expected, const size_t Obtained) const noexcept 
 	{
 		return true;
 	}
@@ -69,7 +69,7 @@ struct Epic::GuardResponseIgnore
 /// GuardResponseThrow
 struct Epic::GuardResponseThrow
 {
-	bool CheckGuard(size_t Expected, size_t Obtained) const noexcept(false)
+	inline bool CheckGuard(const size_t Expected, const size_t Obtained) const noexcept(false)
 	{
 		if (Obtained != Expected)
 		{
@@ -97,7 +97,7 @@ struct Epic::GuardResponseThrow
 /// GuardResponseCErr
 struct Epic::GuardResponseCErr
 {
-	bool CheckGuard(size_t Expected, size_t Obtained) const noexcept
+	inline bool CheckGuard(const size_t Expected, const size_t Obtained) const noexcept
 	{
 		if (Obtained != Expected)
 		{
@@ -124,7 +124,7 @@ struct Epic::GuardResponseCErr
 /// GuardResponseCOut
 struct Epic::GuardResponseCOut
 {
-	bool CheckGuard(size_t Expected, size_t Obtained) const noexcept
+	inline bool CheckGuard(const size_t Expected, const size_t Obtained) const noexcept
 	{
 		if (Obtained != Expected)
 		{
@@ -151,7 +151,7 @@ struct Epic::GuardResponseCOut
 /// GuardResponseAssert
 struct Epic::GuardResponseAssert
 {
-	bool CheckGuard(size_t Expected, size_t Obtained) const noexcept
+	inline bool CheckGuard(const size_t Expected, const size_t Obtained) const noexcept
 	{
 		assert((Obtained == Expected) && "PatternGuard detected corrupted memory.");
 
@@ -175,6 +175,9 @@ public:
 
 	static constexpr size_t Pattern = P;
 
+private:
+	const size_t m_Pattern;
+
 public:
 	PatternGuardImpl() noexcept
 		: m_Pattern(Pattern) { }
@@ -185,13 +188,10 @@ public:
 	}
 
 public:
-	bool CheckGuard() const
+	inline bool CheckGuard() const
 	{
 		return ResponsePolicy::CheckGuard(Pattern, m_Pattern);
 	}
-
-private:
-	size_t m_Pattern;
 };
 
 //////////////////////////////////////////////////////////////////////////////

@@ -149,7 +149,7 @@ private:
 		m_pChunks = pNewChunk;
 
 		// Break the remaining chunk space into free blocks and add them to the freelist
-		size_t remainingBlocks = BatchSize - ChunkInfoBlocks;
+		const size_t remainingBlocks = BatchSize - ChunkInfoBlocks;
 		char* pFreeBlocks = reinterpret_cast<char*>(chunk.Ptr) + (ChunkInfoBlocks * BlockSize);
 		
 		for (size_t i = 0; i < remainingBlocks; ++i)
@@ -209,7 +209,7 @@ private:
 		if (!blk) return;
 
 		// If the blk was allocated aligned, the alignment must be removed
-		size_t alignPad = BlockSize - blk.Size;
+		const size_t alignPad = BlockSize - blk.Size;
 		char* pPtr = reinterpret_cast<char*>(blk.Ptr) - alignPad;
 
 		// Push the adjusted pointer
@@ -249,7 +249,7 @@ private:
 public:
 	/* Returns a block of uninitialized memory at least as big as sz.
 	   If sz is zero, the returned block's pointer is null. */
-	Blk Allocate(size_t sz) noexcept
+	Blk Allocate(const size_t sz) noexcept
 	{
 		// Verify that the requested size is within our allowed bounds
 		if (sz == 0 || sz < MinAllocSize || sz > MaxAllocSize)
@@ -273,7 +273,7 @@ public:
 
 	/* Returns a block of uninitialized memory at least as big as sz (aligned to alignment).
 	   If sz is zero, the returned block's pointer is null. */
-	Blk AllocateAligned(size_t sz, size_t alignment = Alignment) noexcept
+	Blk AllocateAligned(const size_t sz, const size_t alignment = Alignment) noexcept
 	{
 		// Verify that the alignment is acceptable
 		if (!detail::IsGoodAlignment(alignment))

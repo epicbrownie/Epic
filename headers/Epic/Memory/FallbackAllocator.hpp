@@ -100,7 +100,7 @@ public:
 	   Attempts to allocate using the Primary allocator.  The Fallback allocator is used 
 	   if the Primary allocator returns a null pointer. */
 	template<typename = std::enable_if_t<detail::CanAllocate<P>::value || detail::CanAllocate<F>::value>>
-	Blk Allocate(size_t sz) noexcept
+	Blk Allocate(const size_t sz) noexcept
 	{
 		Blk result = detail::AllocateIf<P>::apply(m_PAllocator, sz);
 		
@@ -114,7 +114,7 @@ public:
 	   Attempts to allocate using the Primary allocator.  The Fallback allocator is used 
 	   if the Primary allocator returns a null pointer. */
 	template<typename = std::enable_if_t<detail::CanAllocateAligned<P>::value && detail::CanAllocateAligned<F>::value>>
-	Blk AllocateAligned(size_t sz, size_t alignment = 0) noexcept
+	Blk AllocateAligned(const size_t sz, const size_t alignment = 0) noexcept
 	{
 		Blk result = m_PAllocator.AllocateAligned(sz, (alignment == 0) ? P::Alignment : alignment);
 
@@ -126,7 +126,7 @@ public:
 
 	/* Attempts to reallocate the memory of blk to the new size sz. */
 	template<typename = std::enable_if_t<detail::CanReallocate<P>::value || detail::CanReallocate<F>::value>>
-	bool Reallocate(Blk& blk, size_t sz)
+	bool Reallocate(Blk& blk, const size_t sz)
 	{
 		if(m_PAllocator.Owns(blk))
 			return detail::ReallocateIf<P>::apply(m_PAllocator, blk, sz);
@@ -136,7 +136,7 @@ public:
 
 	/* Attempts to reallocate the memory of blk (aligned to alignment) to the new size sz. */
 	template<typename = std::enable_if_t<detail::CanReallocateAligned<P>::value || detail::CanReallocateAligned<F>::value>>
-	bool ReallocateAligned(Blk& blk, size_t sz, size_t alignment = 0)
+	bool ReallocateAligned(Blk& blk, const size_t sz, const size_t alignment = 0)
 	{
 		if (m_PAllocator.Owns(blk))
 			return detail::ReallocateAlignedIf<P>::apply(m_PAllocator, blk, sz, (alignment == 0) ? P::Alignment : alignment);

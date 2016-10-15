@@ -27,14 +27,14 @@ namespace Epic
 /// MemoryBlock
 struct Epic::MemoryBlock
 {
-	using pointer = void*;
-	using size_type = size_t;
+	using Pointer = void*;
+	using SizeType = size_t;
 
-	pointer Ptr;
-	size_type Size;
+	Pointer Ptr;
+	SizeType Size;
 
 	constexpr MemoryBlock() noexcept : Ptr{ nullptr }, Size{ 0 }  { }
-	constexpr MemoryBlock(pointer ptr, size_type sz) noexcept : Ptr{ ptr }, Size{ sz }  { }
+	constexpr MemoryBlock(Pointer ptr, SizeType sz) noexcept : Ptr{ ptr }, Size{ sz }  { }
 	constexpr MemoryBlock(const MemoryBlock&) noexcept = default;
 
 	MemoryBlock(MemoryBlock&& o) noexcept 

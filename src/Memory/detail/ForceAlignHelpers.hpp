@@ -26,17 +26,17 @@ namespace Epic::detail
 
 struct Epic::detail::ForceAlignSuffix
 {
-	Epic::MemoryBlock::size_type AlignPad;
+	Epic::MemoryBlock::SizeType AlignPad;
 
-	static void Set(const Blk& blk, const Epic::MemoryBlock::size_type& value) noexcept
+	static inline void Set(const Blk& blk, const Epic::MemoryBlock::SizeType& value) noexcept
 	{
 		auto pSuffix = reinterpret_cast<ForceAlignSuffix*>(reinterpret_cast<char*>(blk.Ptr) + blk.Size - sizeof(ForceAlignSuffix));
 		pSuffix->AlignPad = value;
 	}
 
-	static Epic::MemoryBlock::size_type Get(const Blk& blk) noexcept
+	static inline auto Get(const Blk& blk) noexcept
 	{
-		auto pSuffix = reinterpret_cast<ForceAlignSuffix*>(reinterpret_cast<char*>(blk.Ptr) + blk.Size);
+		const auto pSuffix = reinterpret_cast<const ForceAlignSuffix*>(reinterpret_cast<const char*>(blk.Ptr) + blk.Size);
 		return pSuffix->AlignPad;
 	}
 };

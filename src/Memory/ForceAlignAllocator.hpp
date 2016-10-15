@@ -99,7 +99,7 @@ public:
 
 public:
 	/* Returns a block of uninitialized memory (aligned to ForcedAlignment). */
-	Blk Allocate(size_t sz) noexcept
+	Blk Allocate(const size_t sz) noexcept
 	{
 		// Verify that the requested size is within our allowed bounds
 		if (sz == 0 || sz < MinAllocSize || sz > MaxAllocSize)
@@ -115,8 +115,8 @@ public:
 		}
 
 		// Allocating aligned failed. Force a normal allocation to be aligned.
-		size_t blockSpace = sz + Alignment - 1;
-		size_t newsz = blockSpace + sizeof(detail::ForceAlignSuffix);
+		const size_t blockSpace = sz + Alignment - 1;
+		const size_t newsz = blockSpace + sizeof(detail::ForceAlignSuffix);
 		
 		blk = detail::AllocateIf<A>::apply(m_Allocator, newsz);
 		if (!blk) return{ nullptr, 0 };
@@ -137,13 +137,13 @@ public:
 	/* Returns a block of uninitialized memory (aligned to alignment).
 	   ForcedAlignment will not be enforced. */
 	template<typename = std::enable_if_t<detail::CanAllocateAligned<A>::value>>
-	Blk AllocateAligned(size_t sz, size_t alignment = Alignment) noexcept
+	Blk AllocateAligned(const size_t sz, const size_t alignment = Alignment) noexcept
 	{
 		return m_Allocator.AllocateAligned(sz, alignment);
 	}
 
 	/* Attempts to reallocate the memory of blk to the new size sz (aligned to ForcedAlignment). */
-	bool Reallocate(Blk& blk, size_t sz)
+	bool Reallocate(Blk& blk, const size_t sz)
 	{
 		// If the block isn't valid, delegate to Allocate
 		if (!blk)
@@ -174,7 +174,7 @@ public:
 	/* Attempts to reallocate the memory of blk (aligned to alignment) to the new size sz. 
 	   ForcedAlignment will not be enforced. */
 	template<typename = std::enable_if_t<detail::CanReallocateAligned<A>::value>>
-	bool ReallocateAligned(Blk& blk, size_t sz, size_t alignment = Alignment)
+	bool ReallocateAligned(Blk& blk, const size_t sz, const size_t alignment = Alignment)
 	{
 		return m_Allocator.ReallocateAligned(blk, sz, alignment);
 	}
@@ -198,7 +198,7 @@ public:
 		if (!blk) return{ nullptr, 0 };
 
 		// Make sure this block is large enough to store our prefix and a byte
-		size_t spaceReq = 1 + sizeof(detail::ForceAlignSuffix);
+		const size_t spaceReq = 1 + sizeof(detail::ForceAlignSuffix);
 
 		if (blk.Size < spaceReq)
 		{
@@ -226,7 +226,7 @@ public:
 	   of available memory (aligned to alignment).
 	   ForcedAlignment will not be enforced. */
 	template<typename = std::enable_if_t<detail::CanAllocateAllAligned<A>::value>>
-	Blk AllocateAllAligned(size_t alignment = Alignment) noexcept
+	Blk AllocateAllAligned(const size_t alignment = Alignment) noexcept
 	{
 		return m_Allocator.AllocateAllAligned(alignment);
 	}
@@ -247,7 +247,7 @@ public:
 		}
 
 		// Calculate the actual block
-		size_t alignPad = detail::ForceAlignSuffix::Get(blk);
+		const size_t alignPad = detail::ForceAlignSuffix::Get(blk);
 
 		Blk actualblk = 
 		{
