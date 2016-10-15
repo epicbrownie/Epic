@@ -149,7 +149,7 @@ private:
 		m_pChunks = pNewChunk;
 
 		// Break the remaining chunk space into free blocks and add them to the freelist
-		size_t remainingBlocks = BatchSize - ChunkInfoBlocks;
+		const size_t remainingBlocks = BatchSize - ChunkInfoBlocks;
 		char* pFreeBlocks = reinterpret_cast<char*>(chunk.Ptr) + (ChunkInfoBlocks * BlockSize);
 		
 		for (size_t i = 0; i < remainingBlocks; ++i)
@@ -209,7 +209,7 @@ private:
 		if (!blk) return;
 
 		// If the blk was allocated aligned, the alignment must be removed
-		size_t alignPad = BlockSize - blk.Size;
+		const size_t alignPad = BlockSize - blk.Size;
 		char* pPtr = reinterpret_cast<char*>(blk.Ptr) - alignPad;
 
 		// Push the adjusted pointer
@@ -220,15 +220,36 @@ private:
 
 public:
 	/* Returns whether or not this allocator is responsible for the block Blk. */
-	constexpr bool Owns(const Blk& blk) const noexcept
+	bool Owns(const Blk& blk) const noexcept
 	{
-		return m_Allocator.Owns(blk);
+		/* CS */
+		std::lock_guard<MutexType> lock(m_Mutex);
+		return _Owns(blk);
+	}
+
+private:
+	/* Non-locking Owns */
+	bool _Owns(const Blk& blk) const noexcept
+	{
+		const PoolChunk* pChunk = m_pChunks;
+
+		while (pChunk)
+		{
+			const void* pEnd = static_cast<const void*>(reinterpret_cast<const char*>(pChunk->Mem.Ptr) + pChunk->Mem.Size));
+
+			if (blk.Ptr >= pChunk->Mem.Ptr && blk.Ptr < pEnd)
+				return true;
+
+			pChunk = pChunk->pNext;
+		}
+
+		return false;
 	}
 
 public:
 	/* Returns a block of uninitialized memory at least as big as sz.
 	   If sz is zero, the returned block's pointer is null. */
-	Blk Allocate(size_t sz) noexcept
+	Blk Allocate(const size_t sz) noexcept
 	{
 		// Verify that the requested size is within our allowed bounds
 		if (sz == 0 || sz < MinAllocSize || sz > MaxAllocSize)
@@ -252,7 +273,7 @@ public:
 
 	/* Returns a block of uninitialized memory at least as big as sz (aligned to alignment).
 	   If sz is zero, the returned block's pointer is null. */
-	Blk AllocateAligned(size_t sz, size_t alignment = Alignment) noexcept
+	Blk AllocateAligned(const size_t sz, const size_t alignment = Alignment) noexcept
 	{
 		// Verify that the alignment is acceptable
 		if (!detail::IsGoodAlignment(alignment))
@@ -304,7 +325,7 @@ public:
 		{	/* CS */
 			std::lock_guard<MutexType> lock(m_Mutex);
 
-			assert(Owns(blk) && "FreelistAllocator::Deallocate - Attempted to free a block that was not allocated by this allocator");
+			assert(_Owns(blk) && "FreelistAllocator::Deallocate - Attempted to free a block that was not allocated by this allocator");
 			PushBlock(blk);
 		}
 	}
@@ -317,7 +338,7 @@ public:
 		{	/* CS */
 			std::lock_guard<MutexType> lock(m_Mutex);
 
-			assert(Owns(blk) && "FreelistAllocator::DeallocateAligned - Attempted to free a block that was not allocated by this allocator");
+			assert(_Owns(blk) && "FreelistAllocator::DeallocateAligned - Attempted to free a block that was not allocated by this allocator");
 			PushBlock(blk);
 		}
 	}

@@ -100,14 +100,14 @@ public:
 public:
 	/* Returns a block of uninitialized memory.
 	   Uses the unaligned allocator. */
-	Blk Allocate(size_t sz) noexcept
+	Blk Allocate(const size_t sz) noexcept
 	{
 		return m_UAllocator.Allocate(sz);
 	}
 
 	/* Returns a block of uninitialized memory (aligned to alignment).
 	   Uses the aligned allocator. */
-	Blk AllocateAligned(size_t sz, size_t alignment = A::Alignment) noexcept
+	Blk AllocateAligned(const size_t sz, const size_t alignment = A::Alignment) noexcept
 	{
 		return m_AAllocator.AllocateAligned(sz, alignment);
 	}
@@ -115,7 +115,7 @@ public:
 	/* Attempts to reallocate the memory of blk to the new size sz.
 	   Uses the unaligned allocator. */
 	template<typename = std::enable_if_t<detail::CanReallocate<U>::value>>
-	bool Reallocate(Blk& blk, size_t sz)
+	bool Reallocate(Blk& blk, const size_t sz)
 	{
 		return m_UAllocator.Reallocate(blk, sz);
 	}
@@ -123,7 +123,7 @@ public:
 	/* Attempts to reallocate the memory of blk (aligned to alignment) to the new size sz.
 	   Uses the aligned allocator. */
 	template<typename = std::enable_if_t<detail::CanReallocateAligned<A>::value>>
-	bool ReallocateAligned(Blk& blk, size_t sz, size_t alignment = A::Alignment)
+	bool ReallocateAligned(Blk& blk, const size_t sz, const size_t alignment = A::Alignment)
 	{
 		return m_AAllocator.ReallocateAligned(blk, sz, alignment);
 	}
@@ -139,7 +139,7 @@ public:
 	/* Returns a block of uninitialized memory.
 	   Its size is all of the remaining memory in the aligned allocator (aligned to alignment). */
 	template<typename = std::enable_if_t<detail::CanAllocateAll<A>::value>>
-	Blk AllocateAllAligned(size_t alignment = A::Alignment) noexcept
+	Blk AllocateAllAligned(const size_t alignment = A::Alignment) noexcept
 	{
 		return m_AAllocator.AllocateAllAligned(alignment);
 	}

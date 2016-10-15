@@ -61,7 +61,12 @@ private:
 public:
 	StringHashAlgorithm() = delete;
 
-	static constexpr HashType Hash(const CharType* __restrict str, const HashType seed = DefaultSeed) noexcept
+	static constexpr HashType Hash(std::nullptr_t, const HashType seed = DefaultSeed) noexcept
+	{
+		return seed;
+	}
+
+	static inline HashType Hash(const CharType* __restrict str = nullptr, const HashType seed = DefaultSeed) noexcept
 	{
 		HashType hash = seed;
 
@@ -117,15 +122,17 @@ private:
 public:
 	StringHashAlgorithm() = delete;
 
+	static constexpr HashType Hash(std::nullptr_t, const HashType seed = DefaultSeed, const HashType = DefaultPrime) noexcept
+	{
+		return seed;
+	}
+
 	static inline HashType Hash(const CharType* __restrict str, const HashType seed = DefaultSeed, const HashType prime = DefaultPrime) noexcept
 	{
 		HashType hash = seed;
-
+		
 		while (*str != 0)
-		{
-			hash ^= *str++;
-			hash *= prime;
-		}
+			hash = (hash ^ *str++) * prime;
 
 		return hash;
 	}

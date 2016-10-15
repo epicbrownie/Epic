@@ -23,21 +23,25 @@
 namespace Epic
 {
 	template<typename CharType = char, Epic::StringHashAlgorithms Algorithm = Epic::StringHashAlgorithms::Default>
-	class StringHash;
+	class BasicStringHash;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
 /// StringHash<C, A>
 template<typename C, Epic::StringHashAlgorithms A>
-class Epic::StringHash
+class Epic::BasicStringHash
 {
 public:
+	using Type = Epic::BasicStringHash<C, A>;
 	using CharType = C;
 	using AlgorithmType = Epic::StringHashAlgorithm<C, A>;
 	using HashType = typename AlgorithmType::HashType;
 
 	static constexpr Epic::StringHashAlgorithms Algorithm = A;
+
+private:
+	HashType _Hash;
 
 public:
 	struct CStringWrapper
@@ -52,19 +56,22 @@ public:
 	};
 
 public:
+	constexpr BasicStringHash() noexcept
+		: _Hash{ Epic::StringHashAlgorithm<C, A>::Hash(nullptr) } { }
+
 	template<size_t N>
-	explicit constexpr StringHash(const CharType(&cstr)[N]) noexcept
+	constexpr BasicStringHash(const CharType(&cstr)[N]) noexcept
 		: _Hash{ Epic::StringHashAlgorithm<C, A>::FoldHash(cstr) } { }
 
-	explicit inline StringHash(CStringWrapper cstr) noexcept
+	inline BasicStringHash(CStringWrapper cstr) noexcept
 		: _Hash{ Epic::StringHashAlgorithm<C, A>::Hash(cstr.Str) } { }
 
 	template<typename Traits, typename Allocator>
-	explicit inline StringHash(const std::basic_string<C, Traits, Allocator>& str) noexcept
+	inline BasicStringHash(const std::basic_string<C, Traits, Allocator>& str) noexcept
 		: _Hash{ Epic::StringHashAlgorithm<C, A>::Hash(str.c_str()) } { }
 
 public:
-	inline constexpr operator HashType (void) const noexcept
+	constexpr operator HashType (void) const noexcept
 	{
 		return _Hash;
 	}
@@ -77,7 +84,7 @@ public:
 
 public:
 	#define CREATE_COMPARISON_OPERATOR(Op)	\
-		inline constexpr bool operator Op (const Epic::StringHash<C, A>& rhs) const noexcept	\
+		constexpr bool operator Op (const Epic::BasicStringHash<C, A>& rhs) const noexcept	\
 		{																						\
 			return _Hash Op rhs._Hash;															\
 		}
@@ -90,70 +97,76 @@ public:
 	CREATE_COMPARISON_OPERATOR(>=);
 
 	#undef CREATE_COMPARISON_OPERATOR
-
-private:
-	const HashType _Hash;
 };
+
+//////////////////////////////////////////////////////////////////////////////
+
+/// Aliases
+namespace Epic
+{
+	using StringHash = Epic::BasicStringHash<char, Epic::StringHashAlgorithms::Default>;
+	using WStringHash = Epic::BasicStringHash<wchar_t, Epic::StringHashAlgorithms::Default>;
+}
 
 //////////////////////////////////////////////////////////////////////////////
 
 /// Shortcuts
 namespace Epic
 {
-	/// StringHash<N, CharType, Algorithm>(char[N])
-	template<size_t N, typename CharType = char, Epic::StringHashAlgorithms Algorithm = Epic::StringHashAlgorithms::Default>
-	constexpr StringHash<CharType, Algorithm> Hash(const CharType(&cstr)[N]) noexcept
+	/// Hash<N, Algorithm>(char[N])
+	template<size_t N, Epic::StringHashAlgorithms Algorithm = Epic::StringHashAlgorithms::Default>
+	constexpr BasicStringHash<char, Algorithm> Hash(const char(&cstr)[N]) noexcept
 	{
-		return StringHash<CharType, Algorithm>{ cstr };
+		return BasicStringHash<char, Algorithm>{ cstr };
 	}
 
-	/// StringHash<CharType, Algorithm>(cstring)
-	template<typename CharType = char, Epic::StringHashAlgorithms Algorithm = Epic::StringHashAlgorithms::Default>
-	constexpr StringHash<CharType, Algorithm> Hash(const typename Epic::StringHash<CharType, Algorithm>::CStringWrapper str) noexcept
+	/// Hash<N, Algorithm>(wchar_t[N])
+	template<size_t N, Epic::StringHashAlgorithms Algorithm = Epic::StringHashAlgorithms::Default>
+	constexpr BasicStringHash<wchar_t, Algorithm> Hash(const wchar_t(&cstr)[N]) noexcept
 	{
-		return StringHash<CharType, Algorithm>{ str };
+		return BasicStringHash<wchar_t, Algorithm>{ cstr };
 	}
 
-	/// StringHash<CharType, Algorithm>(std::string)
-	template<typename CharType = char, Epic::StringHashAlgorithms Algorithm = Epic::StringHashAlgorithms::Default,
-			 typename Traits = std::char_traits<CharType>, typename Allocator = std::allocator<CharType>>
-	constexpr StringHash<CharType, Algorithm> Hash(const std::basic_string<CharType, Traits, Allocator>& str) noexcept
+	/// Hash<Algorithm>(cstring)
+	template<Epic::StringHashAlgorithms Algorithm = Epic::StringHashAlgorithms::Default>
+	constexpr BasicStringHash<char, Algorithm> Hash(const typename Epic::BasicStringHash<char, Algorithm>::CStringWrapper str) noexcept
 	{
-		return StringHash<CharType, Algorithm>{ str };
+		return BasicStringHash<char, Algorithm>{ str };
+	}
+
+	/// Hash<Algorithm>(wide cstring)
+	template<Epic::StringHashAlgorithms Algorithm = Epic::StringHashAlgorithms::Default>
+	constexpr BasicStringHash<wchar_t, Algorithm> Hash(const typename Epic::BasicStringHash<wchar_t, Algorithm>::CStringWrapper str) noexcept
+	{
+		return BasicStringHash<wchar_t, Algorithm>{ str };
+	}
+
+	/// Hash<Algorithm>(std::string)
+	template<class Traits, class Allocator, Epic::StringHashAlgorithms Algorithm = Epic::StringHashAlgorithms::Default>
+	constexpr BasicStringHash<char, Algorithm> Hash(const std::basic_string<char, Traits, Allocator>& str) noexcept
+	{
+		return BasicStringHash<char, Algorithm>{ str };
+	}
+
+	/// Hash<Algorithm>(std::wstring)
+	template<class Traits, class Allocator, Epic::StringHashAlgorithms Algorithm = Epic::StringHashAlgorithms::Default>
+	constexpr BasicStringHash<wchar_t, Algorithm> Hash(const std::basic_string<wchar_t, Traits, Allocator>& str) noexcept
+	{
+		return BasicStringHash<wchar_t, Algorithm>{ str };
 	}
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// UDLs
-namespace Epic
-{
-	namespace UDL
-	{
-		// String Hash UDLs
-		inline Epic::StringHash<char> operator "" _hash(const char* str, size_t /*len*/)
-		{
-			return Epic::StringHash<char>(str);
-		}
-
-		inline Epic::StringHash<wchar_t> operator "" _hash(const wchar_t* str, size_t /*len*/)
-		{
-			return Epic::StringHash<wchar_t>(str);
-		}
-	}
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
-/// std::hash<Epic::StringHash<C, A>>
+/// std::hash<Epic::BasicStringHash<C, A>>
 namespace std
 {
 	template<typename C, Epic::StringHashAlgorithms A>
-	struct hash<Epic::StringHash<C, A>>
+	struct hash<Epic::BasicStringHash<C, A>>
 	{
 		constexpr hash() noexcept = default;
 
-		constexpr size_t operator() (const Epic::StringHash<C, A>& x) const noexcept
+		constexpr size_t operator() (const Epic::BasicStringHash<C, A>& x) const noexcept
 		{
 			return static_cast<size_t>(x.Value());
 		}

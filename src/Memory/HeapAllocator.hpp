@@ -100,7 +100,7 @@ public:
 public:
 	/* Returns a block of uninitialized memory at least as big as sz. */
 	template<typename = std::enable_if_t<detail::CanAllocate<PolicyType>::value>>
-	Blk Allocate(size_t sz) noexcept
+	Blk Allocate(const size_t sz) noexcept
 	{
 		// Verify that the requested size is within our allowed bounds
 		if (sz == 0 || sz < MinAllocSize || sz > MaxAllocSize)
@@ -111,7 +111,7 @@ public:
 
 	/* Attempts to reallocate the memory of blk to the new size sz. */
 	template<typename = std::enable_if_t<detail::CanReallocate<PolicyType>::value>>
-	bool Reallocate(Blk& blk, size_t sz)
+	bool Reallocate(Blk& blk, const size_t sz)
 	{
 		// If the block isn't valid, delegate to Allocate
 		if (!blk)
@@ -277,12 +277,16 @@ private:
 	}
 
 public:
-	constexpr bool Owns(const Blk& blk) const noexcept
+	const bool Owns(const Blk& blk) const noexcept
 	{
-		return m_Allocator.Owns(blk);
+		const char* pBlk = reinterpret_cast<const char*>(blk.Ptr);
+		const char* pHeapStart = reinterpret_cast<const char*>(m_Heap.Ptr);
+		const char* pHeapEnd = reinterpret_cast<const char*>(GetBlockPointer(0));
+
+		return (pBlk >= pHeapStart) && (pBlk < pHeapEnd);
 	}
 
-	Blk Allocate(size_t sz) noexcept
+	Blk Allocate(const size_t sz) noexcept
 	{
 		// Attempt to reserve memory
 		const size_t blocksReq = (sz + BlkSz - 1) / BlkSz;
@@ -547,29 +551,33 @@ protected:
 	}
 
 protected:
-	constexpr void* GetBlockPointer(size_t block) const noexcept
+	constexpr void* GetBlockPointer(const size_t block) const noexcept
 	{
 		return static_cast<void*>(reinterpret_cast<char*>(m_Heap.Ptr) + (BlkSz * block));
 	}
 
-	constexpr size_t GetBlock(void* ptr) const noexcept
+	constexpr size_t GetBlock(const void* ptr) const noexcept
 	{
-		return (reinterpret_cast<char*>(ptr) - reinterpret_cast<char*>(GetBlockPointer(0))) / BlkSz;
+		return (reinterpret_cast<const char*>(ptr) - reinterpret_cast<const char*>(GetBlockPointer(0))) / BlkSz;
 	}
 
-	constexpr size_t BytesToBlockSize(size_t bytes) const noexcept
+	constexpr size_t BytesToBlockSize(const size_t bytes) const noexcept
 	{
 		return (bytes + BlkSz - 1) / BlkSz;
 	}
 
 public:
-	constexpr bool Owns(const Blk& blk) const noexcept
+	const bool Owns(const Blk& blk) const noexcept
 	{
 		/* m_Heap is never changed in a shared context, so no lock is required. */
-		return m_Heap && (blk.Ptr >= m_Heap.Ptr && blk.Ptr < GetBlockPointer(BlkCnt));
+		const char* pBlk = reinterpret_cast<const char*>(blk.Ptr);
+		const char* pHeapStart = reinterpret_cast<const char*>(m_Heap.Ptr);
+		const char* pHeapEnd = reinterpret_cast<const char*>(GetBlockPointer(BlkCnt));
+
+		return (pBlk >= pHeapStart) && (pBlk < pHeapEnd);
 	}
 
-	Blk Allocate(size_t sz) noexcept
+	Blk Allocate(const size_t sz) noexcept
 	{
 		{	/* CS */
 			std::lock_guard<MutexType> lock(m_Mutex);
@@ -580,8 +588,8 @@ public:
 			// Find a region of free blocks large enough to hold this allocation
 			auto pBitmap = GetBitmapPointer();
 
-			size_t blocksReq = BytesToBlockSize(sz);
-			size_t block = pBitmap->FindAvailable(blocksReq);
+			const size_t blocksReq = BytesToBlockSize(sz);
+			const size_t block = pBitmap->FindAvailable(blocksReq);
 
 			if (block >= BlkCnt) return{ nullptr, 0 };
 
@@ -593,7 +601,7 @@ public:
 		}
 	}
 
-	bool Reallocate(Blk& blk, size_t sz)
+	bool Reallocate(Blk& blk, const size_t sz)
 	{
 		{	/* CS */
 			std::lock_guard<MutexType> lock(m_Mutex);
@@ -602,9 +610,9 @@ public:
 
 			auto pBitmap = GetBitmapPointer();
 
-			size_t curBlock = GetBlock(blk.Ptr);
-			size_t curBlocksReq = BytesToBlockSize(blk.Size);
-			size_t newBlocksReq = BytesToBlockSize(sz);
+			const size_t curBlock = GetBlock(blk.Ptr);
+			const size_t curBlocksReq = BytesToBlockSize(blk.Size);
+			const size_t newBlocksReq = BytesToBlockSize(sz);
 
 			// In-place reallocation
 			if (curBlocksReq == newBlocksReq)
@@ -617,7 +625,7 @@ public:
 			if (sz > blk.Size)
 			{
 				// Try in-place expansion
-				size_t addBlocks = newBlocksReq - curBlocksReq;
+				const size_t addBlocks = newBlocksReq - curBlocksReq;
 				if (pBitmap->HasAvailable(curBlock + curBlocksReq, addBlocks))
 				{
 					blk.Size = sz;
@@ -631,7 +639,7 @@ public:
 			}
 
 			// Shrink the allocation
-			size_t remBlocks = curBlocksReq - newBlocksReq;
+			const size_t remBlocks = curBlocksReq - newBlocksReq;
 			blk.Size = sz;
 			pBitmap->Unset(curBlock + newBlocksReq, remBlocks);
 
@@ -652,8 +660,8 @@ public:
 			assert(Owns(blk) && "LinearHeapInternalStoragePolicy::Deallocate - Attempted to free a block that was not allocated by this allocator");
 
 			auto pBitmap = GetBitmapPointer();
-			size_t block = GetBlock(blk.Ptr);
-			size_t blocksReq = BytesToBlockSize(blk.Size);
+			const size_t block = GetBlock(blk.Ptr);
+			const size_t blocksReq = BytesToBlockSize(blk.Size);
 
 			pBitmap->Unset(block, blocksReq);
 		}
@@ -667,7 +675,7 @@ public:
 			if (!m_Heap) return;
 
 			auto pBitmap = GetBitmapPointer();
-			size_t bitmapBlocks = BytesToBlockSize(BitmapSize);
+			const size_t bitmapBlocks = BytesToBlockSize(BitmapSize);
 
 			pBitmap->Unset(bitmapBlocks, BlkCnt - bitmapBlocks);
 		}
@@ -686,7 +694,7 @@ public:
 
 private:
 	using StoragePolicyType = Epic::detail::LinearHeapInternalStoragePolicy<A, BlkSz, BlkCnt, Align, IsShared>;
-	using base = Epic::detail::LinearHeapPolicyImpl<StoragePolicyType, A, BlkSz, BlkCnt, Align, IsShared>;
+	using Base = Epic::detail::LinearHeapPolicyImpl<StoragePolicyType, A, BlkSz, BlkCnt, Align, IsShared>;
 
 public:
 	constexpr InternalLinearHeapPolicy() noexcept = default;
@@ -710,7 +718,7 @@ public:
 
 private:
 	using StoragePolicyType = Epic::detail::LinearHeapExternalStoragePolicy<A, BlkSz, BlkCnt, Align, IsShared>;
-	using base = Epic::detail::LinearHeapPolicyImpl<StoragePolicyType, A, BlkSz, BlkCnt, Align, IsShared>;
+	using Base = Epic::detail::LinearHeapPolicyImpl<StoragePolicyType, A, BlkSz, BlkCnt, Align, IsShared>;
 
 public:
 	constexpr ExternalLinearHeapPolicy() noexcept = default;

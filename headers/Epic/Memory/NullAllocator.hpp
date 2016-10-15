@@ -54,12 +54,12 @@ public:
 	}
 
 public:
-	Blk Allocate(size_t sz) const noexcept;
-	Blk AllocateAligned(size_t sz, size_t alignment = Alignment) const noexcept;
-	bool Reallocate(Blk& blk, size_t sz) const;
-	bool ReallocateAligned(Blk& blk, size_t sz, size_t alignment = Alignment) const;
+	Blk Allocate(const size_t sz) const noexcept;
+	Blk AllocateAligned(const size_t sz, const size_t alignment = Alignment) const noexcept;
+	bool Reallocate(Blk& blk, const size_t sz) const;
+	bool ReallocateAligned(Blk& blk, const size_t sz, const size_t alignment = Alignment) const;
 	Blk AllocateAll() const noexcept;
-	Blk AllocateAllAligned(size_t alignment = Alignment) const noexcept;
+	Blk AllocateAllAligned(const size_t alignment = Alignment) const noexcept;
 
 public:
 	void Deallocate(Blk blk) const;

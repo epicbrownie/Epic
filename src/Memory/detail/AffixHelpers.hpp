@@ -74,7 +74,7 @@ struct Epic::detail::AffixBuffer<Affix, true>
 
 	Affix _Buffer;
 
-	AffixBuffer(Affix* pObj) noexcept
+	explicit AffixBuffer(Affix* pObj) noexcept
 		: _Buffer(std::move(*pObj))
 	{
 		pObj->~Affix();
@@ -91,6 +91,6 @@ struct Epic::detail::AffixBuffer<void, true>
 {
 	static constexpr bool CanStore = true;
 
-	AffixBuffer(void*) noexcept { }
+	explicit AffixBuffer(void*) noexcept { }
 	void Restore(void*) noexcept { }
 };

@@ -22,7 +22,7 @@ using Epic::Mallocator;
 
 //////////////////////////////////////////////////////////////////////////////
 
-Blk Mallocator::Allocate(size_t sz) const noexcept
+Blk Mallocator::Allocate(const size_t sz) const noexcept
 {
 	// Verify that the requested size is within our allowed bounds
 	if (sz == 0 || sz < MinAllocSize || sz > MaxAllocSize)
@@ -36,7 +36,7 @@ Blk Mallocator::Allocate(size_t sz) const noexcept
 	return{ p, sz };
 }
 
-bool Mallocator::Reallocate(Blk& blk, size_t sz) const
+bool Mallocator::Reallocate(Blk& blk, const size_t sz) const
 {
 	assert(Owns(blk) && "Mallocator::Reallocate - Attempted to reallocate a block that was not allocated by this allocator");
 

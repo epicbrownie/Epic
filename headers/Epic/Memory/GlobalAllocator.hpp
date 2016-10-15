@@ -23,7 +23,7 @@
 
 namespace Epic::detail
 {
-	struct GlobalAllocatorTag;
+	struct GTag;
 
 	template<class A, class Tag>
 	struct GlobalAllocatorAdaptor;
@@ -78,28 +78,28 @@ public:
 public:
 	/* Returns a block of uninitialized memory. */
 	template<typename = std::enable_if_t<detail::CanAllocate<A>::value>>
-	Blk Allocate(size_t sz) noexcept
+	Blk Allocate(const size_t sz) noexcept
 	{
 		return m_pAllocator->Allocate(sz);
 	}
 
 	/* Returns a block of uninitialized memory (aligned to alignment). */
 	template<typename = std::enable_if_t<detail::CanAllocateAligned<A>::value>>
-	Blk AllocateAligned(size_t sz, size_t alignment = A::Alignment) noexcept
+	Blk AllocateAligned(const size_t sz, const size_t alignment = A::Alignment) noexcept
 	{
 		return m_pAllocator->AllocateAligned(sz, alignment);
 	}
 
 	/* Attempts to reallocate the memory of blk to the new size sz. */
 	template<typename = std::enable_if_t<detail::CanReallocate<A>::value>>
-	bool Reallocate(Blk& blk, size_t sz)
+	bool Reallocate(Blk& blk, const size_t sz)
 	{
 		return m_pAllocator->Reallocate(blk, sz);
 	}
 
 	/* Attempts to reallocate the memory of blk (aligned to alignment) to the new size sz. */
 	template<typename = std::enable_if_t<detail::CanReallocateAligned<A>::value>>
-	bool ReallocateAligned(Blk& blk, size_t sz, size_t alignment = A::Alignment)
+	bool ReallocateAligned(Blk& blk, const size_t sz, const size_t alignment = A::Alignment)
 	{
 		return m_pAllocator->ReallocateAligned(blk, sz, alignment);
 	}
@@ -140,7 +140,6 @@ public:
 	}
 };
 
-
 //////////////////////////////////////////////////////////////////////////////
 
 template<class A, class Tag>
@@ -161,6 +160,11 @@ struct Epic::detail::GlobalAllocatorAdaptor<Epic::detail::GlobalAllocatorImpl<A,
 
 namespace Epic
 {
+	namespace detail
+	{
+		using GlobalAllocatorTag = GTag;
+	}
+
 	template<class Allocator, class Tag = Epic::detail::GlobalAllocatorTag>
 	using GlobalAllocator = typename detail::GlobalAllocatorAdaptor<Allocator, Tag>::Type;
 }

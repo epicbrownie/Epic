@@ -88,20 +88,20 @@ struct Epic::detail::HeapBitmap
 	StorageType Blocks[BlockCount];
 
 	// Reset all bits to 0
-	void Reset() noexcept
+	inline void Reset() noexcept
 	{
 		for (size_t i = 0; i < BlockCount; ++i)
 			Blocks[i] = AllZero;
 	}
 
 	// Set bit at location to 0
-	void Unset(const size_t location) noexcept
+	inline void Unset(const size_t location) noexcept
 	{
 		Set(location, false);
 	}
 
 	// Set bits from start to start+count to 0
-	void Unset(const size_t start, const size_t count) noexcept
+	inline void Unset(const size_t start, const size_t count) noexcept
 	{
 		Set(start, count, false);
 	}
@@ -122,7 +122,7 @@ struct Epic::detail::HeapBitmap
 	}
 
 	// Set bits from start to start+count to value
-	void Set(const size_t start, const size_t count, bool value = true) noexcept
+	void Set(const size_t start, const size_t count, const bool value = true) noexcept
 	{
 		const size_t lbound = start / BitsPerBlock;
 		const size_t ubound = (start + count) / BitsPerBlock;

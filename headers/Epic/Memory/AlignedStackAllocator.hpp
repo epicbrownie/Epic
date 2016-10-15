@@ -42,6 +42,10 @@ public:
 	static constexpr size_t MemorySize = S;
 	static constexpr bool IsShareable = false;
 
+private:
+	char* _pCursor;
+	alignas(Alignment) char _Memory[MemorySize];
+
 public:
 	constexpr AlignedStackAllocator() noexcept
 		: _pCursor{ _Memory }, _Memory{ } 
@@ -54,7 +58,7 @@ public:
 	AlignedStackAllocator& operator = (Type&&) = delete;
 
 private:
-	char* _End() noexcept
+	inline char* _End() noexcept
 	{
 		return _Memory + MemorySize;
 	}
@@ -64,7 +68,7 @@ private:
 		return _Memory + MemorySize;
 	}
 
-	size_t _Remaining() noexcept
+	inline size_t _Remaining() noexcept
 	{
 		return static_cast<size_t>(_End() - _pCursor);
 	}
@@ -84,7 +88,7 @@ public:
 public:
 	/* Returns a block of uninitialized memory (aligned to alignment).
 	   If sz is zero, the returned block's pointer is null. */
-	Blk AllocateAligned(size_t sz, size_t alignment = Alignment) noexcept
+	Blk AllocateAligned(const size_t sz, const size_t alignment = Alignment) noexcept
 	{
 		// Verify that the alignment is acceptable
 		if (!detail::IsGoodAlignment(alignment))
@@ -112,7 +116,7 @@ public:
 	/* Returns a block of uninitialized memory.
 	   alignment must be a non-zero power of two.
 	   Its size is all of the remaining memory and it will be aligned to alignment. */
-	Blk AllocateAllAligned(size_t alignment = Alignment) noexcept
+	Blk AllocateAllAligned(const size_t alignment = Alignment) noexcept
 	{
 		// Verify that the alignment is acceptable
 		if (!detail::IsGoodAlignment(alignment))
@@ -144,8 +148,4 @@ private:
 	void* operator new[] (size_t) noexcept = delete;
 	void operator delete (void*) noexcept = delete;
 	void operator delete[] (void*) noexcept = delete;
-
-private:
-	char* _pCursor;
-	alignas(Alignment) char _Memory[MemorySize];
 };

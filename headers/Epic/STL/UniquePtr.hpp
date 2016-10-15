@@ -28,29 +28,41 @@ namespace Epic::detail
 
 //////////////////////////////////////////////////////////////////////////////
 
+namespace Epic
+{
+	template<class T, class A = Epic::DefaultAllocatorFor<T, Epic::eAllocatorFor::UniquePtr>>
+	using UniquePtr = std::unique_ptr<T, Epic::detail::Deleter<A>>;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
 template<class A>
 struct Epic::detail::Deleter
 {
 	size_t m_Extent;
 
-	Deleter() = delete;
+	Deleter() noexcept
+		: m_Extent{ 0 } { }
 
-	Deleter(size_t extent) noexcept
+	Deleter(const size_t extent) noexcept
 		: m_Extent{ extent } { }
 	
 	template<class T>
 	void operator() (T* p)
 	{
-		if (m_Extent == 0) return;
+		assert(m_Extent > 0);
 
-		Epic::STLAllocator<T, A> allocator;
+		using AllocatorType = Epic::STLAllocator<T, A>;
+		using AllocatorTraits = std::allocator_traits<AllocatorType>;
+
+		AllocatorType allocator;
 		
 		// Destroy pObject(s)
 		for (size_t i = 0; i < m_Extent; ++i)
-			allocator.destroy(&p[i]);
+			AllocatorTraits::destroy(allocator, &p[i]);
 
 		// Deallocate memory block
-		allocator.deallocate(p, m_Extent);
+		AllocatorTraits::deallocate(allocator, p, m_Extent);
 	}
 };
 
@@ -61,23 +73,25 @@ namespace Epic
 	/// MakeUnique<T, A, Args...>
 	template<class T, class A = Epic::DefaultAllocatorFor<T, Epic::eAllocatorFor::UniquePtr>, class... Args>
 	inline typename std::enable_if<!std::is_array<T>::value, 
-		std::unique_ptr<T, Epic::detail::Deleter<A>>>::type
+		Epic::UniquePtr<T, A>>::type
 	MakeUnique(Args&&... args)
 	{
 		using AllocatorType = Epic::STLAllocator<T, A>;
+		using AllocatorTraits = std::allocator_traits<AllocatorType>;
+
 		AllocatorType allocator;
 
 		// Use the allocator to create a T
-		T* pObject = allocator.allocate(1);
+		T* pObject = AllocatorTraits::allocate(allocator, 1);
 
 		// Attempt to construct the T
 		try
 		{
-			allocator.construct(pObject, std::forward<Args>(args)...);
+			AllocatorTraits::construct(allocator, pObject, std::forward<Args>(args)...);
 		}
 		catch (...)
 		{
-			allocator.deallocate(pObject, 1);
+			AllocatorTraits::deallocate(allocator, pObject, 1);
 			throw;
 		}
 
@@ -88,12 +102,13 @@ namespace Epic
 	/// MakeUnique<T[], A>
 	template<class T, class A = Epic::DefaultAllocatorFor<T, Epic::eAllocatorFor::UniquePtr>> 
 	inline typename std::enable_if<std::is_array<T>::value && std::extent<T>::value == 0, 
-		std::unique_ptr<T, Epic::detail::Deleter<A>>>::type
-	MakeUnique(size_t Count)
+		Epic::UniquePtr<T, A>>::type
+	MakeUnique(const size_t Count)
 	{
 		using Elem = std::remove_extent_t<T>;
 		using AllocatorType = Epic::STLAllocator<Elem, A>;
-		
+		using AllocatorTraits = std::allocator_traits<AllocatorType>;
+
 		// Check for empty array
 		if (Count == 0)
 			return std::unique_ptr<Elem[], detail::Deleter<A>>{ ((Elem*)nullptr), (detail::Deleter<A>{ 0 }) };
@@ -101,17 +116,17 @@ namespace Epic
 		AllocatorType allocator;
 
 		// Use the allocator to create the object array
-		Elem* pObjects = allocator.allocate(Count);
+		Elem* pObjects = AllocatorTraits::allocate(allocator, Count);
 
 		// Attempt to construct the objects
 		try
 		{
 			for (size_t i = 0; i < Count; ++i)
-				allocator.construct(&pObjects[i]);
+				AllocatorTraits::construct(allocator, &pObjects[i]);
 		}
 		catch (...)
 		{
-			allocator.deallocate(pObjects, Count);
+			AllocatorTraits::deallocate(allocator, pObjects, Count);
 			throw;
 		}
 
@@ -132,23 +147,25 @@ namespace Epic
 	/// MakeImpl<B, D, A, Args...>
 	template<class B, class D, class A = Epic::DefaultAllocatorFor<D, Epic::eAllocatorFor::UniquePtr>, class... Args>
 	inline typename std::enable_if<!std::is_array<B>::value, 
-		std::unique_ptr<B, Epic::detail::Deleter<A>>>::type
+		Epic::UniquePtr<B, A>>::type
 	MakeImpl(Args&&... args)
 	{
 		using AllocatorType = Epic::STLAllocator<D, A>;
+		using AllocatorTraits = std::allocator_traits<AllocatorType>;
+
 		AllocatorType allocator;
 
 		// Use the allocator to create a D
-		D* pObject = allocator.allocate(1);
+		D* pObject = AllocatorTraits::allocate(allocator, 1);
 
 		// Attempt to construct the D
 		try
 		{
-			allocator.construct(pObject, std::forward<Args>(args)...);
+			AllocatorTraits::construct(allocator, pObject, std::forward<Args>(args)...);
 		}
 		catch (...)
 		{
-			allocator.deallocate(pObject, 1);
+			AllocatorTraits::deallocate(allocator, pObject, 1);
 			throw;
 		}
 

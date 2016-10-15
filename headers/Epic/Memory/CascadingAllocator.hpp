@@ -56,7 +56,7 @@ struct Epic::detail::CascadingAllocatorNode
 		: m_Allocator{ }, m_pNext{ nullptr }, m_AllocatedSize{ 0 } 
 	{ }
 
-	CascadingAllocatorNode(size_t sz)
+	explicit CascadingAllocatorNode(const size_t sz)
 		noexcept(std::is_nothrow_default_constructible<Allocator>::value)
 		: m_Allocator{ }, m_pNext{ nullptr }, m_AllocatedSize{ sz }
 	{ }
@@ -200,7 +200,7 @@ protected:
 		while ((pNode = m_pAllocNodes.load(std::memory_order_acquire)) != nullptr)
 		{
 			auto pNextNode = pNode->m_pNext;
-			auto nodesz = pNode->m_AllocatedSize;
+			const auto nodesz = pNode->m_AllocatedSize;
 
 			pNode->~CascadingAllocatorNode();
 
@@ -378,7 +378,7 @@ public:
 
 public:
 	using Type = Epic::detail::CascadingAllocatorImpl<A, IsShared, NodeA>;
-	using base = Epic::detail::CascadingAllocatorBase<A, IsShared, NodeA>;
+	using Base = Epic::detail::CascadingAllocatorBase<A, IsShared, NodeA>;
 	using AllocatorType = A;
 	using NodeAllocatorType = NodeA;
 	
@@ -390,21 +390,21 @@ public:
 
 public:
 	constexpr CascadingAllocatorImpl()
-		noexcept(std::is_nothrow_default_constructible<base>::value) = default;
+		noexcept(std::is_nothrow_default_constructible<Base>::value) = default;
 
 	constexpr CascadingAllocatorImpl(const Type& obj) = delete;
 
-	template<typename = std::enable_if_t<std::is_move_constructible<base>::value>>
+	template<typename = std::enable_if_t<std::is_move_constructible<Base>::value>>
 	constexpr CascadingAllocatorImpl(Type&& obj)
-		noexcept(std::is_nothrow_move_constructible<base>::value)
-		: base(std::move(obj))
+		noexcept(std::is_nothrow_move_constructible<Base>::value)
+		: Base(std::move(obj))
 	{ }
 
 	CascadingAllocatorImpl& operator = (const Type& obj) = delete;
 	CascadingAllocatorImpl& operator = (Type&& obj) = delete;
 	
 private:
-	Blk TryAllocate(size_t sz) noexcept
+	Blk TryAllocate(const size_t sz) noexcept
 	{
 		if (!detail::CanAllocate<A>::value)
 			return{ nullptr, 0 };
@@ -423,7 +423,7 @@ private:
 		return{ nullptr, 0 };
 	}
 
-	Blk TryAllocateAligned(size_t sz, size_t alignment) noexcept
+	Blk TryAllocateAligned(const size_t sz, const size_t alignment) noexcept
 	{
 		if (!detail::CanAllocateAligned<A>::value)
 			return{ nullptr, 0 };
@@ -452,7 +452,7 @@ public:
 public:
 	/* Returns a block of uninitialized memory. */
 	template<typename = std::enable_if_t<detail::CanAllocate<A>::value>>
-	Blk Allocate(size_t sz) noexcept
+	Blk Allocate(const size_t sz) noexcept
 	{
 		// Verify that the requested size is within our allowed bounds
 		if (sz == 0 || sz < MinAllocSize || sz > MaxAllocSize)
@@ -472,7 +472,7 @@ public:
 
 	/* Returns a block of uninitialized memory (aligned to alignment). */
 	template<typename = std::enable_if_t<detail::CanAllocateAligned<A>::value>>
-	Blk AllocateAligned(size_t sz, size_t alignment = Alignment) noexcept
+	Blk AllocateAligned(const size_t sz, const size_t alignment = Alignment) noexcept
 	{
 		// Verify that the alignment is acceptable
 		if (!Epic::detail::IsGoodAlignment(alignment))
@@ -496,7 +496,7 @@ public:
 
 	/* Attempts to reallocate the memory of blk to the new size sz. */
 	template<typename = std::enable_if_t<detail::CanAllocate<A>::value>>
-	bool Reallocate(Blk& blk, size_t sz)
+	bool Reallocate(Blk& blk, const size_t sz)
 	{
 		// If the block isn't valid, delegate to Allocate
 		if (!blk)
@@ -538,7 +538,7 @@ public:
 
 	/* Attempts to reallocate the memory of blk (aligned to alignment) to the new size sz. */
 	template<typename = std::enable_if_t<detail::CanAllocateAligned<A>::value>>
-	bool ReallocateAligned(Blk& blk, size_t sz, size_t alignment = A::Alignment)
+	bool ReallocateAligned(Blk& blk, const size_t sz, const size_t alignment = A::Alignment)
 	{
 		// Verify that the alignment is acceptable
 		if (!Epic::detail::IsGoodAlignment(alignment))
