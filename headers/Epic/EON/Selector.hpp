@@ -31,16 +31,16 @@ struct Epic::EON::HasName
 {
 	Epic::EON::Name _Name;
 
-	HasName(const Epic::EON::Name& name)
+	explicit HasName(const Epic::EON::Name& name)
 		: _Name{ name } { }
 
-	Epic::STLVector<const Epic::EON::Variable*> operator() (const Epic::EON::Object& scope) const
+	inline Epic::STLVector<const Epic::EON::Variable*> operator() (const Epic::EON::Object& scope) const
 	{
 		const Epic::EON::Variable* pVar = detail::GetVariableInObject(scope, _Name);
 		if (pVar)
 			return{ pVar };
 		else
-			return{};
+			return{ };
 	}
 };
 
@@ -49,7 +49,7 @@ struct Epic::EON::HasParent
 	Epic::EON::Name _Parent;
 	Epic::EON::Name _Scope;
 
-	HasParent(const Epic::EON::Name& parent, const Epic::EON::Name& scope = "")
+	explicit HasParent(const Epic::EON::Name& parent, const Epic::EON::Name& scope = "")
 		: _Parent{ parent }, _Scope{ scope } { }
 
 	Epic::STLVector<const Epic::EON::Variable*> operator() (const Epic::EON::Object& initScope) const

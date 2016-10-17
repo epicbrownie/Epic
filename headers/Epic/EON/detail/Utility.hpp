@@ -55,19 +55,20 @@ namespace Epic::EON::detail
 
 				// Find the variant for this path entry
 				const Epic::EON::Name vname{ itKey, itNext };
-				if (vname.empty()) break;
+				if (!vname.empty())
+				{
+					auto it = std::find_if
+					(
+						std::begin(pScope->Members),
+						std::end(pScope->Members),
+						[&](const auto& v) { return v.Name == vname; }
+					);
 
-				auto it = std::find_if
-				(
-					std::begin(pScope->Members),
-					std::end(pScope->Members),
-					[&] (const auto& v) { return v.Name == vname; }
-				);
+					pVariable = (it == std::end(pScope->Members)) ? nullptr : &(*it);
+					if (!pVariable) break;
 
-				pVariable = (it == std::end(pScope->Members)) ? nullptr : &(*it);
-				if (!pVariable) break;
-
-				pScope = boost::get<Epic::EON::Object>(&pVariable->Value.Data);
+					pScope = boost::get<Epic::EON::Object>(&pVariable->Value.Data);
+				}
 
 				// Reset for next path entry
 				itKey = (itNext == itEnd) ? itEnd : std::next(itNext);

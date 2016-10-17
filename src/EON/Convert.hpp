@@ -31,7 +31,7 @@ namespace Epic::EON
 template<class From, class To>
 struct Epic::EON::Convert
 {
-	bool operator() (const From& /*src*/, To& /*dest*/) const
+	inline bool operator() (const From& /*src*/, To& /*dest*/) const
 	{
 		return false;
 	}
@@ -41,7 +41,7 @@ struct Epic::EON::Convert
 template<class Alloc>
 struct Epic::EON::Convert<Epic::EON::String, std::basic_string<char, std::char_traits<char>, Alloc>>
 {
-	bool operator() (const Epic::EON::String& src, std::basic_string<char, std::char_traits<char>, Alloc>& dest) const
+	inline bool operator() (const Epic::EON::String& src, std::basic_string<char, std::char_traits<char>, Alloc>& dest) const
 	{
 		// Convert a wide string to a string
 		using CodeCVT = std::codecvt_utf8<wchar_t>;
@@ -57,8 +57,8 @@ struct Epic::EON::Convert<Epic::EON::String, std::basic_string<char, std::char_t
 template<class AllocN, class AllocW>
 struct Epic::EON::Convert<std::basic_string<char, std::char_traits<char>, AllocN>, std::basic_string<wchar_t, std::char_traits<wchar_t>, AllocW>>
 {
-	bool operator() (const std::basic_string<char, std::char_traits<char>, AllocN>& src,
-					 std::basic_string<wchar_t, std::char_traits<wchar_t>, AllocW>& dest) const
+	inline bool operator() (const std::basic_string<char, std::char_traits<char>, AllocN>& src,
+							std::basic_string<wchar_t, std::char_traits<wchar_t>, AllocW>& dest) const
 	{
 		// Convert a narrow string to a wide string
 		using CodeCVT = std::codecvt_utf8<wchar_t>;
@@ -74,8 +74,8 @@ struct Epic::EON::Convert<std::basic_string<char, std::char_traits<char>, AllocN
 template<Epic::StringHashAlgorithms Algorithm>
 struct Epic::EON::Convert<Epic::EON::String, Epic::BasicStringHash<Epic::EON::String::ValueType::value_type, Algorithm>>
 {
-	bool operator() (const Epic::EON::String& src,
-					 Epic::BasicStringHash<Epic::EON::String::ValueType::value_type, Algorithm>& dest) const
+	inline bool operator() (const Epic::EON::String& src,
+							Epic::BasicStringHash<Epic::EON::String::ValueType::value_type, Algorithm>& dest) const
 	{
 		dest = src.Value;
 		return true;

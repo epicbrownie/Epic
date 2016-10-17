@@ -233,6 +233,9 @@
     <ClInclude Include="src\EON\Selector.hpp">
       <Filter>Utility\EON</Filter>
     </ClInclude>
+    <ClInclude Include="src\EON\Extractor.hpp">
+      <Filter>Utility\EON</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Memory\NullAllocator.cpp">

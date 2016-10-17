@@ -14,6 +14,7 @@
 #pragma once
 
 #include <Epic/EON/Types.hpp>
+#include <Epic/EON/Extractor.hpp>
 #include <Epic/EON/detail/Utility.hpp>
 #include <algorithm>
 #include <boost/variant.hpp>
@@ -198,6 +199,11 @@ public:
 	Bin(Bin&&) = default;
 
 public:
+	EON::Extractor GetExtractor() const
+	{
+		return EON::Extractor(m_Data);
+	}
+
 	const EON::Object& Get() const { return m_Data; }
 
 public:
