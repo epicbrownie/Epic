@@ -19,7 +19,6 @@
 #include <boost/variant/apply_visitor.hpp>
 #include <boost/variant/static_visitor.hpp>
 #include <type_traits>
-#include <vector>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -170,15 +169,15 @@ private:
 	template<class SrcType>
 	inline bool _Assign(const SrcType& src, DestType& dest, ConvertAssignTag) const
 	{
-		return Epic::EON::Convert<SrcType, DestType>{ } (src, dest);
+		return Epic::EON::Convert<SrcType, DestType>::Apply(src, dest);
 	}
 };
 
-// Assign<std::vector<DestType>>
-template<class DestType, class Alloc>
-struct Epic::EON::detail::Assign<std::vector<DestType, Alloc>>
+// Assign<Container<DestType, Alloc>>
+template<class DestType, class Alloc, template<class, class> class Container>
+struct Epic::EON::detail::Assign<Container<DestType, Alloc>>
 {
-	using VectorType = std::vector<DestType, Alloc>;
+	using ContainerType = Container<DestType, Alloc>;
 
 	struct DirectAssignTag { };
 	struct CastAssignTag { };
@@ -200,38 +199,38 @@ struct Epic::EON::detail::Assign<std::vector<DestType, Alloc>>
 
 	// Named assign dispatches to the best method of assignment (dropping Name argument)
 	template<class SrcType>
-	inline bool operator() (const Epic::EON::Name&, const SrcType& src, VectorType& dest) const
+	inline bool operator() (const Epic::EON::Name&, const SrcType& src, ContainerType& dest) const
 	{
 		return _Assign(src, dest, SelectTag<SrcType>::Type());
 	}
 
 	// Assign dispatches to the best method of assignment
 	template<class SrcType>
-	inline bool operator() (const SrcType& src, VectorType& dest) const
+	inline bool operator() (const SrcType& src, ContainerType& dest) const
 	{
 		return _Assign(src, dest, SelectTag<SrcType>::Type());
 	}
 
 private:
 	template<class SrcType>
-	inline bool _Assign(const SrcType& src, VectorType& dest, DirectAssignTag) const
+	inline bool _Assign(const SrcType& src, ContainerType& dest, DirectAssignTag) const
 	{
 		dest.emplace_back(src);
 		return true;
 	}
 
 	template<class SrcType>
-	inline bool _Assign(const SrcType& src, VectorType& dest, CastAssignTag) const
+	inline bool _Assign(const SrcType& src, ContainerType& dest, CastAssignTag) const
 	{
 		dest.emplace_back(SafeCast<SrcType, DestType>::Apply(src));
 		return true;
 	}
 
 	template<class SrcType>
-	inline bool _Assign(const SrcType& src, VectorType& dest, ConvertAssignTag) const
+	inline bool _Assign(const SrcType& src, ContainerType& dest, ConvertAssignTag) const
 	{
 		DestType value;
-		if (Epic::EON::Convert<SrcType, DestType>{ } (src, value))
+		if (Epic::EON::Convert<SrcType, DestType>::Apply(src, value))
 		{
 			dest.emplace_back(std::move(value));
 			return true;
@@ -291,26 +290,7 @@ private:
 
 	inline bool _Assign(DestType& dest, ConvertAssignTag) const
 	{
-		return Epic::EON::Convert<DefaultType, DestType>{ } (_DefaultValue, dest);
-	}
-};
-
-// Default<std::vector<DestType>>
-template<class DestType, class Alloc>
-struct Epic::EON::detail::Default<std::vector<DestType, Alloc>>
-{
-	using VectorType = std::vector<DestType, Alloc>;
-
-	const VectorType _DefaultValue;
-
-	explicit Default(const VectorType& defaultValue)
-		: _DefaultValue(defaultValue) { }
-
-	// Default Assign will assign 'dest' to '_DefaultValue'
-	inline bool operator() (VectorType& dest) const
-	{
-		dest = _DefaultValue;
-		return true;
+		return Epic::EON::Convert<DefaultType, DestType>::Apply(_DefaultValue, dest);
 	}
 };
 

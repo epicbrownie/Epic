@@ -54,44 +54,35 @@ struct Epic::EON::detail::MemBnd
 	bool Assign(const Epic::EON::Object& scope, CType& instance) const
 	{
 		// Apply filter to scope
-		auto vars = _FilterFn(scope);
-		if (std::begin(vars) == std::end(vars))
+		auto var = _FilterFn(scope);
+		if (!var)
 			return DefaultIf<DefaultFn, MType>::Apply(_DefaultFn, instance.*_pMember);
 
 		// Try to assign for each variable found with filter
-		bool result = false;
+		bool result = true;
 
-		for (auto pVariable : vars)
+		if (ObjectValueBinding::MemberBindings > 0)
 		{
-			bool thisResult = true;
+			// An object binding was supplied.
+			// Member object binding requires EON::Object types.
+			auto pObject = boost::get<Epic::EON::Object>(&var->Value.Data);
+			if (!pObject)
+				return false;
 
-			if (ObjectValueBinding::MemberBindings > 0)
+			for (size_t i = 0; i < ObjectValueBinding::MemberBindings; ++i)
 			{
-				// An object binding was supplied.
-				// Member object binding requires EON::Object types.
-				auto pObject = boost::get<Epic::EON::Object>(&pVariable->Value.Data);
-				if (!pObject)
-					continue;
-
-				for (size_t i = 0; i < ObjectValueBinding::MemberBindings; ++i)
+				if (!_ObjBinding.Assign(*pObject, instance.*_pMember, i))
 				{
-					if (!_ObjBinding.Assign(*pObject, instance.*_pMember, i))
-					{
-						thisResult = false;
-						break;
-					}
+					result = false;
+					break;
 				}
 			}
-			else
-			{
-				// Assign as a normal member variable via AssignVisitor
-				auto vsAssign = AssignVisitor<MType, AssignFn>{ instance.*_pMember, _AssignFn };
-				if (!boost::apply_visitor(vsAssign, pVariable->Value.Data))
-					thisResult = false;
-			}
-
-			if (thisResult)
-				result = true;
+		}
+		else
+		{
+			// Assign as a normal member variable via AssignVisitor
+			auto vsAssign = AssignVisitor<MType, AssignFn>{ instance.*_pMember, _AssignFn };
+			result = boost::apply_visitor(vsAssign, var->Value.Data);
 		}
 
 		return result;
@@ -110,7 +101,7 @@ struct Epic::EON::detail::ObjBnd<CType, Epic::EON::detail::MemBnd<CType, MType, 
 
 	static constexpr size_t MemberBindings = 1 + ParentType::MemberBindings;
 
-	ObjBnd(const Binding& binding, const Bindings&... bindings)
+	explicit ObjBnd(const Binding& binding, const Bindings&... bindings)
 		: _Binding{ binding }, ParentType(bindings...) { }
 
 	bool Assign(const Epic::EON::Object& scope, CType& instance, const size_t index) const
@@ -134,7 +125,7 @@ struct Epic::EON::detail::ObjBnd<CType, Epic::EON::detail::MemBnd<CType, MType, 
 
 	static constexpr size_t MemberBindings = 1;
 	
-	ObjBnd(const Binding& binding)
+	explicit ObjBnd(const Binding& binding)
 		: _Binding{ binding }, ParentType() { }
 
 	bool Assign(const Epic::EON::Object& scope, CType& instance, const size_t /*index*/) const
@@ -188,9 +179,6 @@ namespace Epic::EON
 
 namespace Epic::EON
 {
-	// TODO: Includes with custom default fn?
-	// TODO: Additional options for Selectors
-
 	namespace
 	{
 		// Bind a named variable to an object member

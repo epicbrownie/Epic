@@ -19,14 +19,71 @@
 #include <Epic/EON/detail/Assign.hpp>
 #include <Epic/EON/detail/Utility.hpp>
 #include <Epic/STL/Vector.hpp>
+#include <Epic/STL/ForwardList.hpp>
 #include <algorithm>
 
 //////////////////////////////////////////////////////////////////////////////
 
 namespace Epic::EON
 {
+	namespace detail
+	{
+		template<class Container>
+		struct ContainerInserter;
+	}
+
 	class Extractor;
 }
+
+//////////////////////////////////////////////////////////////////////////////
+
+template<class ResultType, class Alloc, template<class, class> class _Container>
+struct Epic::EON::detail::ContainerInserter<_Container<ResultType, Alloc>>
+{
+	using Container = _Container<ResultType, Alloc>;
+
+	static inline void Reserve(Container& container, const typename Container::size_type)
+	{
+		/* Do Nothing */
+	}
+
+	static inline void Add(Container& container, ResultType&& result)
+	{
+		container.emplace_back(std::move(result));
+	}
+};
+
+template<class ResultType, class Alloc>
+struct Epic::EON::detail::ContainerInserter<std::vector<ResultType, Alloc>>
+{
+	using Container = std::vector<ResultType, Alloc>;
+
+	static inline void Reserve(Container& container, const typename Container::size_type count)
+	{
+		container.reserve(count);
+	}
+
+	static inline void Add(Container& container, ResultType&& result)
+	{
+		container.emplace_back(std::move(result));
+	}
+};
+
+template<class ResultType, class Alloc>
+struct Epic::EON::detail::ContainerInserter<std::forward_list<ResultType, Alloc>>
+{
+	using Container = std::forward_list<ResultType, Alloc>;
+
+	static inline void Reserve(Container& container, const typename Container::size_type)
+	{
+		/* Do Nothing */
+	}
+
+	static inline void Add(Container& container, ResultType&& result)
+	{
+		container.emplace_front(std::move(result));
+	}
+};
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -65,19 +122,16 @@ private:
 	template<class ResultType, class SelectorFn, class DefaultFn, class AssignFn>
 	bool _ExtractOne(ResultType& result, SelectorFn selectorFn, DefaultFn defaultFn, AssignFn assignFn) const
 	{
-		auto vars = selectorFn(m_GlobalScope);
-		if (std::begin(vars) == std::end(vars))
+		auto var = selectorFn(m_GlobalScope);
+		if (!var)
 			return detail::DefaultIf<DefaultFn, ResultType>::Apply(defaultFn, result);
 
 		bool assigned = false;
 
-		for (auto pVariable : vars)
-		{
-			auto vsAssign = Epic::EON::detail::AssignVisitor<ResultType, AssignFn>{ result, assignFn };
-			if (boost::apply_visitor(vsAssign, pVariable->Value.Data))
-				assigned = true;
-		}
-
+		auto vsAssign = Epic::EON::detail::AssignVisitor<ResultType, AssignFn>{ result, assignFn };
+		if (boost::apply_visitor(vsAssign, var->Value.Data))
+			assigned = true;
+		
 		return assigned;
 	}
 
@@ -87,62 +141,56 @@ private:
 	{
 		using Bindings = ObjectBinding<ObjectType, MemberBindings...>;
 
-		auto vars = selectorFn(m_GlobalScope);
-		if (std::begin(vars) == std::end(vars))
+		auto var = selectorFn(m_GlobalScope);
+		if (!var)
 			return detail::DefaultIf<DefaultFn, ResultType>::Apply(defaultFn, result);
 
 		bool assigned = false;
 
-		for (auto pVariable : vars)
+		// Extract var as ObjectType
+		const EON::Object* pAsObject = boost::get<EON::Object>(&var->Value.Data);
+
+		if (pAsObject)
 		{
-			// Extract pVariable as ObjectType
-			const EON::Object* pAsObject = boost::get<EON::Object>(&pVariable->Value.Data);
-
-			if (pAsObject)
-			{
-				ObjectType thisResult;
-				if ( (_ExtractObject(pAsObject, thisResult, bindings)) && 
-					 (detail::AssignIf<AssignFn, ObjectType, ResultType>::Apply(assignFn, thisResult, result)) )
-					assigned = true;
-
-				continue;
-			}
+			ObjectType thisResult;
+			if ( (_ExtractObject(pAsObject, thisResult, bindings)) && 
+					(detail::AssignIf<AssignFn, ObjectType, ResultType>::Apply(assignFn, thisResult, result)) )
+				return true;
+		}
 		
-			// Extract variable as array of ObjectType
-			const EON::Array* pAsArray = boost::get<EON::Array>(&pVariable->Value.Data);
+		// Extract variable as array of ObjectType
+		const EON::Array* pAsArray = boost::get<EON::Array>(&var->Value.Data);
 
-			if (pAsArray)
+		if (pAsArray)
+		{
+			for (auto& member : pAsArray->Members)
 			{
-				for (auto& member : pAsArray->Members)
+				const EON::Object* pMemberAsObj = boost::get<EON::Object>(&member.Data);
+
+				if (pMemberAsObj)
 				{
-					const EON::Object* pMemberAsObj = boost::get<EON::Object>(&member.Data);
-
-					if (pMemberAsObj)
-					{
-						ObjectType thisResult;
-						if ( (_ExtractObject(pMemberAsObj, thisResult, bindings)) && 
-							(detail::AssignIf<AssignFn, ObjectType, ResultType>::Apply(assignFn, thisResult, result)) )
-							assigned = true;
-					}
+					ObjectType thisResult;
+					if ( (_ExtractObject(pMemberAsObj, thisResult, bindings)) && 
+						(detail::AssignIf<AssignFn, ObjectType, ResultType>::Apply(assignFn, thisResult, result)) )
+						assigned = true;
 				}
-
-				continue;
 			}
 		}
 
 		return assigned;
 	}
 	
-	template<class ResultType, class Alloc, class SelectorFn, class DefaultFn, class AssignFn>
-	bool _ExtractMany(std::vector<ResultType, Alloc>& result, SelectorFn selectorFn, 
-		DefaultFn defaultFn, AssignFn assignFn) const
+	template<class ResultType, class Alloc, template<class, class> class Container, class SelectorFn, class DefaultFn, class AssignFn>
+	bool _ExtractMany(Container<ResultType, Alloc>& results, SelectorFn selectorFn, DefaultFn defaultFn, AssignFn assignFn) const
 	{
+		using Inserter = detail::ContainerInserter<Container<ResultType, Alloc>>;
+
 		auto vars = selectorFn(m_GlobalScope);
 		if (std::begin(vars) == std::end(vars))
-			return detail::DefaultIf<DefaultFn, std::vector<ResultType, Alloc>>::Apply(defaultFn, result);
+			return true;
 
-		result.reserve(result.size() + vars.size());
-		
+		Inserter::Reserve(results, vars.size());
+
 		bool assigned = false;
 
 		for (auto pVariable : vars)
@@ -153,25 +201,26 @@ private:
 			if (boost::apply_visitor(vsAssign, pVariable->Value.Data))
 			{
 				assigned = true;
-				result.emplace_back(std::move(thisResult));
+				Inserter::Add(results, std::move(thisResult));
 			}
 		}
 
 		return assigned;
 	}
 	
-	template<class ResultType, class Alloc, class SelectorFn, class DefaultFn, class AssignFn, class ObjectType, class... MemberBindings>
-	bool _ExtractMany(std::vector<ResultType, Alloc>& result, SelectorFn selectorFn, 
+	template<class ResultType, class Alloc, template<class, class> class Container, class SelectorFn, class DefaultFn, class AssignFn, class ObjectType, class... MemberBindings>
+	bool _ExtractMany(Container<ResultType, Alloc>& results, SelectorFn selectorFn, 
 		DefaultFn defaultFn, AssignFn assignFn, const ObjectBinding<ObjectType, MemberBindings...>& bindings) const
 	{
+		using Inserter = detail::ContainerInserter<Container<ResultType, Alloc>>;
 		using Bindings = ObjectBinding<ObjectType, MemberBindings...>;
 
 		auto vars = selectorFn(m_GlobalScope);
 		if (std::begin(vars) == std::end(vars))
-			return detail::DefaultIf<DefaultFn, std::vector<ResultType, Alloc>>::Apply(defaultFn, result);
-
-		result.reserve(result.size() + vars.size());
+			return true;
 		
+		Inserter::Reserve(results, vars.size());
+
 		bool assigned = false;
 
 		for (auto pVariable : vars)
@@ -188,7 +237,7 @@ private:
 
 					if (detail::AssignIf<AssignFn, ObjectType, ResultType>::Apply(assignFn, thisResult, convertedResult))
 					{
-						result.emplace_back(std::move(convertedResult));
+						Inserter::Add(results, std::move(convertedResult));
 						assigned = true;
 					}
 				}
@@ -219,7 +268,7 @@ private:
 
 				if (assignedArray)
 				{
-					result.emplace_back(std::move(accumResult));
+					Inserter::Add(results, std::move(accumResult));
 					assigned = true;
 				}
 
@@ -231,16 +280,162 @@ private:
 	}
 
 public:
+	// Get a variable identified with 'selectorFn'.
+	template<class ResultType, class SelectorFn, class AssignFn = detail::Assign<ResultType>>
+	bool GetSingle(SelectorFn selectorFn, ResultType& result, AssignFn assignFn = AssignFn()) const
+	{
+		return _ExtractOne(result, selectorFn, detail::DefaultFail(), assignFn);
+	}
+
+	// Get a variable identified with 'selectorFn'.
+	template<class ResultType, class SelectorFn, class AssignFn = detail::Assign<ResultType>>
+	auto GetSingle(SelectorFn selectorFn, AssignFn assignFn = AssignFn()) const
+	{
+		ResultType result;
+		GetSingle(selectorFn, result, assignFn);
+		return result;
+	}
+
+	// Get a variable identified with 'selectorFn'. Extract it using 'bindings'.
+	template<class ResultType, class SelectorFn, class ObjectType, class AssignFn = detail::Assign<ResultType>, class... MemberBindings>
+	bool GetSingle(SelectorFn selectorFn, ResultType& result, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
+		AssignFn assignFn = AssignFn()) const
+	{
+		return _ExtractOne(result, selectorFn, detail::DefaultFail(), assignFn, bindings);
+	}
+
+	// Get a variable identified with 'selectorFn'. Extract it using 'bindings'.
+	template<class ResultType, class SelectorFn, class ObjectType, class AssignFn = detail::Assign<ResultType>, class... MemberBindings>
+	auto GetSingle(const EON::Name& varName, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
+		AssignFn assignFn = AssignFn()) const
+	{
+		ResultType result;
+		GetSingle(selectorFn, result, bindings, assignFn);
+		return result;
+	}
+
+public:
+	// Get a variable identified with 'selectorFn' or assign 'defaultValue'.
+	template<class ResultType, class SelectorFn, class DefaultType, class AssignFn = detail::Assign<ResultType>>
+	inline bool GetSingleOr(SelectorFn selectorFn, ResultType& result, const DefaultType& defaultValue, 
+		AssignFn assignFn = AssignFn()) const
+	{
+		return _ExtractOne(result, selectorFn, detail::Default<ResultType, DefaultType>{ defaultValue }, assignFn);
+	}
+
+	// Get a variable identified with 'selectorFn' or assign 'defaultValue'
+	template<class ResultType, class SelectorFn, class DefaultType, class AssignFn = detail::Assign<ResultType>>
+	inline auto GetSingleOr(SelectorFn selectorFn, const DefaultType& defaultValue, AssignFn assignFn = AssignFn()) const
+	{
+		ResultType result;
+		GetSingleOr(selectorFn, result, defaultValue, assignFn);
+		return result;
+	}
+
+	// Get a variable identified with 'selectorFn' or assign 'defaultValue'.
+	template<class ResultType, class SelectorFn, class DefaultType, class ObjectType, class AssignFn = detail::Assign<ResultType>, class... MemberBindings>
+	inline bool GetSingleOr(SelectorFn selectorFn, ResultType& result, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
+		const DefaultType& defaultValue, AssignFn assignFn = AssignFn()) const
+	{
+		return _ExtractOne(result, selectorFn, detail::Default<ResultType, DefaultType>{ defaultValue }, assignFn, bindings);
+	}
+
+	// Get a variable identified with 'selectorFn' or assign 'defaultValue'
+	template<class ResultType, class SelectorFn, class DefaultType, class ObjectType, class AssignFn = detail::Assign<ResultType>, class... MemberBindings>
+	inline auto GetSingleOr(SelectorFn selectorFn, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
+		const DefaultType& defaultValue, AssignFn assignFn = AssignFn()) const
+	{
+		ResultType result;
+		GetSingleOr(selectorFn, result, bindings, defaultValue, assignFn);
+		return result;
+	}
+
+public:
+	// Get all variables identified with 'selectorFn'.
+	template<class ResultType, class SelectorFn, class Alloc, template<class, class> class Container, class AssignFn = detail::Assign<ResultType>>
+	inline bool GetMulti(SelectorFn selectorFn, Container<ResultType, Alloc>& results, AssignFn assignFn = AssignFn()) const
+	{
+		return _ExtractMany<ResultType>(results, selectorFn, detail::DefaultFail(), assignFn);
+	}
+
+	// Get all variables identified with 'selectorFn'.
+	template<class ResultType, class SelectorFn, class AssignFn = detail::Assign<ResultType>>
+	inline auto GetMulti(SelectorFn selectorFn, AssignFn assignFn = AssignFn()) const
+	{
+		Epic::STLVector<ResultType> results;
+		GetMulti<ResultType>(selectorFn, results, assignFn);
+		return results;
+	}
+
+	// Get all variables identified with 'selectorFn'. Extract them using 'bindings'.
+	template<class ResultType, class SelectorFn, class Alloc, template<class, class> class Container, class ObjectType, class AssignFn = detail::Assign<ResultType>, class... MemberBindings>
+	inline bool GetMulti(SelectorFn selectorFn, Container<ResultType, Alloc>& results,
+		const ObjectBinding<ObjectType, MemberBindings...>& bindings, AssignFn assignFn = AssignFn()) const
+	{
+		return _ExtractMany<ResultType>(results, selectorFn, detail::DefaultFail(), assignFn, bindings);
+	}
+
+	// Get all variables identified with 'selectorFn'. Extract them using 'bindings'.
+	template<class ResultType, class SelectorFn, class ObjectType, class AssignFn = detail::Assign<ResultType>, class... MemberBindings>
+	inline auto GetMulti(SelectorFn selectorFn, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
+		AssignFn assignFn = AssignFn()) const
+	{
+		Epic::STLVector<ResultType> results;
+		GetMulti<ResultType>(selectorFn, results, bindings, assignFn);
+		return results;
+	}
+
+public:
+	// Get all variables identified with 'selectorFn' or assign 'defaultValue'.
+	template<class ResultType, class SelectorFn, class Alloc, template<class, class> class Container, class DefaultType, class AssignFn = detail::Assign<ResultType>>
+	inline bool GetMultiOr(SelectorFn selectorFn, Container<ResultType, Alloc>& results,
+		const DefaultType& defaultValue, AssignFn assignFn = AssignFn()) const
+	{
+		return _ExtractMany<ResultType>(results, selectorFn, detail::Default<ResultType, DefaultType>{ defaultValue }, assignFn);
+	}
+
+	// Get all variables identified with 'selectorFn' or assign 'defaultValue'
+	template<class ResultType, class SelectorFn, class DefaultType, class AssignFn = detail::Assign<ResultType>>
+	inline auto GetMultiOr(SelectorFn selectorFn, const DefaultType& defaultValue,
+		AssignFn assignFn = AssignFn()) const
+	{
+		Epic::STLVector<ResultType> results;
+		GetMultiOr<ResultType>(selectorFn, results, defaultValue, assignFn);
+		return results;
+	}
+
+	// Get all variables identified with 'selectorFn' using 'bindings' or assign 'defaultValue'.
+	template<class ResultType, class SelectorFn, class Alloc, template<class, class> class Container, class DefaultType, class ObjectType, class AssignFn = detail::Assign<ResultType>, class... MemberBindings>
+	inline bool GetMultiOr(SelectorFn selectorFn, Container<ResultType, Alloc>& results,
+		const ObjectBinding<ObjectType, MemberBindings...>& bindings, 
+		const DefaultType& defaultValue, AssignFn assignFn = AssignFn()) const
+	{
+		return _ExtractMany<ResultType>(results, selectorFn, 
+										detail::Default<ResultType, DefaultType>{ defaultValue }, 
+										assignFn, bindings);
+	}
+
+	// Get all variables identified with 'selectorFn' using 'bindings' or assign 'defaultValue'
+	template<class ResultType, class SelectorFn, class DefaultType, class ObjectType, class AssignFn = detail::Assign<ResultType>, class... MemberBindings>
+	inline auto GetMultiOr(SelectorFn selectorFn, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
+		const DefaultType& defaultValue, AssignFn assignFn = AssignFn()) const
+	{
+		Epic::STLVector<ResultType> results;
+		GetMultiOr<ResultType>(selectorFn, results, bindings, defaultValue, assignFn);
+		return results;
+	}
+
+public:
 	// Get a variable identified by 'varName'.
 	template<class ResultType, class AssignFn = detail::Assign<ResultType>>
-	bool GetNamed(const EON::Name& varName, ResultType& result, AssignFn assignFn = AssignFn()) const
+	inline bool GetNamed(const EON::Name& varName, ResultType& result, AssignFn assignFn = AssignFn()) const
 	{
-		return _ExtractOne(result, EON::HasName{ varName }, detail::DefaultFail(), assignFn);
+		return GetSingle(EON::HasName{ varName }, result, assignFn);
 	}
 
 	// Get a variable identified by 'varName'.
 	template<class ResultType, class AssignFn = detail::Assign<ResultType>>
-	auto GetNamed(const EON::Name& varName, AssignFn assignFn = AssignFn()) const
+	inline auto GetNamed(const EON::Name& varName, AssignFn assignFn = AssignFn()) const
 	{
 		ResultType result;
 		GetNamed(varName, result, assignFn);
@@ -249,15 +444,15 @@ public:
 
 	// Get a variable identified by 'varName'. Extract it using 'bindings'.
 	template<class ResultType, class ObjectType, class AssignFn = detail::Assign<ResultType>, class... MemberBindings>
-	bool GetNamed(const EON::Name& varName, ResultType& result, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
+	inline bool GetNamed(const EON::Name& varName, ResultType& result, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
 		AssignFn assignFn = AssignFn()) const
 	{
-		return _ExtractOne(result, EON::HasName{ varName }, detail::DefaultFail(), assignFn, bindings);
+		return GetSingle(EON::HasName{ varName }, result, bindings, assignFn);
 	}
 
 	// Get a variable identified by 'varName'. Extract it using 'bindings'.
 	template<class ResultType, class ObjectType, class AssignFn = detail::Assign<ResultType>, class... MemberBindings>
-	auto GetNamed(const EON::Name& varName, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
+	inline auto GetNamed(const EON::Name& varName, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
 		AssignFn assignFn = AssignFn()) const
 	{
 		ResultType result;
@@ -268,15 +463,15 @@ public:
 public:
 	// Get a variable identified by 'varName' or assign 'defaultValue'.
 	template<class ResultType, class DefaultType, class AssignFn = detail::Assign<ResultType>>
-	bool GetNamedOr(const EON::Name& varName, ResultType& result, const DefaultType& defaultValue,
+	inline bool GetNamedOr(const EON::Name& varName, ResultType& result, const DefaultType& defaultValue, 
 		AssignFn assignFn = AssignFn()) const
 	{
-		return _ExtractOne(result, EON::HasName{ varName }, detail::Default<ResultType, DefaultType>{ defaultValue }, assignFn);
+		return GetSingleOr(EON::HasName{ varName }, result, defaultValue, assignFn);
 	}
 
 	// Get a variable identified by 'varName' or assign 'defaultValue'
 	template<class ResultType, class DefaultType, class AssignFn = detail::Assign<ResultType>>
-	auto GetNamedOr(const EON::Name& varName, const DefaultType& defaultValue,
+	inline auto GetNamedOr(const EON::Name& varName, const DefaultType& defaultValue,
 		AssignFn assignFn = AssignFn()) const
 	{
 		ResultType result;
@@ -286,16 +481,15 @@ public:
 
 	// Get a variable identified by 'varName' or assign 'defaultValue'.
 	template<class ResultType, class DefaultType, class ObjectType, class AssignFn = detail::Assign<ResultType>, class... MemberBindings>
-	bool GetNamedOr(const EON::Name& varName, ResultType& result, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
+	inline bool GetNamedOr(const EON::Name& varName, ResultType& result, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
 		const DefaultType& defaultValue, AssignFn assignFn = AssignFn()) const
 	{
-		return _ExtractOne(result, EON::HasName{ varName }, 
-			detail::Default<ResultType, DefaultType>{ defaultValue }, assignFn, bindings);
+		return GetSingleOr(EON::HasName{ varName }, result, bindings, defaultValue, assignFn);
 	}
 
 	// Get a variable identified by 'varName' or assign 'defaultValue'
 	template<class ResultType, class DefaultType, class ObjectType, class AssignFn = detail::Assign<ResultType>, class... MemberBindings>
-	auto GetNamedOr(const EON::Name& varName, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
+	inline auto GetNamedOr(const EON::Name& varName, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
 		const DefaultType& defaultValue, AssignFn assignFn = AssignFn()) const
 	{
 		ResultType result;
@@ -305,76 +499,74 @@ public:
 
 public:
 	// Get all variables descended from 'varAncestor'.
-	template<class ResultType, class Alloc, class AssignFn = detail::Assign<ResultType>>
-	bool GetDesc(const EON::Name& varAncestor, std::vector<ResultType, Alloc>& result, 
-		AssignFn assignFn = AssignFn()) const
+	template<class ResultType, class Alloc, template<class, class> class Container, class AssignFn = detail::Assign<ResultType>>
+	inline bool GetDesc(const EON::Name& varAncestor, Container<ResultType, Alloc>& results, AssignFn assignFn = AssignFn()) const
 	{
-		return _ExtractMany(result, EON::HasParent{ varAncestor }, detail::DefaultFail(), assignFn);
+		return GetMulti(EON::HasParent{ varAncestor }, results, assignFn);
 	}
 
-	// Get a variable identified by 'varAncestor'.
+	// Get all variables descended from 'varAncestor'.
 	template<class ResultType, class AssignFn = detail::Assign<ResultType>>
-	auto GetDesc(const EON::Name& varAncestor, AssignFn assignFn = AssignFn()) const
+	inline auto GetDesc(const EON::Name& varAncestor, AssignFn assignFn = AssignFn()) const
 	{
-		Epic::STLVector<ResultType> result;
-		GetDesc(varAncestor, result, assignFn);
-		return result;
+		Epic::STLVector<ResultType> results;
+		GetDesc<ResultType>(varAncestor, results, assignFn);
+		return results;
 	}
 
-	// Get a variable identified by 'varAncestor'. Extract it using 'bindings'.
-	template<class ResultType, class Alloc, class ObjectType, class AssignFn = detail::Assign<ResultType>, class... MemberBindings>
-	bool GetDesc(const EON::Name& varAncestor, std::vector<ResultType, Alloc>& result, 
+	// Get all variables descended from 'varAncestor'. Extract them using 'bindings'.
+	template<class ResultType, class Alloc, template<class, class> class Container, class ObjectType, class AssignFn = detail::Assign<ResultType>, class... MemberBindings>
+	inline bool GetDesc(const EON::Name& varAncestor, Container<ResultType, Alloc>& results,
 		const ObjectBinding<ObjectType, MemberBindings...>& bindings, AssignFn assignFn = AssignFn()) const
 	{
-		return _ExtractMany(result, EON::HasParent{ varAncestor }, detail::DefaultFail(), assignFn, bindings);
+		return GetMulti(EON::HasParent{ varAncestor }, results, bindings, assignFn);
 	}
 
-	// Get a variable identified by 'varAncestor'. Extract it using 'bindings'.
+	// Get all variables descended from 'varAncestor'. Extract them using 'bindings'.
 	template<class ResultType, class ObjectType, class AssignFn = detail::Assign<ResultType>, class... MemberBindings>
-	auto GetDesc(const EON::Name& varAncestor, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
+	inline auto GetDesc(const EON::Name& varAncestor, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
 		AssignFn assignFn = AssignFn()) const
 	{
-		Epic::STLVector<ResultType> result;
-		GetDesc(varAncestor, result, bindings, assignFn);
-		return result;
+		Epic::STLVector<ResultType> results;
+		GetDesc<ResultType>(varAncestor, results, bindings, assignFn);
+		return results;
 	}
 
 public:
-	// Get a variable identified by 'varName' or assign 'defaultValue'.
-	template<class ResultType, class Alloc, class DefaultType, class AssignFn = detail::Assign<ResultType>>
-	bool GetDescOr(const EON::Name& varAncestor, std::vector<ResultType, Alloc>& result, 
+	// Get all variables descended from 'varAncestor' or assign 'defaultValue'.
+	template<class ResultType, class Alloc, template<class, class> class Container, class DefaultType, class AssignFn = detail::Assign<ResultType>>
+	inline bool GetDescOr(const EON::Name& varAncestor, Container<ResultType, Alloc>& results,
 		const DefaultType& defaultValue, AssignFn assignFn = AssignFn()) const
 	{
-		return _ExtractMany(result, EON::HasParent{ varAncestor }, detail::Default<ResultType, DefaultType>{ defaultValue }, assignFn);
+		return GetMultiOr(EON::HasParent{ varAncestor }, results, defaultValue, assignFn);
 	}
 
-	// Get a variable identified by 'varName' or assign 'defaultValue'
+	// Get all variables descended from 'varAncestor' or assign 'defaultValue'
 	template<class ResultType, class DefaultType, class AssignFn = detail::Assign<ResultType>>
-	auto GetDescOr(const EON::Name& varAncestor, const DefaultType& defaultValue,
+	inline auto GetDescOr(const EON::Name& varAncestor, const DefaultType& defaultValue,
 		AssignFn assignFn = AssignFn()) const
 	{
-		Epic::STLVector<ResultType> result;
-		GetDescOr(varAncestor, result, defaultValue, assignFn);
-		return result;
+		Epic::STLVector<ResultType> results;
+		GetDescOr<ResultType>(varAncestor, results, defaultValue, assignFn);
+		return results;
 	}
 
-	// Get a variable identified by 'varName' or assign 'defaultValue'.
-	template<class ResultType, class Alloc, class DefaultType, class ObjectType, class AssignFn = detail::Assign<ResultType>, class... MemberBindings>
-	bool GetDescOr(const EON::Name& varAncestor, std::vector<ResultType, Alloc>& result, 
+	// Get all variables descended from 'varAncestor' using 'bindings' or assign 'defaultValue'.
+	template<class ResultType, class Alloc, template<class, class> class Container, class DefaultType, class ObjectType, class AssignFn = detail::Assign<ResultType>, class... MemberBindings>
+	inline bool GetDescOr(const EON::Name& varAncestor, Container<ResultType, Alloc>& results,
 		const ObjectBinding<ObjectType, MemberBindings...>& bindings, 
 		const DefaultType& defaultValue, AssignFn assignFn = AssignFn()) const
 	{
-		return _ExtractMany(result, EON::HasParent{ varAncestor }, 
-			detail::Default<ResultType, DefaultType>{ defaultValue }, assignFn, bindings);
+		return GetMultiOr(EON::HasParent{ varAncestor }, results, bindings, defaultValue, assignFn);
 	}
 
-	// Get a variable identified by 'varName' or assign 'defaultValue'
+	// Get all variables descended from 'varAncestor' using 'bindings' or assign 'defaultValue'
 	template<class ResultType, class DefaultType, class ObjectType, class AssignFn = detail::Assign<ResultType>, class... MemberBindings>
-	auto GetDescOr(const EON::Name& varAncestor, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
+	inline auto GetDescOr(const EON::Name& varAncestor, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
 		const DefaultType& defaultValue, AssignFn assignFn = AssignFn()) const
 	{
-		Epic::STLVector<ResultType> result;
-		GetDescOr(varAncestor, result, bindings, defaultValue, assignFn);
-		return result;
+		Epic::STLVector<ResultType> results;
+		GetDescOr<ResultType>(varAncestor, results, bindings, defaultValue, assignFn);
+		return results;
 	}
 };
