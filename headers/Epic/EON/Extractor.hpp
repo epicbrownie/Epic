@@ -85,8 +85,26 @@ struct Epic::EON::detail::ContainerInserter<std::forward_list<ResultType, Alloc>
 	}
 };
 
+// Explicit support for Epic::SmallVector
+template<class ResultType, class Alloc>
+struct Epic::EON::detail::ContainerInserter<boost::container::small_vector_base<ResultType, Alloc>>
+{
+	using Container = boost::container::small_vector_base<ResultType, Alloc>;
+
+	static inline void Reserve(Container& container, const typename Container::size_type count)
+	{
+		container.reserve(count);
+	}
+
+	static inline void Add(Container& container, ResultType&& result)
+	{
+		container.emplace_back(std::move(result));
+	}
+};
+
 //////////////////////////////////////////////////////////////////////////////
 
+// Extractor
 class Epic::EON::Extractor
 {
 private:
@@ -117,6 +135,25 @@ private:
 		}
 
 		return true;
+	}
+
+	template<class SelectorFn>
+	inline size_t _Extent(SelectorFn selectorFn) const
+	{
+		auto var = selectorFn(m_GlobalScope);
+		if (!var) return 0;
+
+		return boost::apply_visitor(Epic::EON::detail::ExtentVisitor<void>(), var->Value.Data);
+	}
+
+	template<class SelectorFn, class FilterFn>
+	inline size_t _Extent(SelectorFn selectorFn, FilterFn filterFn) const
+	{
+		auto var = selectorFn(m_GlobalScope);
+		if (!var) return 0;
+
+		auto vsExtent = Epic::EON::detail::ExtentVisitor<FilterFn>{ filterFn };
+		return boost::apply_visitor(vsExtent, var->Value.Data);
 	}
 
 	template<class ResultType, class SelectorFn, class DefaultFn, class AssignFn>
@@ -640,5 +677,41 @@ public:
 		Epic::STLVector<ResultType> results;
 		GetDescOr<ResultType>(varAncestor, results, bindings, defaultValue, assignFn);
 		return results;
+	}
+
+public:
+	// Get the extent of the variable identified with 'selectorFn'.
+	template<class SelectorFn>
+	inline size_t GetSingleExtent(SelectorFn selectorFn) const
+	{
+		return _Extent(selectorFn);
+	}
+
+	template<class SelectorFn, class FilterFn>
+	inline size_t GetSingleExtent(SelectorFn selectorFn, FilterFn filterFn) const
+	{
+		return _Extent(selectorFn, filterFn);
+	}
+
+	inline size_t GetPathExtent(const EON::Name& varPath) const
+	{
+		return _Extent(Epic::EON::HasPath{ varPath });
+	}
+
+	template<class FilterFn>
+	inline size_t GetPathExtent(const EON::Name& varPath, FilterFn filterFn) const
+	{
+		return _Extent(Epic::EON::HasPath{ varPath }, filterFn);
+	}
+
+	inline size_t GetNamedExtent(const EON::NameHash& varName) const
+	{
+		return _Extent(Epic::EON::HasName{ varName });
+	}
+
+	template<class FilterFn>
+	inline size_t GetNamedExtent(const EON::NameHash& varName, FilterFn filterFn) const
+	{
+		return _Extent(Epic::EON::HasName{ varName }, filterFn);
 	}
 };

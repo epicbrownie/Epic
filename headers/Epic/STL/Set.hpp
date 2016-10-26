@@ -17,6 +17,7 @@
 #include <Epic/STL/Allocator.hpp>
 #include <set>
 #include <unordered_set>
+#include <boost/container/flat_set.hpp>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -27,13 +28,21 @@ namespace Epic
 	using STLSet = std::set<K, CompareFn, Epic::STLAllocator<K, A>>;
 
 	/// STLMultiSet<K, CompareFn, A>
-	template<class K, class CompareFn = std::less<K>, class A = Epic::DefaultAllocatorFor<K, eAllocatorFor::MultiSet>>
+	template<class K, class CompareFn = std::less<K>, class A = Epic::DefaultAllocatorFor<K, eAllocatorFor::Set>>
 	using STLMultiSet = std::multiset<K, CompareFn, Epic::STLAllocator<K, A>>;
 
 	/// STLUnorderedSet<K, HashFn, EqualFn, A>
 	template<class K, 
 			 class HashFn = std::hash<K>, 
 			 class EqualFn = std::equal_to<K>, 
-			 class A = Epic::DefaultAllocatorFor<K, eAllocatorFor::UnorderedSet>>
+			 class A = Epic::DefaultAllocatorFor<K, eAllocatorFor::Set>>
 	using STLUnorderedSet = std::unordered_set<K, HashFn, EqualFn, Epic::STLAllocator<K, A>>;
+
+	/// FlatSet<K, CompareFn, A>
+	template<class K, class CompareFn = std::less<K>, class A = Epic::DefaultAllocatorFor<K, eAllocatorFor::Set>>
+	using FlatSet = boost::container::flat_set<K, CompareFn, Epic::STLAllocator<K, A>>;
+
+	/// FlatMultiSet<K, CompareFn, A>
+	template<class K, class CompareFn = std::less<K>, class A = Epic::DefaultAllocatorFor<K, eAllocatorFor::Set>>
+	using FlatMultiSet = boost::container::flat_multiset<K, CompareFn, Epic::STLAllocator<K, A>>;
 }

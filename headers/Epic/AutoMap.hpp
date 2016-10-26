@@ -26,7 +26,7 @@ namespace Epic
 	template<class K, class V>
 	class AutoMapDefaultStore;
 
-	template<class T, class Key = Epic::StringHash, bool Sync = false, template<class, class> class Store = AutoMapDefaultStore>
+	template<class CRTP, class Key = Epic::StringHash, bool Sync = false, template<class, class> class Store = AutoMapDefaultStore>
 	class AutoMap;
 
 	struct AutoMapIgnoreT{ };
@@ -34,15 +34,16 @@ namespace Epic
 
 //////////////////////////////////////////////////////////////////////////////
 
-// AutoMap<T, K, Store>
-template<class T, class K, bool Sync, template<class, class> class Store>
+// AutoMap<CRTP, K, Store>
+template<class CRTP, class K, bool Sync, template<class, class> class Store>
 class Epic::AutoMap
 {
-	static_assert(std::is_class<std::remove_cv_t<T>>::value, "AutoMap can only store class types");
+	static_assert(std::is_class<std::remove_cv_t<CRTP>>::value, "AutoMap can only store class types");
 
 private:
+	using Type = Epic::AutoMap<CRTP, K, Sync, Store>;
 	using Key = K;
-	using Pointer = typename std::add_pointer<T>::type;
+	using Pointer = typename std::add_pointer<CRTP>::type;
 	using MapStore = Store<Key, Pointer>;
 	using MutexType = std::conditional_t<Sync, std::recursive_mutex, Epic::NullMutex>;
 
@@ -58,17 +59,17 @@ protected:
 		MapStore::Insert(key, Pointer(this));
 	}
 
-	AutoMap(const AutoMap<T, K, Sync, Store>&) = delete;
+	AutoMap(const Type&) = delete;
 
-	AutoMap(const AutoMap<T, K, Sync, Store>&, const Key& key)
+	AutoMap(const Type&, const Key& key)
 	{
 		std::lock_guard<MutexType> lock(s_Mutex);
 		MapStore::Insert(key, Pointer(this));
 	}
 
-	AutoMap(AutoMap<T, K, Sync, Store>&&) = delete;
+	AutoMap(Type&&) = delete;
 
-	AutoMap(AutoMap<T, K, Sync, Store>&& other, const Key& key)
+	AutoMap(Type&& other, const Key& key)
 	{
 		std::lock_guard<MutexType> lock(s_Mutex);
 		MapStore::EraseValue(Pointer(&other));
@@ -92,6 +93,7 @@ public:
 	}
 };
 
+// AutoMap Static Initializers
 template<class T, class K, bool Sync, template<class, class> class Store>
 decltype(Epic::AutoMap<T, K, Sync, Store>::s_Mutex) Epic::AutoMap<T, K, Sync, Store>::s_Mutex;
 
@@ -109,11 +111,11 @@ public:
 
 	using Key = K;
 	using Value = V;
-	using AllocatedType = std::pair<const Key, Value>;
+	using AllocatedType = std::pair<Key, Value>;
 	using Allocator = Epic::DefaultAllocatorFor<AllocatedType, Epic::eAllocatorFor::Map>;
 
 private:
-	using MapType = Epic::STLMap<Key, Value, std::less<Key>, AllocatedType, Allocator>;
+	using MapType = Epic::FlatMap<Key, Value, std::less<Key>, AllocatedType, Allocator>;
 
 private:
 	static MapType s_Data;
@@ -139,7 +141,7 @@ public:
 	static void EraseValue(const Value& value) noexcept
 	{
 		auto it = std::find_if(std::begin(s_Data), std::end(s_Data),
-			[&](const auto& pair)
+			[&] (const auto& pair)
 		{
 			return pair.second == value;
 		});
@@ -149,7 +151,7 @@ public:
 	}
 };
 
-// Static Initializers
+// AutoMapDefaultStore Static Initializers
 template<class K, class V>
 decltype(Epic::AutoMapDefaultStore<K, V>::s_Data) Epic::AutoMapDefaultStore<K, V>::s_Data;
 

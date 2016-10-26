@@ -15,6 +15,7 @@
 
 #include <Epic/EON/Convert.hpp>
 #include <Epic/EON/Types.hpp>
+#include <Epic/STL/Vector.hpp>
 #include <Epic/TMP/TypeTraits.hpp>
 #include <boost/variant/apply_visitor.hpp>
 #include <boost/variant/static_visitor.hpp>
@@ -237,6 +238,28 @@ private:
 		}
 
 		return false;
+	}
+};
+
+// Assign<SmallVector<DestType, N, Alloc>>
+// Explicit support for Epic::SmallVector
+template<class DestType, size_t N, class Alloc>
+struct Epic::EON::detail::Assign<boost::container::small_vector<DestType, N, Alloc>>
+{
+	using ContainerType = boost::container::small_vector_base<DestType, Alloc>;
+
+	// Named assign delegates to Assign<Container>
+	template<class SrcType>
+	inline bool operator() (const Epic::EON::Name& name, const SrcType& src, ContainerType& dest) const
+	{
+		return Assign<ContainerType>() (name, src, dest);
+	}
+
+	// Assign delegates to Assign<Container>
+	template<class SrcType>
+	inline bool operator() (const SrcType& src, ContainerType& dest) const
+	{
+		return Assign<ContainerType>() (src, dest);
 	}
 };
 

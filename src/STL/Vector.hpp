@@ -16,6 +16,7 @@
 #include <Epic/Memory/Default.hpp>
 #include <Epic/STL/Allocator.hpp>
 #include <vector>
+#include <boost/container/small_vector.hpp>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -24,4 +25,8 @@ namespace Epic
 	/// STLVector<T, A>
 	template<class T, class A = Epic::DefaultAllocatorFor<T, eAllocatorFor::Vector>>
 	using STLVector = std::vector<T, Epic::STLAllocator<T, A>>;
+
+	/// SmallVector<T, N, A>
+	template<class T, size_t N, class A = Epic::DefaultAllocatorFor<T, eAllocatorFor::Vector>>
+	using SmallVector = boost::container::small_vector<T, N, Epic::STLAllocator<T, A>>;
 }
