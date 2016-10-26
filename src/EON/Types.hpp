@@ -15,6 +15,7 @@
 
 #include <Epic/STL/Vector.hpp>
 #include <Epic/STL/String.hpp>
+#include <Epic/StringHash.hpp>
 #include <boost/variant.hpp>
 
 //////////////////////////////////////////////////////////////////////////////
@@ -32,6 +33,7 @@ namespace Epic::EON
 	struct Boolean;
 
 	using Name = Epic::STLString<char>;
+	using NameHash = Epic::BasicStringHash<char>;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -126,6 +128,7 @@ struct Epic::EON::Variant
 // Variable
 struct Epic::EON::Variable
 {
+	EON::NameHash NameHash;
 	EON::Name Name;
 	EON::Name Parent;
 	EON::Variant Value;

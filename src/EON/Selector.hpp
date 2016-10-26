@@ -21,55 +21,52 @@
 
 namespace Epic::EON
 {
+	struct HasPath;
 	struct HasName;
 	struct HasParent;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-struct Epic::EON::HasName
+struct Epic::EON::HasPath
 {
-	Epic::EON::Name _Name;
+	Epic::EON::Name _Path;
 
-	explicit HasName(const Epic::EON::Name& name)
-		: _Name{ name } { }
+	explicit HasPath(const Epic::EON::Name& path)
+		: _Path{ path } { }
 
 	inline const Epic::EON::Variable* operator() (const Epic::EON::Object& scope) const
 	{
-		return detail::GetVariableInObject(scope, _Name);
+		return detail::GetVariableInObject(scope, _Path);
+	}
+};
+
+struct Epic::EON::HasName
+{
+	Epic::EON::NameHash _Hash;
+
+	explicit HasName(const Epic::EON::NameHash& hash)
+		: _Hash{ hash } { }
+
+	inline const Epic::EON::Variable* operator() (const Epic::EON::Object& scope) const
+	{
+		return detail::GetVariableInObject(scope, _Hash);
 	}
 };
 
 struct Epic::EON::HasParent
 {
 	Epic::EON::Name _Parent;
-	Epic::EON::Name _Scope;
 
-	explicit HasParent(const Epic::EON::Name& parent, const Epic::EON::Name& scope = "")
-		: _Parent{ parent }, _Scope{ scope } { }
+	explicit HasParent(const Epic::EON::Name& parent)
+		: _Parent{ parent } { }
 
-	Epic::STLVector<const Epic::EON::Variable*> operator() (const Epic::EON::Object& initScope) const
+	Epic::STLVector<const Epic::EON::Variable*> operator() (const Epic::EON::Object& scope) const
 	{
 		Epic::STLVector<const Epic::EON::Variable*> results;
 
-		// Refine scope
-		const Epic::EON::Object* pScope = &initScope;
-
-		if (!_Scope.empty())
-		{
-			const Epic::EON::Variable* pScopeVar = detail::GetVariableInObject(initScope, _Scope);
-			if (!pScopeVar)
-				return results;
-
-			const Epic::EON::Object* pScopeObj = boost::get<Epic::EON::Object>(&pScopeVar->Value.Data);
-			if (!pScopeObj)
-				return results;
-
-			pScope = pScopeObj;
-		}
-
 		// Find all variables within the scope that inherit _Parent
-		for (auto& v : pScope->Members)
+		for (auto& v : scope.Members)
 			if (v.Parent == _Parent)
 				results.emplace_back(&v);
 

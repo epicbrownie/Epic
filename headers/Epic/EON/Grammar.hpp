@@ -52,7 +52,7 @@ private:
 
 	static void AddVariableToObject(EON::Object& obj, const EON::Variable& variable)
 	{
-		obj.Members.emplace_back(variable);
+		obj.Members.push_back(variable);
 	}
 
 	static void SetIntegerValue(EON::Integer& var, const EON::Integer::ValueType& value)
@@ -78,6 +78,7 @@ private:
 	static void SetVariableName(EON::Variable& variable, const EON::Name& name)
 	{
 		variable.Name = name;
+		variable.NameHash = name;
 	}
 	
 	static void SetVariableValue(EON::Variable& variable, const EON::Variant& var)

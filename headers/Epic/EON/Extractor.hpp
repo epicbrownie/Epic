@@ -306,7 +306,7 @@ public:
 
 	// Get a variable identified with 'selectorFn'. Extract it using 'bindings'.
 	template<class ResultType, class SelectorFn, class ObjectType, class AssignFn = detail::Assign<ResultType>, class... MemberBindings>
-	auto GetSingle(const EON::Name& varName, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
+	auto GetSingle(SelectorFn selectorFn, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
 		AssignFn assignFn = AssignFn()) const
 	{
 		ResultType result;
@@ -426,16 +426,88 @@ public:
 	}
 
 public:
+	// Get a variable identified by 'varPath'.
+	template<class ResultType, class AssignFn = detail::Assign<ResultType>>
+	inline bool GetPath(const EON::Name& varPath, ResultType& result, AssignFn assignFn = AssignFn()) const
+	{
+		return GetSingle(EON::HasPath{ varPath }, result, assignFn);
+	}
+
+	// Get a variable identified by 'varPath'.
+	template<class ResultType, class AssignFn = detail::Assign<ResultType>>
+	inline auto GetPath(const EON::Name& varPath, AssignFn assignFn = AssignFn()) const
+	{
+		ResultType result;
+		GetPath(varPath, result, assignFn);
+		return result;
+	}
+
+	// Get a variable identified by 'varPath'. Extract it using 'bindings'.
+	template<class ResultType, class ObjectType, class AssignFn = detail::Assign<ResultType>, class... MemberBindings>
+	inline bool GetPath(const EON::Name& varPath, ResultType& result, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
+		AssignFn assignFn = AssignFn()) const
+	{
+		return GetSingle(EON::HasPath{ varPath }, result, bindings, assignFn);
+	}
+
+	// Get a variable identified by 'varPath'. Extract it using 'bindings'.
+	template<class ResultType, class ObjectType, class AssignFn = detail::Assign<ResultType>, class... MemberBindings>
+	inline auto GetPath(const EON::Name& varPath, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
+		AssignFn assignFn = AssignFn()) const
+	{
+		ResultType result;
+		GetPath(varPath, result, bindings, assignFn);
+		return result;
+	}
+
+public:
+	// Get a variable identified by 'varPath' or assign 'defaultValue'.
+	template<class ResultType, class DefaultType, class AssignFn = detail::Assign<ResultType>>
+	inline bool GetPathOr(const EON::Name& varPath, ResultType& result, const DefaultType& defaultValue, 
+		AssignFn assignFn = AssignFn()) const
+	{
+		return GetSingleOr(EON::HasPath{ varPath }, result, defaultValue, assignFn);
+	}
+
+	// Get a variable identified by 'varPath' or assign 'defaultValue'
+	template<class ResultType, class DefaultType, class AssignFn = detail::Assign<ResultType>>
+	inline auto GetPathOr(const EON::Name& varPath, const DefaultType& defaultValue,
+		AssignFn assignFn = AssignFn()) const
+	{
+		ResultType result;
+		GetPathOr(varPath, result, defaultValue, assignFn);
+		return result;
+	}
+
+	// Get a variable identified by 'varPath' or assign 'defaultValue'.
+	template<class ResultType, class DefaultType, class ObjectType, class AssignFn = detail::Assign<ResultType>, class... MemberBindings>
+	inline bool GetPathOr(const EON::Name& varPath, ResultType& result, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
+		const DefaultType& defaultValue, AssignFn assignFn = AssignFn()) const
+	{
+		return GetSingleOr(EON::HasPath{ varPath }, result, bindings, defaultValue, assignFn);
+	}
+
+	// Get a variable identified by 'varPath' or assign 'defaultValue'
+	template<class ResultType, class DefaultType, class ObjectType, class AssignFn = detail::Assign<ResultType>, class... MemberBindings>
+	inline auto GetPathOr(const EON::Name& varPath, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
+		const DefaultType& defaultValue, AssignFn assignFn = AssignFn()) const
+	{
+		ResultType result;
+		GetPathOr(varPath, result, bindings, defaultValue, assignFn);
+		return result;
+	}
+
+public:
 	// Get a variable identified by 'varName'.
 	template<class ResultType, class AssignFn = detail::Assign<ResultType>>
-	inline bool GetNamed(const EON::Name& varName, ResultType& result, AssignFn assignFn = AssignFn()) const
+	inline bool GetNamed(const EON::NameHash& varName, ResultType& result, AssignFn assignFn = AssignFn()) const
 	{
 		return GetSingle(EON::HasName{ varName }, result, assignFn);
 	}
 
 	// Get a variable identified by 'varName'.
 	template<class ResultType, class AssignFn = detail::Assign<ResultType>>
-	inline auto GetNamed(const EON::Name& varName, AssignFn assignFn = AssignFn()) const
+	inline auto GetNamed(const EON::NameHash& varName, AssignFn assignFn = AssignFn()) const
 	{
 		ResultType result;
 		GetNamed(varName, result, assignFn);
@@ -444,7 +516,7 @@ public:
 
 	// Get a variable identified by 'varName'. Extract it using 'bindings'.
 	template<class ResultType, class ObjectType, class AssignFn = detail::Assign<ResultType>, class... MemberBindings>
-	inline bool GetNamed(const EON::Name& varName, ResultType& result, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
+	inline bool GetNamed(const EON::NameHash& varName, ResultType& result, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
 		AssignFn assignFn = AssignFn()) const
 	{
 		return GetSingle(EON::HasName{ varName }, result, bindings, assignFn);
@@ -452,7 +524,7 @@ public:
 
 	// Get a variable identified by 'varName'. Extract it using 'bindings'.
 	template<class ResultType, class ObjectType, class AssignFn = detail::Assign<ResultType>, class... MemberBindings>
-	inline auto GetNamed(const EON::Name& varName, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
+	inline auto GetNamed(const EON::NameHash& varName, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
 		AssignFn assignFn = AssignFn()) const
 	{
 		ResultType result;
@@ -463,7 +535,7 @@ public:
 public:
 	// Get a variable identified by 'varName' or assign 'defaultValue'.
 	template<class ResultType, class DefaultType, class AssignFn = detail::Assign<ResultType>>
-	inline bool GetNamedOr(const EON::Name& varName, ResultType& result, const DefaultType& defaultValue, 
+	inline bool GetNamedOr(const EON::NameHash& varName, ResultType& result, const DefaultType& defaultValue, 
 		AssignFn assignFn = AssignFn()) const
 	{
 		return GetSingleOr(EON::HasName{ varName }, result, defaultValue, assignFn);
@@ -471,7 +543,7 @@ public:
 
 	// Get a variable identified by 'varName' or assign 'defaultValue'
 	template<class ResultType, class DefaultType, class AssignFn = detail::Assign<ResultType>>
-	inline auto GetNamedOr(const EON::Name& varName, const DefaultType& defaultValue,
+	inline auto GetNamedOr(const EON::NameHash& varName, const DefaultType& defaultValue,
 		AssignFn assignFn = AssignFn()) const
 	{
 		ResultType result;
@@ -481,7 +553,7 @@ public:
 
 	// Get a variable identified by 'varName' or assign 'defaultValue'.
 	template<class ResultType, class DefaultType, class ObjectType, class AssignFn = detail::Assign<ResultType>, class... MemberBindings>
-	inline bool GetNamedOr(const EON::Name& varName, ResultType& result, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
+	inline bool GetNamedOr(const EON::NameHash& varName, ResultType& result, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
 		const DefaultType& defaultValue, AssignFn assignFn = AssignFn()) const
 	{
 		return GetSingleOr(EON::HasName{ varName }, result, bindings, defaultValue, assignFn);
@@ -489,7 +561,7 @@ public:
 
 	// Get a variable identified by 'varName' or assign 'defaultValue'
 	template<class ResultType, class DefaultType, class ObjectType, class AssignFn = detail::Assign<ResultType>, class... MemberBindings>
-	inline auto GetNamedOr(const EON::Name& varName, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
+	inline auto GetNamedOr(const EON::NameHash& varName, const ObjectBinding<ObjectType, MemberBindings...>& bindings,
 		const DefaultType& defaultValue, AssignFn assignFn = AssignFn()) const
 	{
 		ResultType result;

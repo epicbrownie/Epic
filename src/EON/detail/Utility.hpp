@@ -24,6 +24,7 @@ namespace Epic::EON::detail
 	namespace
 	{
 		const Epic::EON::Variable* GetVariableInObject(const Epic::EON::Object& scope, const Epic::EON::Name& name);
+		const Epic::EON::Variable* GetVariableInObject(const Epic::EON::Object& scope, const Epic::EON::NameHash& namehash);
 	}
 }
 
@@ -57,14 +58,21 @@ namespace Epic::EON::detail
 				const Epic::EON::Name vname{ itKey, itNext };
 				if (!vname.empty())
 				{
-					auto it = std::find_if
+					const Epic::EON::NameHash vnamehash{ vname };
+
+					// Binary search for the variable
+					auto it = std::lower_bound
 					(
 						std::begin(pScope->Members),
 						std::end(pScope->Members),
-						[&](const auto& v) { return v.Name == vname; }
+						vnamehash,
+						[&] (const auto& v, const auto& vh) { return v.NameHash < vh; }
 					);
 
-					pVariable = (it == std::end(pScope->Members)) ? nullptr : &(*it);
+					// Assert that the hash value is unique
+					assert(it == std::end(pScope->Members) || (*it).NameHash != vnamehash || (*it).Name == vname);
+
+					pVariable = (it == std::end(pScope->Members) || (*it).NameHash != vnamehash) ? nullptr : &(*it);
 					if (!pVariable) break;
 
 					pScope = boost::get<Epic::EON::Object>(&pVariable->Value.Data);
@@ -75,6 +83,20 @@ namespace Epic::EON::detail
 			}
 
 			return pVariable;
+		}
+
+		const Epic::EON::Variable* GetVariableInObject(const Epic::EON::Object& scope, const Epic::EON::NameHash& namehash)
+		{
+			// Binary search for the variable
+			auto it = std::lower_bound
+			(
+				std::begin(scope.Members),
+				std::end(scope.Members),
+				namehash,
+				[&] (const auto& v, const auto& vh) { return v.NameHash < vh; }
+			);
+
+			return (it == std::end(scope.Members) || (*it).NameHash != namehash) ? nullptr : &(*it);
 		}
 	}
 }
