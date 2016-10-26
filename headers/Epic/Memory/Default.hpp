@@ -33,11 +33,7 @@ namespace Epic
 		Deque,
 		Vector,
 		Map,
-		MultiMap,
-		UnorderedMap,
 		Set,
-		MultiSet,
-		UnorderedSet,
 
 		StringStream, IStringStream, OStringStream
 	};
