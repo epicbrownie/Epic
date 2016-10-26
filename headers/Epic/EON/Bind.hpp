@@ -27,13 +27,13 @@ namespace Epic::EON::detail
 	template<class CType, class... MTypes>
 	struct ObjBnd;
 
-	template<class CType, class MType, class FilterFn, class AssignFn, class... Bindings>
+	template<class CType, class MType, class DefaultFn, class AssignFn, class... Bindings>
 	struct MemBnd;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-template<class CType, class MType, class FilterFn, class AssignFn, class... Bindings>
+template<class CType, class MType, class DefaultFn, class AssignFn, class... Bindings>
 struct Epic::EON::detail::MemBnd
 {
 	typedef MType CType::*Pointer;
@@ -41,65 +41,67 @@ struct Epic::EON::detail::MemBnd
 
 	const Pointer _pMember;
 	const ObjectValueBinding _ObjBinding;
-	FilterFn _FilterFn;
-	AssignFn _AssignFn;
+	const Epic::EON::NameHash _Name;
+	mutable DefaultFn _DefaultFn;
+	mutable AssignFn _AssignFn;
 
-	MemBnd(Pointer pMember, FilterFn filterFn, AssignFn assignFn)
-		: _pMember(pMember), _FilterFn(filterFn), _AssignFn(assignFn), _ObjBinding() { }
+	MemBnd(Pointer pMember, const Epic::EON::NameHash& name, DefaultFn defaultFn, AssignFn assignFn)
+		: _pMember(pMember), _Name{ name }, _DefaultFn(defaultFn), _AssignFn(assignFn), _ObjBinding() { }
 
-	MemBnd(Pointer pMember, FilterFn filterFn, AssignFn assignFn, const ObjectValueBinding& objBinding)
-		: _pMember(pMember), _FilterFn(filterFn), _AssignFn(assignFn), _ObjBinding(objBinding) { }
+	MemBnd(Pointer pMember, const Epic::EON::NameHash& name, DefaultFn defaultFn, AssignFn assignFn, const ObjectValueBinding& objBinding)
+		: _pMember(pMember), _Name{ name }, _DefaultFn(defaultFn), _AssignFn(assignFn), _ObjBinding(objBinding) { }
 
 	bool Assign(const Epic::EON::Object& scope, CType& instance) const
 	{
 		// Apply filter to scope
-		auto vars = _FilterFn(scope);
-		if (std::begin(vars) == std::end(vars))
-			return DefaultAssignIf<AssignFn, MType>::Apply(_AssignFn, instance.*_pMember);
+		auto var = Epic::EON::HasName(_Name) (scope);
+		if (!var)
+			return DefaultIf<DefaultFn, MType>::Apply(_DefaultFn, instance.*_pMember);
 
-		// Try to assign for each variable found with filter
-		bool result = false;
+		// Try to assign
+		bool result = true;
 
-		for (auto pVariable : vars)
+		if (ObjectValueBinding::MemberBindings > 0)
 		{
-			if (ObjectValueBinding::MemberBindings > 0)
-			{
-				// An object binding was supplied.
-				// Member object binding requires EON::Object types.
-				auto pObject = boost::get<Epic::EON::Object>(&pVariable->Value.Data);
-				if (!pObject)
-					continue;
+			// An object binding was supplied.
+			// Member object binding requires EON::Object types.
+			auto pObject = boost::get<Epic::EON::Object>(&var->Value.Data);
+			if (!pObject)
+				return false;
 
-				for (size_t i = 0; i < ObjectValueBinding::MemberBindings; ++i)
-					if (_ObjBinding.Assign(*pObject, instance.*_pMember, i))
-						result = true;
-			}
-			else
+			for (size_t i = 0; i < ObjectValueBinding::MemberBindings; ++i)
 			{
-				// Assign as a normal member variable via AssignVisitor
-				auto vsAssign = AssignVisitor<MType, AssignFn>{ instance.*_pMember, _AssignFn };
-				if (boost::apply_visitor(vsAssign, pVariable->Value.Data))
-					result = true;
+				if (!_ObjBinding.Assign(*pObject, instance.*_pMember, i))
+				{
+					result = false;
+					break;
+				}
 			}
+		}
+		else
+		{
+			// Assign as a normal member variable via AssignVisitor
+			auto vsAssign = AssignVisitor<MType, AssignFn>{ instance.*_pMember, _AssignFn };
+			result = boost::apply_visitor(vsAssign, var->Value.Data);
 		}
 
 		return result;
 	}
 };
 
-template<class CType, class MType, class FilterFn, class AssignFn, class... BTypes, class... Bindings>
-struct Epic::EON::detail::ObjBnd<CType, Epic::EON::detail::MemBnd<CType, MType, FilterFn, AssignFn, BTypes...>, Bindings...>
+template<class CType, class MType, class DefaultFn, class AssignFn, class... BTypes, class... Bindings>
+struct Epic::EON::detail::ObjBnd<CType, Epic::EON::detail::MemBnd<CType, MType, DefaultFn, AssignFn, BTypes...>, Bindings...>
 	: public Epic::EON::detail::ObjBnd<CType, Bindings...>
 {
 	using ParentType = ObjBnd<CType, Bindings...>;
 	using ResultType = CType;
-	using Binding = MemBnd<CType, MType, FilterFn, AssignFn, BTypes...>;
+	using Binding = MemBnd<CType, MType, DefaultFn, AssignFn, BTypes...>;
 	
 	Binding _Binding;
 
 	static constexpr size_t MemberBindings = 1 + ParentType::MemberBindings;
 
-	ObjBnd(const Binding& binding, const Bindings&... bindings)
+	explicit ObjBnd(const Binding& binding, const Bindings&... bindings)
 		: _Binding{ binding }, ParentType(bindings...) { }
 
 	bool Assign(const Epic::EON::Object& scope, CType& instance, const size_t index) const
@@ -111,19 +113,19 @@ struct Epic::EON::detail::ObjBnd<CType, Epic::EON::detail::MemBnd<CType, MType, 
 	}
 };
 
-template<class CType, class MType, class FilterFn, class AssignFn, class... BTypes>
-struct Epic::EON::detail::ObjBnd<CType, Epic::EON::detail::MemBnd<CType, MType, FilterFn, AssignFn, BTypes...>>
+template<class CType, class MType, class DefaultFn, class AssignFn, class... BTypes>
+struct Epic::EON::detail::ObjBnd<CType, Epic::EON::detail::MemBnd<CType, MType, DefaultFn, AssignFn, BTypes...>>
 	: public Epic::EON::detail::ObjBnd<CType>
 {
 	using ParentType = ObjBnd<CType>;
 	using ResultType = CType;
-	using Binding = MemBnd<CType, MType, FilterFn, AssignFn, BTypes...>;
+	using Binding = MemBnd<CType, MType, DefaultFn, AssignFn, BTypes...>;
 
 	Binding _Binding;
 
 	static constexpr size_t MemberBindings = 1;
 	
-	ObjBnd(const Binding& binding)
+	explicit ObjBnd(const Binding& binding)
 		: _Binding{ binding }, ParentType() { }
 
 	bool Assign(const Epic::EON::Object& scope, CType& instance, const size_t /*index*/) const
@@ -154,8 +156,8 @@ namespace Epic::EON
 	template<class CType, class... MTypes>
 	using ObjectBinding = detail::ObjBnd<CType, MTypes...>;
 
-	template<class CType, class MType, class FilterFn, class AssignFn, class... Bindings>
-	using MemberBinding = detail::MemBnd<CType, MType, FilterFn, AssignFn, Bindings...>;
+	template<class CType, class MType, class DefaultFn, class AssignFn, class... Bindings>
+	using MemberBinding = detail::MemBnd<CType, MType, DefaultFn, AssignFn, Bindings...>;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -179,56 +181,73 @@ namespace Epic::EON
 {
 	namespace
 	{
-		// TODO: Additional Includes that default the default value
-		// TODO: Additional options for Selectors
-
 		// Bind a named variable to an object member
-		template<class ClassType, class MemberType>
-		auto Require(const Epic::EON::Name& name, MemberType ClassType::*pMember)
+		template<class ClassType, class MemberType, class AssignFn = Epic::EON::detail::Assign<MemberType>>
+		auto Require(const Epic::EON::NameHash& name, MemberType ClassType::*pMember, AssignFn assignFn = AssignFn())
 		{
-			using AssignFn = Epic::EON::detail::NoDefaultAssign<MemberType>;
-			using Binding = MemberBinding<ClassType, MemberType, Epic::EON::HasName, AssignFn>;
+			using DefaultFn = Epic::EON::detail::DefaultFail;
+			using Binding = MemberBinding<ClassType, MemberType, DefaultFn, AssignFn>;
 
-			return Binding{ pMember, Epic::EON::HasName{ name }, AssignFn{ } };
-		}
-
-		// Bind a named variable to an object member with a custom assignment function
-		template<class ClassType, class MemberType, class AssignFn>
-		auto Require(const Epic::EON::Name& name, MemberType ClassType::*pMember, AssignFn assignFn)
-		{
-			using Binding = MemberBinding<ClassType, MemberType, HasName, AssignFn>;
-
-			return Binding{ pMember, Epic::EON::HasName{ name }, assignFn };
+			return Binding{ pMember, name, DefaultFn(), assignFn };
 		}
 
 		// Bind a named variable to an object member
-		template<class ClassType, class MemberType, class... BoundMemberTypes>
-		auto Require(const Epic::EON::Name& name, MemberType ClassType::*pMember, const ObjectBinding<MemberType, BoundMemberTypes...>& bindings)
+		template<class ClassType, class MemberType, class AssignFn = Epic::EON::detail::Assign<MemberType>, class... BoundMemberTypes>
+		auto Require(const Epic::EON::NameHash& name, MemberType ClassType::*pMember,
+			const ObjectBinding<MemberType, BoundMemberTypes...>& bindings, AssignFn assignFn = AssignFn())
 		{
-			using AssignFn = Epic::EON::detail::NoDefaultAssign<MemberType>;
-			using Binding = MemberBinding<ClassType, MemberType, HasName, AssignFn, BoundMemberTypes...>;
+			using DefaultFn = Epic::EON::detail::DefaultFail;
+			using Binding = MemberBinding<ClassType, MemberType, DefaultFn, AssignFn, BoundMemberTypes...>;
 
-			return Binding{ pMember, Epic::EON::HasName{ name }, AssignFn{ }, bindings };
+			return Binding{ pMember, name, DefaultFn(), assignFn, bindings };
+		}
+	}
+
+	namespace
+	{
+		// Bind an optional named variable to an object member (without default)
+		template<class ClassType, class MemberType, class AssignFn = Epic::EON::detail::Assign<MemberType>>
+		auto Include(const Epic::EON::NameHash& name, MemberType ClassType::*pMember, 
+			AssignFn assignFn = AssignFn())
+		{
+			using DefaultFn = Epic::EON::detail::NoDefault<MemberType>;
+			using Binding = MemberBinding<ClassType, MemberType, DefaultFn, AssignFn>;
+
+			return Binding{ pMember, name, DefaultFn(), assignFn };
 		}
 
-		// Bind an optional named variable to an object member
-		template<class ClassType, class DefaultType, class MemberType>
-		auto Include(const Epic::EON::Name& name, const DefaultType& defaultValue, MemberType ClassType::*pMember)
+		// Bind an optional named variable to an object member (without default)
+		template<class ClassType, class MemberType, class AssignFn = Epic::EON::detail::Assign<MemberType>, class... BoundMemberTypes>
+		auto Include(const Epic::EON::NameHash& name, MemberType ClassType::*pMember, const ObjectBinding<MemberType, BoundMemberTypes...>& bindings, 
+			AssignFn assignFn = AssignFn())
 		{
-			using AssignFn = Epic::EON::detail::DefaultAssign<MemberType, DefaultType>;
-			using Binding = MemberBinding<ClassType, MemberType, HasName, AssignFn>;
+			using DefaultFn = Epic::EON::detail::NoDefault<MemberType>;
+			using Binding = MemberBinding<ClassType, MemberType, DefaultFn, AssignFn, BoundMemberTypes...>;
 
-			return Binding{ pMember, Epic::EON::HasName{ name }, AssignFn{ defaultValue } };
+			return Binding{ pMember, name, DefaultFn(), assignFn, bindings };
 		}
 
-		// Bind an optional named variable to an object member
-		template<class ClassType, class DefaultType, class MemberType, class... BoundMemberTypes>
-		auto Include(const Epic::EON::Name& name, const DefaultType& defaultValue, MemberType ClassType::*pMember, const ObjectBinding<MemberType, BoundMemberTypes...>& bindings)
+		// Bind an optional named variable to an object member (with default)
+		template<class ClassType, class DefaultType, class MemberType, class AssignFn = Epic::EON::detail::Assign<MemberType>>
+		auto Include(const Epic::EON::NameHash& name, const DefaultType& defaultValue, MemberType ClassType::*pMember, 
+			AssignFn assignFn = AssignFn())
 		{
-			using AssignFn = Epic::EON::detail::DefaultAssign<MemberType, DefaultType>;
-			using Binding = MemberBinding<ClassType, MemberType, HasName, AssignFn, BoundMemberTypes...>;
+			using DefaultFn = Epic::EON::detail::Default<MemberType, DefaultType>;
+			using Binding = MemberBinding<ClassType, MemberType, DefaultFn, AssignFn>;
 
-			return Binding{ pMember, Epic::EON::HasName{ name }, AssignFn{ defaultValue }, bindings };
+			return Binding{ pMember, name, DefaultFn{ defaultValue }, assignFn };
+		}
+
+		// Bind an optional named variable to an object member (with default)
+		template<class ClassType, class DefaultType, class MemberType, class AssignFn = Epic::EON::detail::Assign<MemberType>, class... BoundMemberTypes>
+		auto Include(const Epic::EON::NameHash& name, const DefaultType& defaultValue, MemberType ClassType::*pMember, 
+			const ObjectBinding<MemberType, BoundMemberTypes...>& bindings, 
+			AssignFn assignFn = AssignFn())
+		{
+			using DefaultFn = Epic::EON::detail::Default<MemberType, DefaultType>;
+			using Binding = MemberBinding<ClassType, MemberType, DefaultFn, AssignFn, BoundMemberTypes...>;
+
+			return Binding{ pMember, name, DefaultFn{ defaultValue }, assignFn, bindings };
 		}
 	}
 }

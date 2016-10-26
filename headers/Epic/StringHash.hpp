@@ -76,6 +76,26 @@ public:
 		return _Hash;
 	}
 
+	template<size_t N>
+	inline Type& operator = (const CharType(&cstr)[N]) noexcept
+	{
+		_Hash = Epic::StringHashAlgorithm<C, A>::FoldHash(cstr);
+		return *this;
+	}
+
+	inline Type& operator = (CStringWrapper cstr) noexcept
+	{
+		_Hash = Epic::StringHashAlgorithm<C, A>::Hash(cstr.Str);
+		return *this;
+	}
+
+	template<typename Traits, typename Allocator>
+	inline Type& operator = (const std::basic_string<C, Traits, Allocator>& str) noexcept
+	{
+		_Hash = Epic::StringHashAlgorithm<C, A>::Hash(str.c_str());
+		return *this;
+	}
+
 public:
 	constexpr HashType Value() const noexcept
 	{

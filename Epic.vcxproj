@@ -29,6 +29,7 @@
     <ClInclude Include="src\EON\Convert.hpp" />
     <ClInclude Include="src\EON\detail\Assign.hpp" />
     <ClInclude Include="src\EON\detail\Utility.hpp" />
+    <ClInclude Include="src\EON\Extractor.hpp" />
     <ClInclude Include="src\EON\Grammar.hpp" />
     <ClInclude Include="src\EON\Selector.hpp" />
     <ClInclude Include="src\EON\Types.hpp" />

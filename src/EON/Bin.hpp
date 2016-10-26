@@ -14,6 +14,7 @@
 #pragma once
 
 #include <Epic/EON/Types.hpp>
+#include <Epic/EON/Extractor.hpp>
 #include <Epic/EON/detail/Utility.hpp>
 #include <algorithm>
 #include <boost/variant.hpp>
@@ -198,6 +199,11 @@ public:
 	Bin(Bin&&) = default;
 
 public:
+	EON::Extractor GetExtractor() const
+	{
+		return EON::Extractor(m_Data);
+	}
+
 	const EON::Object& Get() const { return m_Data; }
 
 public:
@@ -219,12 +225,24 @@ public:
 		Insert(std::move(v));
 	}
 
-	void Insert(EON::Variable&& variable)
+	inline void Insert(EON::Variable&& variable)
 	{
 		assert(variable.Name != "" && "Variable must have a name");
 
 		if (detail::Tidy(&m_Data, &m_Data, variable, true))
-			m_Data.Members.emplace_back(std::move(variable));
+		{
+			m_Data.Members.emplace
+			(
+				std::upper_bound
+				(
+					std::begin(m_Data.Members),
+					std::end(m_Data.Members),
+					variable,
+					[] (const auto& a, const auto& b) { return a.NameHash < b.NameHash; }
+				),
+				std::move(variable)
+			);
+		}
 	}
 };
 
@@ -258,16 +276,23 @@ namespace Epic::EON::detail
 			if (resolveInheritance && !variable.Parent.empty())
 				detail::ResolveInheritance(variable, pGlobal);
 
-			// Finally, if the variable is an object, tidy its members
+			// Finally, if the variable is an object, tidy and sort its members
 			if (pObject)
 			{
 				for (size_t i = 0; i < pObject->Members.size(); )
 				{
 					if (!Tidy(pGlobal, pObject, pObject->Members[i], false))
-						pObject->Members.erase(std::begin(pObject->Members) + i); 
+						pObject->Members.erase(std::begin(pObject->Members) + i);
 					else
 						++i;
 				}
+
+				std::sort
+				(
+					std::begin(pObject->Members),
+					std::end(pObject->Members),
+					[] (const auto& a, const auto& b) { return a.NameHash < b.NameHash; }
+				);
 			}
 
 			// Search the scope for a duplicate of the variable
