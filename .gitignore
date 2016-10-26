@@ -214,24 +214,4 @@ ModelManifest.xml
 # Visual Studio DB file?
 *.VC.opendb
 *.VC.db
-/headers/Epic/AppLock.h
-/headers/Epic/ATONTypes.h
-/headers/Epic/ATONGrammar.hpp
-/headers/Epic/ATONDataBin.h
-/headers/Epic/AutoList.hpp
-/headers/Epic/stringhashalgorithm.hpp
-/src/AppLock.cpp
-/src/AppLock.h
-/src/ATONTypes.h
-/src/ATONGrammar.hpp
-/src/ATONDataBin.h
-/src/ATONDataBin.cpp
-/src/Memory/_SegregatorAllocator.hpp
-/src/Memory/_MetaTypes.hpp
-/src/Memory/_FallbackAllocator.hpp
-/src/Memory/_AlignmentAllocator.hpp
-/src/_Dev
-/headers/Epic/Memory/NedMalloc
-/headers/Epic/_Dev
-/src/Memory/AffixAllocator.hpp
 /docs
