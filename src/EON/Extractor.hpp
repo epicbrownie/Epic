@@ -85,6 +85,23 @@ struct Epic::EON::detail::ContainerInserter<std::forward_list<ResultType, Alloc>
 	}
 };
 
+// Explicit support for Epic::SmallVector
+template<class ResultType, class Alloc>
+struct Epic::EON::detail::ContainerInserter<boost::container::small_vector_base<ResultType, Alloc>>
+{
+	using Container = boost::container::small_vector_base<ResultType, Alloc>;
+
+	static inline void Reserve(Container& container, const typename Container::size_type count)
+	{
+		container.reserve(count);
+	}
+
+	static inline void Add(Container& container, ResultType&& result)
+	{
+		container.emplace_back(std::move(result));
+	}
+};
+
 //////////////////////////////////////////////////////////////////////////////
 
 class Epic::EON::Extractor
