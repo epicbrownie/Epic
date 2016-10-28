@@ -38,6 +38,9 @@
     <Filter Include="Utility\EON\detail">
       <UniqueIdentifier>{5579b32b-784f-4af0-a23b-1d4d6288c11f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Math">
+      <UniqueIdentifier>{3b31b01f-1d92-438b-a487-23e7ceac3bb4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Singleton.hpp">
@@ -235,6 +238,9 @@
     </ClInclude>
     <ClInclude Include="src\EON\Extractor.hpp">
       <Filter>Utility\EON</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TMP\Sequence.hpp">
+      <Filter>Utility\TMP</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
