@@ -41,6 +41,9 @@
     <Filter Include="Math">
       <UniqueIdentifier>{3b31b01f-1d92-438b-a487-23e7ceac3bb4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Math\detail">
+      <UniqueIdentifier>{11ab25d8-4cfb-4c86-96fb-aa0204abbdb4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Singleton.hpp">
@@ -241,6 +244,27 @@
     </ClInclude>
     <ClInclude Include="src\TMP\Sequence.hpp">
       <Filter>Utility\TMP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\detail\VectorFwd.hpp">
+      <Filter>Math\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\VectorBase.hpp">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\Vector.hpp">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\VectorSwizzler.hpp">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\detail\VectorSwizzlerFwd.hpp">
+      <Filter>Math\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\detail\VectorHelpers.hpp">
+      <Filter>Math\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\Algorithm.hpp">
+      <Filter>Math</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
