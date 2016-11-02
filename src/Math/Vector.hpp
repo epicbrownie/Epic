@@ -408,7 +408,7 @@ public:
 	friend Type operator Op (const T& value, const Type& vec)										\
 	{																								\
 		Type result{ vec };																			\
-		vec Op= value;																				\
+		result Op= value;																			\
 		return result;																				\
 	}
 
@@ -501,10 +501,10 @@ public:
 	friend bool operator != (const Vector<U, Sz>& vecA, const Vector<U, Sz>& vecB);
 
 	template<class U, size_t Sz>
-	friend std::ostream& operator<< (std::ostream& stream, const Vector<U, Sz>& vec);
+	friend std::ostream& operator << (std::ostream& stream, const Vector<U, Sz>& vec);
 
 	template<class U, size_t Sz>
-	friend std::wostream& operator<< (std::wostream& stream, const Vector<U, Sz>& vec);
+	friend std::wostream& operator << (std::wostream& stream, const Vector<U, Sz>& vec);
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -535,7 +535,7 @@ namespace Epic
 	}
 
 	template<class U, size_t Sz>
-	inline std::ostream& operator<< (std::ostream& stream, const Vector<U, Sz>& vec)
+	inline std::ostream& operator << (std::ostream& stream, const Vector<U, Sz>& vec)
 	{
 		stream << '[';
 		Epic::TMP::ForEach<Epic::TMP::MakeSequence<size_t, Sz>>::Apply(
@@ -551,7 +551,7 @@ namespace Epic
 	}
 
 	template<class U, size_t Sz>
-	inline std::wostream& operator<< (std::wostream& stream, const Vector<U, Sz>& vec)
+	inline std::wostream& operator << (std::wostream& stream, const Vector<U, Sz>& vec)
 	{
 		stream << L'[';
 		Epic::TMP::ForEach<Epic::TMP::MakeSequence<size_t, Sz>>::Apply(
