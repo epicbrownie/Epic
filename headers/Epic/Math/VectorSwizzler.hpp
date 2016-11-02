@@ -44,14 +44,17 @@ private:
 			struct UnassignableLValue>;
 
 public:
-	inline VectorType ToVector() const
+	inline VectorType ToVector() const noexcept
 	{
 		VectorType result;
 
 		Epic::TMP::ForEach2<
 			Epic::TMP::MakeSequence<size_t, sizeof...(Indices)>,
-			Epic::TMP::Sequence<size_t, Indices...>
-		>::Apply([&](size_t dest, size_t src) { result[dest] = m_Values[src]; });
+			Epic::TMP::Sequence<size_t, Indices...>>
+		::Apply([&](size_t dest, size_t src) 
+		{ 
+			result[dest] = m_Values[src]; 
+		});
 
 		return result;
 	}

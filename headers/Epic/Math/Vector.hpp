@@ -45,7 +45,13 @@ public:
 	Vector(const Type&) noexcept = default;
 	Vector(Type&&) noexcept = default;
 
-	Vector(std::initializer_list<T> values) noexcept
+	template<class U>
+	inline Vector(const Vector<U, Size>& vec)
+	{
+		ForEach<Size>([&](size_t n) { Values[n] = static_cast<T>(vec[n]); });
+	}
+
+	inline Vector(std::initializer_list<T> values) noexcept
 	{
 		std::copy
 		(
@@ -71,28 +77,28 @@ public:
 	}
 
 public:
-	inline T& at(size_t index) noexcept
+	inline T& at(const size_t index) noexcept
 	{
 		assert(index >= 0 && index < Size);
 
 		return Values[index];
 	}
 
-	inline const T& at(size_t index) const noexcept
+	inline const T& at(const size_t index) const noexcept
 	{
 		assert(index >= 0 && index < Size);
 
 		return Values[index];
 	}
 
-	inline T& operator[] (size_t index) noexcept
+	inline T& operator[] (const size_t index) noexcept
 	{
 		assert(index >= 0 && index < Size);
 
 		return Values[index];
 	}
 
-	inline const T& operator[] (size_t index) const noexcept
+	inline const T& operator[] (const size_t index) const noexcept
 	{
 		assert(index >= 0 && index < Size);
 
