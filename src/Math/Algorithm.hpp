@@ -13,71 +13,14 @@
 
 #pragma once
 
+#include <Epic/Math/Angle.hpp>
+#include <Epic/Math/Constants.hpp>
 #include <Epic/Math/Vector.hpp>
 #include <Epic/TMP/Sequence.hpp>
 #include <algorithm>
 #include <cmath>
 #include <limits>
 #include <type_traits>
-
-//////////////////////////////////////////////////////////////////////////////
-
-// Constants
-namespace Epic
-{
-	namespace
-	{
-		template<typename T = float>
-		constexpr T Pi = T(3.1415926535897932385);
-
-		template<typename T = float>
-		constexpr T PiSq = Pi<T> * Pi<T>;
-
-		template<typename T = float>
-		constexpr T TwoPi = Pi<T> +Pi<T>;
-
-		template<typename T = float>
-		constexpr T HalfPi = Pi<T> / T(2);
-
-		template<typename T = float>
-		constexpr T InvPi = T(1) / Pi<T>;
-
-		template<typename T = float>
-		constexpr T InvTwoPi = T(1) / TwoPi<T>;
-
-		template<typename T = float>
-		constexpr T Epsilon = std::numeric_limits<T>::epsilon();
-
-		template<typename T = float>
-		constexpr T MaxReal = std::numeric_limits<T>::max();
-
-		template<typename T = float>
-		constexpr T MinReal = std::numeric_limits<T>::min();
-	}
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
-// Angle Algorithms
-namespace Epic
-{
-	namespace
-	{
-		// Convert a degree value to radians
-		template<typename T>
-		constexpr T DegToRad(const T value) noexcept
-		{
-			return Pi<T> * value / T(180);
-		}
-
-		// Convert a radian value to degrees
-		template<typename T>
-		constexpr T RadToDeg(const T value) noexcept
-		{
-			return T(180) * value / Pi<T>;
-		}
-	}
-}
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -118,6 +61,13 @@ namespace Epic
 							 const Vector<T, Size>& vecB) noexcept
 		{
 			return Distance(vecA.ToVector(), vecB);
+		}
+
+		// Calculate the angle between unit vectors 'vecA' and 'vecB'
+		template<class T, class U, size_t Size>
+		inline Radian<T> AngleOf(const Vector<T, Size>& vecA, const Vector<U, Size>& vecB) noexcept
+		{
+			return{ std::acos(vecA.Dot(vecB)) };
 		}
 
 		// Calculate the average value of Vector 'vec'
