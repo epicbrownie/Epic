@@ -324,6 +324,14 @@ public:
 		return *this;																				\
 	}																								\
 																									\
+	Type& operator Op (const Type& vec) noexcept													\
+	{																								\
+		Epic::TMP::ForEach<Epic::TMP::MakeSequence<size_t, Size>>									\
+			::Apply([&](size_t index) { Values[index] Op vec[index]; });							\
+																									\
+		return *this;																				\
+	}																								\
+																									\
 	template<class U, size_t Sz>																	\
 	Type& operator Op (const Vector<U, Sz>& vec)													\
 	{																								\
@@ -379,6 +387,13 @@ public:
 	{																								\
 		Type result{ *this };																		\
 		result Op= values;																			\
+		return result;																				\
+	}																								\
+																									\
+	inline Type operator Op (const Type& vec) const noexcept										\
+	{																								\
+		Type result{ *this };																		\
+		result Op= vec;																				\
 		return result;																				\
 	}																								\
 																									\

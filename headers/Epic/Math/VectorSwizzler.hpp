@@ -85,6 +85,14 @@ public:
 		return *this;																				\
 	}																								\
 																									\
+	AssignableThis operator Op (const Type& other)													\
+	{																								\
+		Epic::TMP::ForEach<Epic::TMP::Sequence<size_t, Indices...>>									\
+			::Apply([&](size_t index) { m_Values[index] Op other.m_Values[index]; });				\
+																									\
+		return *this;																				\
+	}																								\
+																									\
 	template<class VectorType2, class TArray2, size_t... Indices2>									\
 	AssignableThis operator Op (const VectorSwizzler<VectorType2, TArray2, Indices2...>& other)		\
 	{																								\
@@ -138,6 +146,13 @@ public:
 																							\
 	template<class U>																		\
 	inline auto operator Op (const Epic::Vector<U, sizeof...(Indices)>& vec)				\
+	{																						\
+		auto result = ToVector();															\
+		result Op= vec;																		\
+		return result;																		\
+	}																						\
+																							\
+	inline auto operator Op (const Type& vec)												\
 	{																						\
 		auto result = ToVector();															\
 		result Op= vec;																		\
