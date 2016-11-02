@@ -44,6 +44,7 @@
     <ClInclude Include="src\Math\detail\VectorFwd.hpp" />
     <ClInclude Include="src\Math\detail\VectorSwizzlerFwd.hpp" />
     <ClInclude Include="src\Math\Matrix.hpp" />
+    <ClInclude Include="src\Math\MatrixHelpers.hpp" />
     <ClInclude Include="src\Math\Vector.hpp" />
     <ClInclude Include="src\Math\VectorSwizzler.hpp" />
     <ClInclude Include="src\Memory\AffixAllocator.hpp" />
