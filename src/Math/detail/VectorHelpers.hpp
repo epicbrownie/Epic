@@ -14,7 +14,7 @@
 #pragma once
 
 #include <Epic/TMP/Sequence.hpp>
-#include <Epic/Math/VectorBase.hpp>
+#include <Epic/Math/detail/VectorBase.hpp>
 #include <Epic/Math/detail/VectorFwd.hpp>
 #include <Epic/Math/detail/VectorSwizzlerFwd.hpp>
 #include <array>
@@ -107,5 +107,5 @@ struct Epic::detail::VectorHelper
 		using Type = T;
 	};
 
-	using BaseType = Epic::VectorBase<Size, SwizzlerGenerator, TArray>;
+	using BaseType = Epic::detail::VectorBase<Size, SwizzlerGenerator, TArray>;
 };

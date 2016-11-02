@@ -15,7 +15,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-namespace Epic
+namespace Epic::detail
 {
 	template<size_t Size, template<size_t...> class SwizzlerGenerator, class TArray>
 	class VectorBase;
@@ -23,16 +23,18 @@ namespace Epic
 
 //////////////////////////////////////////////////////////////////////////////
 
+// VectorBase
 template<size_t Size, template<size_t...> class SwizzlerGenerator, class TArray>
-class Epic::VectorBase
+class Epic::detail::VectorBase
 {
 public:
 	// Value Array
 	TArray Values;
 };
 
+// VectorBase<1>
 template<template<size_t...> class SwizzlerGenerator, class TArray>
-class Epic::VectorBase<1, SwizzlerGenerator, TArray>
+class Epic::detail::VectorBase<1, SwizzlerGenerator, TArray>
 {
 public:
 	union
@@ -57,8 +59,9 @@ public:
 	};
 };
 
+// VectorBase<2>
 template<template<size_t...> class SwizzlerGenerator, class TArray>
-class Epic::VectorBase<2, SwizzlerGenerator, TArray>
+class Epic::detail::VectorBase<2, SwizzlerGenerator, TArray>
 {
 public:
 	union
@@ -109,8 +112,9 @@ public:
 	};
 };
 
+// VectorBase<3>
 template<template<size_t...> class SwizzlerGenerator, class TArray>
-class Epic::VectorBase<3, SwizzlerGenerator, TArray>
+class Epic::detail::VectorBase<3, SwizzlerGenerator, TArray>
 {
 public:
 	union
@@ -251,8 +255,9 @@ public:
 	};
 };
 
+// VectorBase<4>
 template<template<size_t...> class SwizzlerGenerator, class TArray>
-class Epic::VectorBase<4, SwizzlerGenerator, TArray>
+class Epic::detail::VectorBase<4, SwizzlerGenerator, TArray>
 {
 public:
 	union
