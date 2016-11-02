@@ -83,7 +83,7 @@ public:
 	using Type = Epic::detail::MatrixBase<T, 2>;
 
 	using ValueType = T;
-	static constexpr size_t Size = 2;
+	static constexpr size_t Size = 4;
 
 	using RowType = Epic::Vector<T, 2>;
 	static constexpr size_t RowCount = 2;
@@ -111,7 +111,7 @@ public:
 	using Type = Epic::detail::MatrixBase<T, 3>;
 
 	using ValueType = T;
-	static constexpr size_t Size = 3;
+	static constexpr size_t Size = 9;
 
 	using RowType = Epic::Vector<T, 3>;
 	static constexpr size_t RowCount = 3;
@@ -140,7 +140,7 @@ public:
 	using Type = Epic::detail::MatrixBase<T, 4>;
 
 	using ValueType = T;
-	static constexpr size_t Size = 4;
+	static constexpr size_t Size = 16;
 
 	using RowType = Epic::Vector<T, 4>;
 	static constexpr size_t RowCount = 4;
