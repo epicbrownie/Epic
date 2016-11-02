@@ -13,7 +13,7 @@
 
 #pragma once
 
-#include <Epic/Math/Algorithm.hpp>
+#include <Epic/Math/Constants.hpp>
 #include <cmath>
 #include <iostream>
 
@@ -26,6 +26,29 @@ namespace Epic
 
 	template<class T = float>
 	class Radian;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+// Conversions
+namespace Epic
+{
+	namespace
+	{
+		// Convert a degree value to radians
+		template<typename T>
+		constexpr T DegToRad(const T value) noexcept
+		{
+			return Epic::Pi<T> * value / T(180);
+		}
+
+		// Convert a radian value to degrees
+		template<typename T>
+		constexpr T RadToDeg(const T value) noexcept
+		{
+			return T(180) * value / Epic::Pi<T>;
+		}
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -95,21 +118,21 @@ public:
 	#pragma region Assignment Operators
 	#define CREATE_ASSIGNMENT_OPERATOR(Op)	\
 																		\
-	Type& operator Op (const ValueType& value)							\
+	inline Type& operator Op (const ValueType& value) noexcept			\
 	{																	\
 		m_Value Op value;												\
 		return *this;													\
 	}																	\
 																		\
 	template<typename U>												\
-	Type& operator Op (const Radian<U>& value)							\
+	inline Type& operator Op (const Radian<U>& value) noexcept			\
 	{																	\
 		m_Value Op T(value.Value());									\
 		return *this;													\
 	}																	\
 																		\
 	template<typename U>												\
-	Type& operator Op (const Degree<U>& value)							\
+	inline Type& operator Op (const Degree<U>& value) noexcept			\
 	{																	\
 		m_Value Op Epic::DegToRad(T(value.Value()));					\
 		return *this;													\
@@ -135,35 +158,35 @@ public:
 public:
 	#pragma region Arithmetic Operators
 	#define CREATE_ARITHMETIC_OPERATOR(Op) 	\
-																		\
-	inline Type operator Op (const ValueType& value) const				\
-	{																	\
-		Type result{ *this };											\
-		result Op= value;												\
-		return result;													\
-	}																	\
-																		\
-	template<class U>													\
-	inline Type operator Op (const Radian<U>& value) const				\
-	{																	\
-		Type result{ *this };											\
-		result Op= vec;													\
-		return result;													\
-	}																	\
-																		\
-	template<class U>													\
-	inline Type operator Op (const Degree<U>& value) const				\
-	{																	\
-		Type result{ *this };											\
-		result Op= vec;													\
-		return result;													\
-	}																	\
-																		\
-	friend Type operator Op (const ValueType& value, const Type& rad)	\
-	{																	\
-		Type result{ rad };												\
-		result Op= value;												\
-		return result;													\
+																						\
+	inline Type operator Op (const ValueType& value) const noexcept						\
+	{																					\
+		Type result{ *this };															\
+		result Op= value;																\
+		return result;																	\
+	}																					\
+																						\
+	template<class U>																	\
+	inline Type operator Op (const Radian<U>& value) const noexcept						\
+	{																					\
+		Type result{ *this };															\
+		result Op= value;																\
+		return result;																	\
+	}																					\
+																						\
+	template<class U>																	\
+	inline Type operator Op (const Degree<U>& value) const noexcept						\
+	{																					\
+		Type result{ *this };															\
+		result Op= value;																\
+		return result;																	\
+	}																					\
+																						\
+	friend inline Type operator Op (const ValueType& value, const Type& rad) noexcept	\
+	{																					\
+		Type result{ rad };																\
+		result Op= value;																\
+		return result;																	\
 	}
 
 	CREATE_ARITHMETIC_OPERATOR(+);
@@ -186,13 +209,13 @@ public:
 	#pragma region Comparison Operators
 	#define CREATE_COMPARISON_OPERATOR(Op)	\
 																		\
-	constexpr bool operator Op (const ValueType& value) const			\
+	constexpr bool operator Op (const ValueType& value) const noexcept	\
 	{																	\
 		return m_Value Op value;										\
 	}																	\
 																		\
 	template<typename U>												\
-	constexpr bool operator Op (const Radian<U>& value) const			\
+	constexpr bool operator Op (const Radian<U>& value) const noexcept	\
 	{																	\
 		return m_Value Op value.Value();								\
 	}
@@ -244,9 +267,9 @@ private:
 	ValueType m_Value;
 
 public:
-	Degree() = default;
-	Degree(const Type&) = default;
-	Degree(Type&&) = default;
+	Degree() noexcept = default;
+	Degree(const Type&) noexcept = default;
+	Degree(Type&&) noexcept = default;
 
 	constexpr Degree(const T value) noexcept
 		: m_Value(value) { }
@@ -297,21 +320,21 @@ public:
 	#pragma region Assignment Operators
 	#define CREATE_ASSIGNMENT_OPERATOR(Op)	\
 																		\
-	Type& operator Op (const ValueType& value)							\
+	Type& operator Op (const ValueType& value) noexcept					\
 	{																	\
 		m_Value Op value;												\
 		return *this;													\
 	}																	\
 																		\
 	template<typename U>												\
-	Type& operator Op (const Degree<U>& value)							\
+	Type& operator Op (const Degree<U>& value) noexcept					\
 	{																	\
 		m_Value Op T(value.Value());									\
 		return *this;													\
 	}																	\
 																		\
 	template<typename U>												\
-	Type& operator Op (const Radian<U>& value)							\
+	Type& operator Op (const Radian<U>& value) noexcept					\
 	{																	\
 		m_Value Op Epic::RadToDeg(T(value.Value()));					\
 		return *this;													\
@@ -337,35 +360,35 @@ public:
 public:
 	#pragma region Arithmetic Operators
 	#define CREATE_ARITHMETIC_OPERATOR(Op) 	\
-																		\
-	inline Type operator Op (const ValueType& value) const				\
-	{																	\
-		Type result{ *this };											\
-		result Op= value;												\
-		return result;													\
-	}																	\
-																		\
-	template<class U>													\
-	inline Type operator Op (const Degree<U>& value) const				\
-	{																	\
-		Type result{ *this };											\
-		result Op= vec;													\
-		return result;													\
-	}																	\
-																		\
-	template<class U>													\
-	inline Type operator Op (const Radian<U>& value) const				\
-	{																	\
-		Type result{ *this };											\
-		result Op= vec;													\
-		return result;													\
-	}																	\
-																		\
-	friend Type operator Op (const ValueType& value, const Type& rad)	\
-	{																	\
-		Type result{ rad };												\
-		result Op= value;												\
-		return result;													\
+																						\
+	inline Type operator Op (const ValueType& value) const noexcept						\
+	{																					\
+		Type result{ *this };															\
+		result Op= value;																\
+		return result;																	\
+	}																					\
+																						\
+	template<class U>																	\
+	inline Type operator Op (const Degree<U>& value) const noexcept						\
+	{																					\
+		Type result{ *this };															\
+		result Op= value;																\
+		return result;																	\
+	}																					\
+																						\
+	template<class U>																	\
+	inline Type operator Op (const Radian<U>& value) const noexcept						\
+	{																					\
+		Type result{ *this };															\
+		result Op= value;																\
+		return result;																	\
+	}																					\
+																						\
+	friend inline Type operator Op (const ValueType& value, const Type& deg) noexcept	\
+	{																					\
+		Type result{ deg };																\
+		result Op= value;																\
+		return result;																	\
 	}
 
 	CREATE_ARITHMETIC_OPERATOR(+);
@@ -387,16 +410,16 @@ public:
 public:
 	#pragma region Comparison Operators
 	#define CREATE_COMPARISON_OPERATOR(Op)	\
-																		\
-	constexpr bool operator Op (const ValueType& value) const			\
-	{																	\
-		return m_Value Op value;										\
-	}																	\
-																		\
-	template<typename U>												\
-	constexpr bool operator Op (const Degree<U>& value) const			\
-	{																	\
-		return m_Value Op value.Value();								\
+																				\
+	constexpr bool operator Op (const ValueType& value) const noexcept			\
+	{																			\
+		return m_Value Op value;												\
+	}																			\
+																				\
+	template<typename U>														\
+	constexpr bool operator Op (const Degree<U>& value) const noexcept			\
+	{																			\
+		return m_Value Op value.Value();										\
 	}
 
 	CREATE_COMPARISON_OPERATOR(< );

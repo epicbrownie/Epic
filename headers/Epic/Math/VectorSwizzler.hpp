@@ -34,7 +34,7 @@ private:
 	TArray m_Values;
 
 public:
-	VectorSwizzler() = default;
+	VectorSwizzler() noexcept = default;
 
 private:
 	using AssignableThis =
@@ -44,7 +44,7 @@ private:
 			struct UnassignableLValue>;
 
 public:
-	VectorType ToVector() const
+	inline VectorType ToVector() const
 	{
 		VectorType result;
 
@@ -60,22 +60,21 @@ public:
 	#pragma region Assignment Operators
 	#define CREATE_ASSIGNMENT_OPERATOR(Op)	\
 																									\
-	AssignableThis operator Op (std::initializer_list<ScalarType> values)							\
+	inline AssignableThis operator Op (std::initializer_list<ScalarType> values) noexcept			\
 	{																								\
 		auto it = std::begin(values);																\
 																									\
-		Epic::TMP::ForEach<Epic::TMP::Sequence<size_t, Indices...>>::Apply(							\
-			[&](size_t index)																		\
-			{																						\
-				if (it != std::end(values))															\
-					m_Values[index] Op *it++;														\
-			});																						\
+		ForEach([&](size_t index)																	\
+		{																							\
+			if (it != std::end(values))																\
+				m_Values[index] Op *it++;															\
+		});																							\
 																									\
 		return *this;																				\
 	}																								\
 																									\
 	template<class T, size_t Size>																	\
-	AssignableThis operator Op (const Epic::Vector<T, Size>& vec)									\
+	inline AssignableThis operator Op (const Epic::Vector<T, Size>& vec) noexcept					\
 	{																								\
 		Epic::TMP::ForEach2<																		\
 			Epic::TMP::Sequence<size_t, Indices...>,												\
@@ -85,33 +84,32 @@ public:
 		return *this;																				\
 	}																								\
 																									\
-	AssignableThis operator Op (const Type& other)													\
+	inline AssignableThis operator Op (const Type& other) noexcept									\
 	{																								\
-		Epic::TMP::ForEach<Epic::TMP::Sequence<size_t, Indices...>>									\
-			::Apply([&](size_t index) { m_Values[index] Op other.m_Values[index]; });				\
-																									\
+		ForEach([&](size_t index) { m_Values[index] Op other.m_Values[index]; });					\
 		return *this;																				\
 	}																								\
 																									\
-	template<class VectorType2, class TArray2, size_t... Indices2>									\
-	AssignableThis operator Op (const VectorSwizzler<VectorType2, TArray2, Indices2...>& other)		\
+	template<class VT, class TArray2, size_t... Is>													\
+	inline AssignableThis operator Op (const VectorSwizzler<VT, TArray2, Is...>& vec) noexcept		\
 	{																								\
-		if (static_cast<const void*>(this) == static_cast<const void*>(&other))						\
-			return *this Op other.ToVector();														\
+		if (static_cast<const void*>(this) == static_cast<const void*>(&vec))						\
+			return *this Op vec.ToVector();															\
 																									\
 		Epic::TMP::ForEach2<																		\
 			Epic::TMP::Sequence<size_t, Indices...>,												\
-			Epic::TMP::Sequence<size_t, Indices2...>>												\
-		::Apply([&](size_t iThis, size_t iOther) { m_Values[iThis] Op other.m_Values[iOther]; });	\
+			Epic::TMP::Sequence<size_t, Is...>>														\
+		::Apply([&](size_t iThis, size_t iOther)													\
+		{																							\
+			m_Values[iThis] Op vec.m_Values[iOther];												\
+		});																							\
 																									\
 		return *this;																				\
 	}																								\
 																									\
-	AssignableThis operator Op (const ScalarType& value)											\
+	inline AssignableThis operator Op (const ScalarType& value) noexcept							\
 	{																								\
-		Epic::TMP::ForEach<Epic::TMP::Sequence<size_t, Indices...>>									\
-			::Apply([&](size_t index) { m_Values[index] Op value; });								\
-																									\
+		ForEach([&](size_t index) { m_Values[index] Op value; });									\
 		return *this;																				\
 	}
 
@@ -135,50 +133,50 @@ public:
 public:
 	#pragma region Arithmetic Operators
 	#define CREATE_ARITHMETIC_OPERATOR(Op) 	\
-																							\
-	template<class U>																		\
-	inline auto operator Op (std::initializer_list<U> values)								\
-	{																						\
-		auto result = ToVector();															\
-		result Op= values;																	\
-		return result;																		\
-	}																						\
-																							\
-	template<class U>																		\
-	inline auto operator Op (const Epic::Vector<U, sizeof...(Indices)>& vec)				\
-	{																						\
-		auto result = ToVector();															\
-		result Op= vec;																		\
-		return result;																		\
-	}																						\
-																							\
-	inline auto operator Op (const Type& vec)												\
-	{																						\
-		auto result = ToVector();															\
-		result Op= vec;																		\
-		return result;																		\
-	}																						\
-																							\
-	template<class VectorType2, class TArray2, size_t... Indices2>							\
-	inline auto operator Op (const VectorSwizzler<VectorType2, TArray2, Indices2...>& vec)	\
-	{																						\
-		auto result = ToVector();															\
-		result Op= vec;																		\
-		return result;																		\
-	}																						\
-																							\
-	inline auto operator Op (const ScalarType& value)										\
-	{																						\
-		auto result = ToVector();															\
-		result Op= value;																	\
-		return result;																		\
-	}																						\
-																							\
-	friend auto operator Op (const ScalarType& value, const Type& vec)						\
-	{																						\
-		auto result = vec.ToVector();														\
-		result Op= value;																	\
-		return result;																		\
+																								\
+	template<class U>																			\
+	inline auto operator Op (std::initializer_list<U> values) const noexcept					\
+	{																							\
+		auto result = ToVector();																\
+		result Op= values;																		\
+		return result;																			\
+	}																							\
+																								\
+	template<class U>																			\
+	inline auto operator Op (const Epic::Vector<U, sizeof...(Indices)>& vec) const noexcept		\
+	{																							\
+		auto result = ToVector();																\
+		result Op= vec;																			\
+		return result;																			\
+	}																							\
+																								\
+	inline auto operator Op (const Type& vec) const noexcept									\
+	{																							\
+		auto result = ToVector();																\
+		result Op= vec;																			\
+		return result;																			\
+	}																							\
+																								\
+	template<class VT, class TArray2, size_t... Is>												\
+	inline auto operator Op (const VectorSwizzler<VT, TArray2, Is...>& vec) const noexcept		\
+	{																							\
+		auto result = ToVector();																\
+		result Op= vec;																			\
+		return result;																			\
+	}																							\
+																								\
+	inline auto operator Op (const ScalarType& value) const noexcept							\
+	{																							\
+		auto result = ToVector();																\
+		result Op= value;																		\
+		return result;																			\
+	}																							\
+																								\
+	friend inline auto operator Op (const ScalarType& value, const Type& vec) noexcept			\
+	{																							\
+		auto result = vec.ToVector();															\
+		result Op= value;																		\
+		return result;																			\
 	}
 	
 	CREATE_ARITHMETIC_OPERATOR(+);
@@ -196,6 +194,19 @@ public:
 
 	#undef CREATE_ARITHMETIC_OPERATOR
 	#pragma endregion
+
+private:
+	template<class Function>
+	inline void ForEach(Function fn) noexcept
+	{
+		Epic::TMP::ForEach<Epic::TMP::Sequence<size_t, Indices...>>::Apply(fn);
+	}
+
+	template<class Function>
+	inline void ForEach(Function fn) const noexcept
+	{
+		Epic::TMP::ForEach<Epic::TMP::Sequence<size_t, Indices...>>::Apply(fn);
+	}
 
 private:
 	template<class VectorType2, class TArray2, size_t... Indices2>

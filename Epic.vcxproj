@@ -36,6 +36,7 @@
     <ClInclude Include="src\Ext\Erase.hpp" />
     <ClInclude Include="src\Math\Algorithm.hpp" />
     <ClInclude Include="src\Math\Angle.hpp" />
+    <ClInclude Include="src\Math\Constants.hpp" />
     <ClInclude Include="src\Math\detail\MatrixBase.hpp" />
     <ClInclude Include="src\Math\detail\MatrixFwd.hpp" />
     <ClInclude Include="src\Math\detail\VectorBase.hpp" />
