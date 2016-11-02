@@ -35,11 +35,15 @@
     <ClInclude Include="src\EON\Types.hpp" />
     <ClInclude Include="src\Ext\Erase.hpp" />
     <ClInclude Include="src\Math\Algorithm.hpp" />
+    <ClInclude Include="src\Math\Angle.hpp" />
+    <ClInclude Include="src\Math\detail\MatrixBase.hpp" />
+    <ClInclude Include="src\Math\detail\MatrixFwd.hpp" />
+    <ClInclude Include="src\Math\detail\VectorBase.hpp" />
     <ClInclude Include="src\Math\detail\VectorHelpers.hpp" />
     <ClInclude Include="src\Math\detail\VectorFwd.hpp" />
     <ClInclude Include="src\Math\detail\VectorSwizzlerFwd.hpp" />
+    <ClInclude Include="src\Math\Matrix.hpp" />
     <ClInclude Include="src\Math\Vector.hpp" />
-    <ClInclude Include="src\Math\VectorBase.hpp" />
     <ClInclude Include="src\Math\VectorSwizzler.hpp" />
     <ClInclude Include="src\Memory\AffixAllocator.hpp" />
     <ClInclude Include="src\Memory\AlignedMallocator.hpp" />

@@ -248,9 +248,6 @@
     <ClInclude Include="src\Math\detail\VectorFwd.hpp">
       <Filter>Math\detail</Filter>
     </ClInclude>
-    <ClInclude Include="src\Math\VectorBase.hpp">
-      <Filter>Math</Filter>
-    </ClInclude>
     <ClInclude Include="src\Math\Vector.hpp">
       <Filter>Math</Filter>
     </ClInclude>
@@ -265,6 +262,21 @@
     </ClInclude>
     <ClInclude Include="src\Math\Algorithm.hpp">
       <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\Matrix.hpp">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\Angle.hpp">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\detail\VectorBase.hpp">
+      <Filter>Math\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\detail\MatrixBase.hpp">
+      <Filter>Math\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\detail\MatrixFwd.hpp">
+      <Filter>Math\detail</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
