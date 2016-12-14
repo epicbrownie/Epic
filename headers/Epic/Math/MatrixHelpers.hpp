@@ -20,6 +20,10 @@ namespace Epic
 	struct OnesMatrixTag { };
 	struct ZeroesMatrixTag { };
 	struct IdentityMatrixTag { };
+	
+	struct TranslationMatrixTag { };
+	struct ScaleMatrixTag { };
+	struct RotationMatrixTag { };
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -29,4 +33,8 @@ namespace Epic
 	static OnesMatrixTag OnesMatrix;
 	static ZeroesMatrixTag ZeroesMatrix;
 	static IdentityMatrixTag IdentityMatrix;
+
+	static TranslationMatrixTag TranslationMatrix;
+	static ScaleMatrixTag ScaleMatrix;
+	static RotationMatrixTag RotationMatrix;
 }

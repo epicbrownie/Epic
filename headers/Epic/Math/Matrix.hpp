@@ -44,6 +44,11 @@ public:
 	Matrix(const Type&) noexcept = default;
 	Matrix(Type&&) noexcept = default;
 
+	inline Matrix(const T& value) noexcept
+	{
+		ForEach<Size>([&](size_t n) { Values[n] = value; });
+	}
+
 	template<class U, size_t Sz>
 	inline Matrix(const Matrix<U, Sz>& mat) noexcept
 	{
@@ -121,19 +126,17 @@ public:
 	}
 
 	inline Matrix(const IdentityMatrixTag&) noexcept
+		: Matrix(ZeroesMatrix)
 	{
-		size_t i = 0;
+		ForEach<RowCount>([&](size_t n) { Values[RowCount*n + n] = T(1); });
+	}
 
-		ForEach<Size>([&](size_t n)
-		{
-			if (n == i)
-			{
-				Values[n] = T(1);
-				i += RowType::Size + 1;
-			}
-			else
-				Values[n] = T(0);
-		});
+	template<class Arg, class... Args, 
+		typename = std::enable_if_t<(detail::Span<Arg, Args...>::Value <= RowType::Size)>>
+	inline Matrix(const TranslationMatrixTag&, Arg&& arg, Args&&... args) noexcept
+		: Matrix(IdentityMatrix)
+	{
+		ConstructAt(Size - RowType::Size, std::forward<Arg>(arg), std::forward<Args>(args)...);
 	}
 
 	// Translate/Scale/Rotate
@@ -209,26 +212,32 @@ public:
 	// Multiplies this matrix and 'vec' together. (vec' = vec * M)
 	void Transform(Vector<T, Size>& vec) const noexcept
 	{
-		const decltype(vec) cache{ vec };
+		const decltype(vec) src{ vec };
 		
 		// These branches should be optimized away (TODO: constexpr if when available)
 		if (RowType::Size == 4)
 		{
-			vec[0] = (cache[0] * Values[0]) + (cache[1] * Values[4]) + (cache[2] * Values[8]);
-			vec[1] = (cache[0] * Values[1]) + (cache[1] * Values[5]) + (cache[2] * Values[9]);
-			vec[2] = (cache[0] * Values[2]) + (cache[1] * Values[6]) + (cache[2] * Values[10]);
-			vec[3] = (cache[0] * Values[3]) + (cache[1] * Values[7]) + (cache[2] * Values[11]);
+			ForEach<RowCount>([&](size_t r)
+			{
+				vec[r] = (src[0] * Values[r * 4 + 0]) + 
+						 (src[1] * Values[r * 4 + 1]) + 
+						 (src[2] * Values[r * 4 + 2]) +
+						 (src[3] * Values[r * 4 + 3]);
+			});
 		}
 		else if (RowType::Size == 3)
 		{
-			vec[0] = (cache[0] * Values[0]) + (cache[1] * Values[3]) + (cache[2] * Values[6]);
-			vec[1] = (cache[0] * Values[1]) + (cache[1] * Values[4]) + (cache[2] * Values[7]);
-			vec[2] = (cache[0] * Values[2]) + (cache[1] * Values[5]) + (cache[2] * Values[8]);
+			ForEach<RowCount>([&](const size_t r)
+			{
+				vec[r] = (src[0] * Values[r * 3 + 0]) + 
+						 (src[1] * Values[r * 3 + 1]) + 
+						 (src[2] * Values[r * 3 + 2]);
+			});
 		}
 		else if (RowType::Size == 2)
 		{
-			vec[0] = (cache[0] * Values[0]) + (cache[1] * Values[2]);
-			vec[1] = (cache[0] * Values[1]) + (cache[1] * Values[3]);
+			vec[0] = (src[0] * Values[0]) + (src[1] * Values[1]);
+			vec[1] = (src[0] * Values[2]) + (src[1] * Values[3]);
 		}
 		else if (RowType::Size == 1)
 		{
@@ -236,12 +245,12 @@ public:
 		}
 		else
 		{
-			ForEach<RowCount>([&](size_t c) 
+			ForEach<RowCount>([&](const size_t r) 
 			{
-				vec[c] = cache[0] * Values[c];
+				vec[r] = cache[0] * Values[r * RowType::Size];
 
-				for (size_t j = 1; j < RowCount; ++j)
-					vec[c] += cache[j] * Values[(j * RowType::Size) + c];
+				for (size_t j = 1; j < RowType::Size; ++j)
+					vec[r] += cache[j] * Values[(r * RowType::Size) + j];
 			});
 		}
 	}
@@ -271,16 +280,14 @@ public:
 		
 		ForEach<RowCount>([&](size_t r) 
 		{
-			ForEach<RowType::Size>([&](size_t c) 
+			for(size_t c=0; c<RowType::Size; ++c)
 			{
 				const size_t vi = (r * RowType::Size) + c;
 				result[vi] = T(0);
 
-				ForEach<RowType::Size>([&](size_t v) 
-				{
+				for(size_t v=0; v<RowType::Size; ++v)
 					result[vi] += Values[(r * RowType::Size) + v] * mat.Values[(v * RowType::Size) + c];
-				});
-			});
+			}
 		});
 
 		return (*this = result);
@@ -303,20 +310,12 @@ public:
 	}
 
 	// Inverts this matrix under the assumption that it describes a rigid-body transformation.
-	Type& InvertFast() noexcept
+	Type& InvertRigid() noexcept
 	{
-		ForEach<RowCount - 1>([&](size_t i) 
-		{
-			Rows[i][RowType::Size - 1] = -Rows[i].Dot(Rows[RowCount - 1]);
-		});
-
-		Rows[RowCount - 1] = T(0);
-		Rows[RowCount - 1][RowType::Size - 1] = T(1);
-
-		return Transpose();
+		return TransposeInvertRigid().Transpose();
 	}
 
-	// Inverts this matrix. (M * inverse(M) = identity(M))
+	// Inverts this matrix. (s.t. M * inverse(M) = identity(M))
 	Type& Invert() noexcept
 	{
 		const T det = Determinant();
@@ -342,17 +341,18 @@ public:
 		}
 		else if (RowCount == 3)
 		{
-			Type adj;
-
-			adj.Values[0] =  ((Values[4] * Values[8]) - (Values[5] * Values[7]));
-			adj.Values[1] = -((Values[1] * Values[8]) - (Values[2] * Values[7]));
-			adj.Values[2] =  ((Values[1] * Values[5]) - (Values[2] * Values[4]));
-			adj.Values[3] = -((Values[3] * Values[8]) - (Values[5] * Values[6]));
-			adj.Values[4] =  ((Values[0] * Values[8]) - (Values[2] * Values[6]));
-			adj.Values[5] = -((Values[0] * Values[5]) - (Values[2] * Values[3]));
-			adj.Values[6] =  ((Values[3] * Values[7]) - (Values[4] * Values[6]));
-			adj.Values[7] = -((Values[0] * Values[7]) - (Values[1] * Values[6]));
-			adj.Values[8] =  ((Values[0] * Values[4]) - (Values[1] * Values[3]));
+			Type adj
+			{
+				 (Values[4] * Values[8]) - (Values[5] * Values[7]),
+				-(Values[1] * Values[8]) - (Values[2] * Values[7]),
+				 (Values[1] * Values[5]) - (Values[2] * Values[4]),
+				-(Values[3] * Values[8]) - (Values[5] * Values[6]),
+				 (Values[0] * Values[8]) - (Values[2] * Values[6]),
+				-(Values[0] * Values[5]) - (Values[2] * Values[3]),
+				 (Values[3] * Values[7]) - (Values[4] * Values[6]),
+				-(Values[0] * Values[7]) - (Values[1] * Values[6]),
+				 (Values[0] * Values[4]) - (Values[1] * Values[3])
+			};
 
 			*this = adj;
 			*this *= T(1) / det;
@@ -422,10 +422,19 @@ public:
 	}
 
 	// Inverts this matrix under the assumption that it describes a rigid-body transformation; then transposes it.
-	inline Type& TransposeFastInvert() noexcept
+	inline Type& TransposeInvertRigid() noexcept
 	{
-		InvertFast();
-		return Transpose();
+		ForEach<RowCount - 1>([&](size_t i)
+		{
+			Rows[i][RowType::Size - 1] = -Rows[i].Dot(Rows[RowCount - 1]);
+		});
+
+		Rows[RowCount - 1] = T(0);
+		Rows[RowCount - 1][RowType::Size - 1] = T(1);
+
+		// NOTE: *this is now equal to the transposed inverse
+
+		return *this;
 	}
 
 	// Inverts this matrix; then transposes it.
@@ -435,85 +444,110 @@ public:
 		return Transpose();
 	}
 
+	// Constructs a matrix from the square region between [I, I + N]
 	template<size_t I = 0, size_t N = RowCount,
-			 typename InvalidSliceParams = std::enable_if_t<((I + N) <= RowCount)>>
+			 typename InvalidSlice = std::enable_if_t<((I + N) <= RowCount)>>
 	Matrix<T, N> Slice() const noexcept
 	{
 		Matrix<T, N> result;
 		size_t src = (RowCount * I) + I;
 		size_t dest = 0;
 
-		for (size_t i = 0; i < N; ++i)
+		ForEach<N>([&](size_t)
 		{
 			for (size_t j = 0; j < N; ++j)
 				result.Values[dest++] = Values[src++];
 
 			src += RowCount - N;
-		}
+		});
 
 		return result;
 	}
 
+	// Constructs a matrix from this matrix, less 'Amount' rows and columns
+	// NOTE: Equivalent to Slice<0, S - Amount>()
 	template<size_t Amount = 1, typename ResultSizeMustBeGreaterThan0 = std::enable_if_t<(RowCount > Amount)>>
 	auto Contract() const noexcept
 	{
 		return Slice<0, RowCount - Amount>();
 	}
 
+	// Constructs a matrix from this matrix with 'Amount' additional rows and columns.
+	// Added rows/columns are filled with values from the identity matrix.
 	template<size_t Amount = 1>
-	auto Expand() const noexcept
+	inline auto Expand() const noexcept
 	{
 		return Expand<Amount>(IdentityMatrix);
 	}
 
+	// Constructs a matrix from this matrix with 'Amount' additional rows and columns.
+	// Added rows/columns are filled with values from the zeroes matrix.
 	template<size_t Amount = 1>
-	auto Expand(const ZeroesMatrixTag&) const
+	auto Expand(const ZeroesMatrixTag&) const noexcept
 	{
 		constexpr static size_t Expanded = RowCount + Amount;
 
 		Matrix<T, Expanded> result(*this);
 
-		for (size_t r = 0; r < RowCount; ++r)
-			for (size_t c = RowCount; c < Expanded; ++c)
+		ForEach<RowCount>([&](size_t r)
+		{
+			for (size_t c = RowType::Size; c < Expanded; ++c)
 				result.Values[(r * Expanded) + c] = T(0);
+		});
 
-		for (size_t c = 0; c < Expanded * Amount; ++c)
+		ForEach<Expanded * Amount>([&](size_t c)
+		{
 			result.Values[(Expanded * RowCount) + c] = T(0);
+		});
 
 		return result;
 	}
 
+	// Constructs a matrix from this matrix with 'Amount' additional rows and columns.
+	// Added rows/columns are filled with values from the ones matrix.
 	template<size_t Amount = 1>
-	auto Expand(const OnesMatrixTag&) const
+	auto Expand(const OnesMatrixTag&) const noexcept
 	{
 		constexpr static size_t Expanded = RowCount + Amount;
 
 		Matrix<T, Expanded> result(*this);
 
-		for (size_t r = 0; r < RowCount; ++r)
-			for (size_t c = RowCount; c < Expanded; ++c)
+		ForEach<RowCount>([&](size_t r)
+		{
+			for (size_t c = RowType::Size; c < Expanded; ++c)
 				result.Values[(r * Expanded) + c] = T(1);
+		});
 
-		for (size_t c = 0; c < Expanded * Amount; ++c)
+		ForEach<Expanded * Amount>([&](size_t c)
+		{
 			result.Values[(Expanded * RowCount) + c] = T(1);
+		});
 
 		return result;
 	}
 
+	// Constructs a matrix from this matrix with 'Amount' additional rows and columns.
+	// Added rows/columns are filled with values from the identity matrix.
 	template<size_t Amount = 1>
-	auto Expand(const IdentityMatrixTag&) const
+	auto Expand(const IdentityMatrixTag&) const noexcept
 	{
 		constexpr static size_t Expanded = RowCount + Amount;
 
 		Matrix<T, Expanded> result(*this);
 
-		for (size_t r = 0; r < RowCount; ++r)
-			for (size_t c = RowCount; c < Expanded; ++c)
+		ForEach<RowCount>([&](size_t r)
+		{
+			for (size_t c = RowType::Size; c < Expanded; ++c)
 				result.Values[(r * Expanded) + c] = T(0);
+		});
 
 		for (size_t r = RowCount; r < Expanded; ++r)
-			for (size_t c = 0; c < Expanded; ++c)
+		{
+			ForEach<Expanded>([&](size_t c)
+			{
 				result.Values[(Expanded * r) + c] = (r == c) ? T(1) : T(0);
+			});
+		}
 
 		return result;
 	}
@@ -534,10 +568,10 @@ public:
 	}
 	
 	// Copies 'mat' and inverts it under the assumption that it describes a rigid-body transformation.
-	static inline Type FastInverseOf(const Type& mat) noexcept
+	static inline Type RigidInverseOf(const Type& mat) noexcept
 	{
 		Type result{ mat };
-		return result.InvertFast();
+		return result.InvertRigid();
 	}
 
 	// Copies 'mat' and inverts it
@@ -548,10 +582,10 @@ public:
 	}
 
 	// Copies 'mat'. The copy is then inverted under the assumption that it describes a rigid-body transformation and then transposed.
-	static inline Type FastTransposedInverseOf(const Type& mat) noexcept
+	static inline Type TransposedRigidInverseOf(const Type& mat) noexcept
 	{
 		Type result{ mat };
-		return result.TransposeFastInvert();
+		return result.TransposeInvertRigid();
 	}
 
 	// Copies 'mat'. The copy is then inverted and then transposed.
@@ -570,10 +604,10 @@ public:
 		return result;
 	}
 
-	// Copy this matrix inverted (assumes it describes a rigid-body transformation)
+	// Copy this matrix inverted under the assumption that it describes a rigid-body transformation
 	inline Type operator ~ () const noexcept
 	{
-		return Type::FastInverseOf(*this);
+		return Type::RigidInverseOf(*this);
 	}
 
 	// Implicit conversion to T if this Matrix contains only one value
@@ -581,6 +615,179 @@ public:
 	{
 		return Values[0];
 	}
+
+public:
+	#pragma region Assignment Operators
+	
+	// Set all values to zero
+	inline Type& operator = (const ZeroesMatrixTag&) noexcept
+	{
+		ForEach<Size>([&](size_t n) { Values[n] = T(0); });
+		return *this;
+	}
+
+	// Set all values to one
+	inline Type& operator = (const OnesMatrixTag&) noexcept
+	{
+		ForEach<Size>([&](size_t n) { Values[n] = T(1); });
+		return *this;
+	}
+
+	// Set this Matrix to an identity matrix (s.t. M * identity(M) = M)
+	inline Type& operator = (const IdentityMatrixTag&) noexcept
+	{
+		ForEach<Size>([&](size_t n) { Values[n] = T(0); });
+		ForEach<RowCount>([&](size_t n) { Values[RowCount*n + n] = T(1); });
+		return *this;
+	}
+
+	// Compose this matrix with m
+	inline Type& operator *= (const Type& m) noexcept
+	{
+		return Compose(m);
+	}
+
+	//////
+
+	#define CREATE_SCALAR_ASSIGNMENT_OPERATOR(Op)											\
+																							\
+	inline Type& operator Op (const T& value) noexcept										\
+	{																						\
+		ForEach<Size>([&](size_t index) { Values[index] Op value; });						\
+		return *this;																		\
+	}																						\
+																							\
+	inline Type& operator Op (std::initializer_list<T> values) noexcept						\
+	{																						\
+		auto it = std::begin(values);														\
+																							\
+		ForEach<Size>([&](size_t index)														\
+		{																					\
+			if (it != std::end(values))														\
+				Values[index] Op *it++;														\
+		});																					\
+																							\
+		return *this;																		\
+	}
+	
+	CREATE_SCALAR_ASSIGNMENT_OPERATOR(= );
+	CREATE_SCALAR_ASSIGNMENT_OPERATOR(+= );
+	CREATE_SCALAR_ASSIGNMENT_OPERATOR(-= );
+	CREATE_SCALAR_ASSIGNMENT_OPERATOR(*= );
+	CREATE_SCALAR_ASSIGNMENT_OPERATOR(/= );
+
+	// The following assignment operators will fail for non-integral types
+	CREATE_SCALAR_ASSIGNMENT_OPERATOR(|= );
+	CREATE_SCALAR_ASSIGNMENT_OPERATOR(&= );
+	CREATE_SCALAR_ASSIGNMENT_OPERATOR(^= );
+	CREATE_SCALAR_ASSIGNMENT_OPERATOR(%= );
+	CREATE_SCALAR_ASSIGNMENT_OPERATOR(<<= );
+	CREATE_SCALAR_ASSIGNMENT_OPERATOR(>>= );
+
+	#undef CREATE_SCALAR_ASSIGNMENT_OPERATOR
+
+	//////
+
+	#define CREATE_MATRIX_ASSIGNMENT_OPERATOR(Op)											\
+																							\
+	template<class U>																		\
+	inline Type& operator Op (const Matrix<U, S>& mat) noexcept								\
+	{																						\
+		ForEach<Size>([&](size_t index) { Values[index] Op T(mat.Values[index]); });		\
+		return *this;																		\
+	}
+
+	CREATE_MATRIX_ASSIGNMENT_OPERATOR(= );
+	CREATE_MATRIX_ASSIGNMENT_OPERATOR(+= );
+	CREATE_MATRIX_ASSIGNMENT_OPERATOR(-= );
+
+	// The following assignment operators will fail for non-integral types
+	CREATE_MATRIX_ASSIGNMENT_OPERATOR(|= );
+	CREATE_MATRIX_ASSIGNMENT_OPERATOR(&= );
+	CREATE_MATRIX_ASSIGNMENT_OPERATOR(^= );
+	CREATE_MATRIX_ASSIGNMENT_OPERATOR(%= );
+	CREATE_MATRIX_ASSIGNMENT_OPERATOR(<<= );
+	CREATE_MATRIX_ASSIGNMENT_OPERATOR(>>= );
+
+	#undef CREATE_MATRIX_ASSIGNMENT_OPERATOR
+
+	#pragma endregion
+
+public:
+	#pragma region Arithmetic Operators
+
+	// Return the composite of this matrix and 'mat'
+	inline Type operator * (const Type& mat) const noexcept
+	{
+		return Type::CompositeOf(*this, mat);
+	}
+
+	//////
+
+	#define CREATE_SCALAR_ARITHMETIC_OPERATOR(Op) 													\
+																									\
+	inline Type operator Op (const T& value) const noexcept											\
+	{																								\
+		Type result{ *this };																		\
+		result Op= value;																			\
+		return result;																				\
+	}																								\
+																									\
+	friend inline Type operator Op (const T& value, const Type& mat) noexcept						\
+	{																								\
+		Type result{ mat };																			\
+		result Op= value;																			\
+		return result;																				\
+	}																								\
+																									\
+	inline Type operator Op (std::initializer_list<T> values) const	noexcept						\
+	{																								\
+		Type result{ *this };																		\
+		result Op= values;																			\
+		return result;																				\
+	}
+
+	CREATE_SCALAR_ARITHMETIC_OPERATOR(+);
+	CREATE_SCALAR_ARITHMETIC_OPERATOR(-);
+	CREATE_SCALAR_ARITHMETIC_OPERATOR(*);
+	CREATE_SCALAR_ARITHMETIC_OPERATOR(/);
+
+	// The following arithmetic operators are only defined for integral types
+	CREATE_SCALAR_ARITHMETIC_OPERATOR(|);
+	CREATE_SCALAR_ARITHMETIC_OPERATOR(&);
+	CREATE_SCALAR_ARITHMETIC_OPERATOR(^);
+	CREATE_SCALAR_ARITHMETIC_OPERATOR(%);
+	CREATE_SCALAR_ARITHMETIC_OPERATOR(<<);
+	CREATE_SCALAR_ARITHMETIC_OPERATOR(>>);
+
+	#undef CREATE_SCALAR_ARITHMETIC_OPERATOR
+
+	//////
+
+	#define CREATE_MATRIX_ARITHMETIC_OPERATOR(Op)								\
+																				\
+	template<class U>															\
+	inline Type operator Op (const Matrix<U, S>& mat) const	noexcept			\
+	{																			\
+		Type result{ *this };													\
+		result Op= mat;															\
+		return result;															\
+	}																			\
+
+	CREATE_MATRIX_ARITHMETIC_OPERATOR(+);
+	CREATE_MATRIX_ARITHMETIC_OPERATOR(-);
+
+	// The following arithmetic operators are only defined for integral types
+	CREATE_MATRIX_ARITHMETIC_OPERATOR(| );
+	CREATE_MATRIX_ARITHMETIC_OPERATOR(&);
+	CREATE_MATRIX_ARITHMETIC_OPERATOR(^);
+	CREATE_MATRIX_ARITHMETIC_OPERATOR(%);
+	CREATE_MATRIX_ARITHMETIC_OPERATOR(<< );
+	CREATE_MATRIX_ARITHMETIC_OPERATOR(>> );
+
+	#undef CREATE_MATRIX_ARITHMETIC_OPERATOR
+
+	#pragma endregion
 
 private:
 	#pragma region Iteration Helpers
