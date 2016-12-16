@@ -57,12 +57,12 @@ public:
 		if (Sz < RowCount)
 		{
 			// 'mat' is smaller than this matrix
+			Identity();
+
 			ForEach<Sz>([&](size_t r)
 			{
-				ForEach<Sz>([&](size_t c)
-				{
-					Values[(r * RowSize) + c] = T(mat.Values[(r * Sz) + c]);
-				});
+				for (size_t c = 0; c < Sz; ++c)
+					Values[(r * RowType::Size) + c] = T(mat.Values[(r * Matrix<U, Sz>::RowType::Size) + c]);
 			});
 		}
 		else if (Sz > RowCount)
@@ -70,16 +70,14 @@ public:
 			// 'mat' is larger than this matrix
 			ForEach<RowCount>([&](size_t r) 
 			{
-				ForEach<RowType::Size>([&](size_t c) 
-				{
-					Values[(r * RowSize) + c] = T(mat.Values[(r * Sz) + c]);
-				});
+				for (size_t c = 0; c < RowType::Size; ++c)
+					Values[(r * RowType::Size) + c] = T(mat.Values[(r * Matrix<U, Sz>::RowType::Size) + c]);
 			});
 		}
 		else
 		{
 			// 'mat' is the same size as this matrix
-			ForEach<Size>([&](size_t n) { Values[n] = mat[n]; });
+			ForEach<Size>([&](size_t n) { Values[n] = T(mat[n]); });
 		}
 	}
 
@@ -98,9 +96,6 @@ public:
 			std::next(std::begin(rows), std::min(rows.size(), RowCount)),
 			std::begin(Rows)
 		);
-
-		if (rows.size() < RowCount)
-			std::fill(std::next(std::begin(Rows), rows.size()), std::end(Rows), T(0));
 	}
 
 	// Constructs a matrix from a list of values
@@ -112,9 +107,6 @@ public:
 			std::next(std::begin(values), std::min(values.size(), Size)),
 			std::begin(Values)
 		);
-
-		if (values.size() < Size)
-			std::fill(std::next(std::begin(Values), values.size()), std::end(Values), T(0));
 	}
 
 	// Constructs a matrix from a span of values
@@ -139,7 +131,7 @@ public:
 	inline Matrix(const IdentityMatrixTag&) noexcept
 		: Matrix(T(0))
 	{
-		ForEach<RowCount>([&](size_t n) { Values[RowCount*n + n] = T(1); });
+		ForEach<RowCount>([&](size_t n) { Values[RowType::Size * n + n] = T(1); });
 	}
 
 	// Constructs a translation matrix from a span of values
@@ -147,7 +139,7 @@ public:
 		typename = std::enable_if_t<(detail::Span<Arg, Args...>::Value <= RowType::Size)>>
 	inline Matrix(const TranslationMatrixTag&, Arg&& arg, Args&&... args) noexcept
 	{
-		Translate(arg, args...);
+		Translate(std::forward<Arg>(arg), std::forward<Args>(args)...);
 	}
 
 	// Constructs a scale matrix from a span of values
@@ -155,7 +147,7 @@ public:
 		typename = std::enable_if_t<(detail::Span<Arg, Args...>::Value <= RowType::Size)>>
 	inline Matrix(const ScaleMatrixTag&, Arg&& arg, Args&&... args) noexcept
 	{
-		Scale(arg, args...);
+		Scale(std::forward<Arg>(arg), std::forward<Args>(args)...);
 	}
 	
 	// Constructs an X-axis rotation matrix
@@ -202,7 +194,7 @@ public:
 
 	// Constructs a shear matrix from a shear amount and the target row/column coordinates
 	template<typename EnabledFor2x2OrGreater = std::enable_if_t<(S >= 2)>>
-	inline Matrix(ShearMatrixTag, const T shear, const size_t row, const size_t column) noexcept
+	inline Matrix(const ShearMatrixTag&, const T shear, const size_t row, const size_t column) noexcept
 		: Matrix(IdentityMatrix)
 	{
 		assert(row >= 0 && row < RowCount);
