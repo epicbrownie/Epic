@@ -14,6 +14,8 @@
 #pragma once
 
 #include <Epic/Math/detail/VectorFwd.hpp>
+#include <Epic/Math/detail/MatrixFwd.hpp>
+#include <Epic/Math/detail/QuaternionFwd.hpp>
 #include <Epic/Math/detail/VectorHelpers.hpp>
 #include <Epic/Math/VectorSwizzler.hpp>
 #include <Epic/TMP/Sequence.hpp>
@@ -138,6 +140,14 @@ public:
 	constexpr decltype(std::data(Values)) data() const noexcept
 	{
 		return std::data(Values);
+	}
+
+public:
+	// Explicitly set a span of values
+	template<class Arg, class... Args, typename = std::enable_if_t<(detail::Span<Arg, Args...>::Value == Size)>>
+	inline void Reset(Arg&& arg, Args&&... args) noexcept
+	{
+		Construct(std::forward<Arg>(arg), std::forward<Args>(args)...);
 	}
 
 public:
@@ -292,6 +302,15 @@ public:
 	}
 
 public:
+	// Transform this Vector by the Matrix 'mat'
+	inline Type& operator *= (const Epic::Matrix<T, S>& mat) noexcept;
+
+	// Transform this Vector by the Matrix 'mat' (auto-homogenized)
+	inline Type& operator *= (const Matrix<T, S + 1>& mat) noexcept;
+
+	// Transform this Vector by the Quaternion 'quat'
+	inline Type& operator *= (const Quaternion<T>& quat) noexcept;
+
 	// Copy this Vector with negated values
 	inline Type operator - () const noexcept
 	{
@@ -445,6 +464,8 @@ public:
 	#pragma endregion
 
 private:
+	#pragma region Iteration Helpers
+
 	template<size_t N, class Function>
 	inline void ForEach(Function fn) noexcept
 	{
@@ -456,6 +477,10 @@ private:
 	{
 		Epic::TMP::ForEach<Epic::TMP::MakeSequence<size_t, N>>::Apply(fn);
 	}
+
+	#pragma endregion
+
+	#pragma region Construction Helpers
 
 	template<class... Vals>
 	inline void Construct(Vals&&... vals) noexcept
@@ -516,6 +541,8 @@ private:
 	{
 		ForEach<Sz>([&](size_t n) { Values[offset++] = value[n]; });
 	}
+
+	#pragma endregion
 
 public:
 	template<class U, size_t Sz>
@@ -719,3 +746,4 @@ namespace Epic
 	using Color4f = Vector<float, 4>;
 	using Color4i = Vector<int, 4>;
 }
+

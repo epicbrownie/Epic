@@ -284,6 +284,15 @@
     <ClInclude Include="src\Math\MatrixHelpers.hpp">
       <Filter>Math</Filter>
     </ClInclude>
+    <ClInclude Include="src\Math\detail\QuaternionBase.hpp">
+      <Filter>Math\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\detail\QuaternionFwd.hpp">
+      <Filter>Math\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\Quaternion.hpp">
+      <Filter>Math</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Memory\NullAllocator.cpp">

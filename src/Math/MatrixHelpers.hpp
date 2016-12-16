@@ -23,18 +23,44 @@ namespace Epic
 	
 	struct TranslationMatrixTag { };
 	struct ScaleMatrixTag { };
+
 	struct RotationMatrixTag { };
+	struct XRotationMatrixTag { };
+	struct YRotationMatrixTag { };
+	struct ZRotationMatrixTag { };
+
+	struct LookAtMatrixTag { };
+	struct FrustumMatrixTag { };
+	struct PerspectiveMatrixTag { };
+	struct OrthoMatrixTag { };
+	struct Ortho2DMatrixTag { };
+	struct ShearMatrixTag { };
+	struct PickingMatrixTag { };
+	struct ShadowMatrixTag { };
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
 namespace Epic
 {
-	static OnesMatrixTag OnesMatrix;
-	static ZeroesMatrixTag ZeroesMatrix;
+	static OnesMatrixTag OneMatrix;
+	static ZeroesMatrixTag ZeroMatrix;
 	static IdentityMatrixTag IdentityMatrix;
 
 	static TranslationMatrixTag TranslationMatrix;
 	static ScaleMatrixTag ScaleMatrix;
+
 	static RotationMatrixTag RotationMatrix;
+	static XRotationMatrixTag XRotationMatrix;
+	static YRotationMatrixTag YRotationMatrix;
+	static ZRotationMatrixTag ZRotationMatrix;
+
+	static LookAtMatrixTag LookAtMatrix;
+	static FrustumMatrixTag FrustumMatrix;
+	static PerspectiveMatrixTag PerspectiveMatrix;
+	static OrthoMatrixTag OrthoMatrix;
+	static Ortho2DMatrixTag Ortho2DMatrix;
+	static ShearMatrixTag ShearMatrix;
+	static PickingMatrixTag PickingMatrix;
+	static ShadowMatrixTag ShadowMatrix;
 }
