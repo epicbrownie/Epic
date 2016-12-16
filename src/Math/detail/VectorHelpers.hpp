@@ -54,7 +54,7 @@ struct Epic::detail::SpanOf<Epic::Vector<T, Size>>
 template<class VectorType, class TArray, size_t... Indices>
 struct Epic::detail::SpanOf<Epic::VectorSwizzler<VectorType, TArray, Indices...>>
 {
-	constexpr static size_t Value = Epic::detail::SpanOf<VectorType>::Value;
+	constexpr static size_t Value = sizeof...(Indices);
 };
 
 // SpanOf<T[N]>
