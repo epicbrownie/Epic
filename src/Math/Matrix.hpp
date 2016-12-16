@@ -579,13 +579,13 @@ public:
 		
 		ForEach<RowCount>([&](size_t r) 
 		{
-			for(size_t c=0; c<RowType::Size; ++c)
+			for (size_t c = 0; c < RowType::Size; ++c)
 			{
 				const size_t vi = (r * RowType::Size) + c;
-				result[vi] = T(0);
+				result.Values[vi] = T(0);
 
-				for(size_t v=0; v<RowType::Size; ++v)
-					result[vi] += Values[(r * RowType::Size) + v] * mat.Values[(v * RowType::Size) + c];
+				for (size_t v = 0; v < RowType::Size; ++v)
+					result.Values[vi] += Values[(r * RowType::Size) + v] * mat.Values[(v * RowType::Size) + c];
 			}
 		});
 
@@ -989,6 +989,12 @@ public:
 
 	#define CREATE_MATRIX_ASSIGNMENT_OPERATOR(Op)											\
 																							\
+	inline Type& operator Op (const Type& mat) noexcept										\
+	{																						\
+		ForEach<Size>([&](size_t index) { Values[index] Op mat.Values[index]; });			\
+		return *this;																		\
+	}																						\
+																							\
 	template<class U>																		\
 	inline Type& operator Op (const Matrix<U, S>& mat) noexcept								\
 	{																						\
@@ -1064,6 +1070,13 @@ public:
 	//////
 
 	#define CREATE_MATRIX_ARITHMETIC_OPERATOR(Op)								\
+																				\
+	inline Type operator Op (const Type& mat) const	noexcept					\
+	{																			\
+		Type result{ *this };													\
+		result Op= mat;															\
+		return result;															\
+	}																			\
 																				\
 	template<class U>															\
 	inline Type operator Op (const Matrix<U, S>& mat) const	noexcept			\
