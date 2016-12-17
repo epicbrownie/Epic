@@ -74,12 +74,12 @@ namespace Epic::detail
 		
 		using Left = typename SegBucketListFilter<
 			SegBucketIndexLess<N>::Predicate, 
-			TMP::IndexSequenceFor<Buckets...>, 
+			TMP::IndexListFor<Buckets...>, 
 			Buckets...>::Type;
 		
 		using Right = typename SegBucketListFilter<
 			SegBucketIndexGreater<N>::Predicate, 
-			TMP::IndexSequenceFor<Buckets...>, 
+			TMP::IndexListFor<Buckets...>, 
 			Buckets...>::Type;
 
 		using Type = typename BinarySegregatorAllocatorBuilder<Center, Left, Right, Buckets...>::Type;

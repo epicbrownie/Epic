@@ -18,20 +18,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-namespace Epic::TMP
-{
-	template<size_t I> 
-	struct GenIndexSequence;
-
-	template<class DebugType, class ReleaseType> 
-	struct DebugSwitch;
-
-	template<size_t... Vs>
-	struct StaticMax;
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
+// Literal
 namespace Epic::TMP
 {
 	template<typename T, T N>
@@ -40,31 +27,35 @@ namespace Epic::TMP
 
 //////////////////////////////////////////////////////////////////////////////
 
+// GenIndexList
 namespace Epic::TMP
 {
-	/// GenIndexSequence<I> - Generates a List<> containing Literal<size_t> types from 0..I.
+	// GenIndexList<I> - Generates a List<> containing Literal<size_t> types from 0..I.
 	template<size_t I>
-	struct GenIndexSequence
+	struct GenIndexList
 	{
-		using Type = typename Concat<typename GenIndexSequence<I - 1>::Type, List<TMP::Literal<size_t, I>>>::Type;
+		using Type = typename Concat<typename GenIndexList<I - 1>::Type, List<TMP::Literal<size_t, I>>>::Type;
 	};
 
 	template<> 
-	struct GenIndexSequence<0>
+	struct GenIndexList<0>
 	{
 		using Type = List<TMP::Literal<size_t, 0>>;
 	};
 	
-
-	/// IndexSequenceFor<Ts...> - Invokes GenIndexSequence on the size of Ts
+	// IndexListFor<Ts...> - Invokes GenIndexList on the sizeof... Ts
 	template<typename... Ts>
-	using IndexSequenceFor = typename GenIndexSequence<sizeof...(Ts) - 1>::Type;
+	using IndexListFor = typename GenIndexList<sizeof...(Ts) - 1>::Type;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
+// DebugSwitch
 namespace Epic::TMP
 {
+	template<class DebugType, class ReleaseType>
+	struct DebugSwitch;
+
 #ifdef NDEBUG
 	template<class, class R>
 	struct DebugSwitch
@@ -82,8 +73,12 @@ namespace Epic::TMP
 
 //////////////////////////////////////////////////////////////////////////////
 
+// StaticMax
 namespace Epic::TMP
 {
+	template<size_t... Vs>
+	struct StaticMax;
+
 	template<size_t V1>
 	struct StaticMax<V1>
 	{

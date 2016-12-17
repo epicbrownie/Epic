@@ -17,7 +17,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// List<> - List Metatype
+// List<> - List Metatype
 namespace Epic::TMP
 {
 	template<typename...> struct List;
@@ -25,7 +25,7 @@ namespace Epic::TMP
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// Concat<> - List<> Concatenation
+// Concat<> - List Concatenation
 namespace Epic::TMP
 {
 	template<typename... Lists> 
@@ -58,7 +58,7 @@ namespace Epic::TMP
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// Filter<> - List<> Filtering
+// Filter<> - List Filtering
 namespace Epic::TMP
 {
 	namespace detail

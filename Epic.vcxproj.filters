@@ -38,6 +38,12 @@
     <Filter Include="Utility\EON\detail">
       <UniqueIdentifier>{5579b32b-784f-4af0-a23b-1d4d6288c11f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Math">
+      <UniqueIdentifier>{3b31b01f-1d92-438b-a487-23e7ceac3bb4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math\detail">
+      <UniqueIdentifier>{11ab25d8-4cfb-4c86-96fb-aa0204abbdb4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Singleton.hpp">
@@ -235,6 +241,57 @@
     </ClInclude>
     <ClInclude Include="src\EON\Extractor.hpp">
       <Filter>Utility\EON</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TMP\Sequence.hpp">
+      <Filter>Utility\TMP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\detail\VectorFwd.hpp">
+      <Filter>Math\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\Vector.hpp">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\VectorSwizzler.hpp">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\detail\VectorSwizzlerFwd.hpp">
+      <Filter>Math\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\detail\VectorHelpers.hpp">
+      <Filter>Math\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\Algorithm.hpp">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\Matrix.hpp">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\Angle.hpp">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\detail\VectorBase.hpp">
+      <Filter>Math\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\detail\MatrixBase.hpp">
+      <Filter>Math\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\detail\MatrixFwd.hpp">
+      <Filter>Math\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\Constants.hpp">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\MatrixHelpers.hpp">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\detail\QuaternionBase.hpp">
+      <Filter>Math\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\detail\QuaternionFwd.hpp">
+      <Filter>Math\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\Quaternion.hpp">
+      <Filter>Math</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
