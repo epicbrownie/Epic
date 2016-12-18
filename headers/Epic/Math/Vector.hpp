@@ -17,6 +17,7 @@
 #include <Epic/Math/detail/MatrixFwd.hpp>
 #include <Epic/Math/detail/QuaternionFwd.hpp>
 #include <Epic/Math/detail/VectorHelpers.hpp>
+#include <Epic/Math/detail/MathHelpers.hpp>
 #include <Epic/Math/VectorSwizzler.hpp>
 #include <Epic/TMP/Sequence.hpp>
 #include <algorithm>
@@ -43,16 +44,26 @@ private:
 	using Base::Values;
 
 public:
+	#pragma region Constructors
+
+	// Constructs a vector with default initialized values
 	Vector() noexcept = default;
+
+	// Copy-constructs a vector
 	Vector(const Type&) noexcept = default;
+
+	// Move-constructs a vector
 	Vector(Type&&) noexcept = default;
 
+	// Copy-converts a vector
 	template<class U>
-	inline Vector(const Vector<U, Size>& vec)
+	inline Vector(const Vector<U, Size>& vec) noexcept
 	{
 		ForEach<Size>([&](size_t n) { Values[n] = static_cast<T>(vec[n]); });
 	}
 
+	// Constructs a vector from a list of values.
+	// Unspecified values are left default initialized.
 	inline Vector(std::initializer_list<T> values) noexcept
 	{
 		std::copy
@@ -61,16 +72,15 @@ public:
 			std::next(std::begin(values), std::min(values.size(), Size)),
 			std::begin(Values)
 		);
-
-		if (values.size() < Size)
-			std::fill(std::next(std::begin(Values), values.size()), std::end(Values), T{ 0 });
 	}
 
+	// Constructs a vector whose values are all set to a value
 	inline explicit Vector(const T& value) noexcept
 	{
-		std::fill(std::begin(Values), std::end(Values), value);
+		ForEach<Size>([&](size_t n) { Values[n] = value; });
 	}
 
+	// Constructs a vector from a span of values
 	template<class Arg, class... Args,
 			 typename = std::enable_if_t<(detail::Span<Arg, Args...>::Value == Size)>>
 	inline Vector(Arg&& arg, Args&&... args) noexcept
@@ -78,7 +88,31 @@ public:
 		Construct(std::forward<Arg>(arg), std::forward<Args>(args)...);
 	}
 
+	// Constructs a vector whose values are all set to 0
+	inline Vector(const ZeroesTag&) noexcept
+		: Vector(T(0))
+	{ }
+
+	// Constructs a vector whose values are all set to 1
+	inline Vector(const OnesTag&) noexcept
+		: Vector(T(1))
+	{ }
+
+	// Constructs an origin vector whose last element is 1
+	inline Vector(const IdentityTag&) noexcept
+	{
+		const auto z = T(0);
+
+		ForEach<Size - 1>([&](size_t n) { Values[n] = z; });
+		Values[Size - 1] = T(1);
+	}
+
+	#pragma endregion
+
 public:
+	#pragma region Range Accessors
+
+	// Accesses the element at 'index'
 	inline T& at(const size_t index) noexcept
 	{
 		assert(index >= 0 && index < Size);
@@ -86,6 +120,7 @@ public:
 		return Values[index];
 	}
 
+	// Accesses the element at 'index'
 	inline const T& at(const size_t index) const noexcept
 	{
 		assert(index >= 0 && index < Size);
@@ -93,6 +128,7 @@ public:
 		return Values[index];
 	}
 
+	// Accesses the element at 'index'
 	inline T& operator[] (const size_t index) noexcept
 	{
 		assert(index >= 0 && index < Size);
@@ -100,6 +136,7 @@ public:
 		return Values[index];
 	}
 
+	// Accesses the element at 'index'
 	inline const T& operator[] (const size_t index) const noexcept
 	{
 		assert(index >= 0 && index < Size);
@@ -107,51 +144,81 @@ public:
 		return Values[index];
 	}
 
+	// Retrieves an iterator to the first element
 	inline decltype(std::begin(Values)) begin() noexcept
 	{
 		return std::begin(Values);
 	}
 
+	// Retrieves an iterator to the first element
 	constexpr decltype(std::begin(Values)) begin() const noexcept
 	{
 		return std::begin(Values);
 	}
 
+	// Retrieves an iterator to one past the last element
 	inline decltype(std::end(Values)) end() noexcept
 	{
 		return std::end(Values);
 	}
 
+	// Retrieves an iterator to one past the last element
 	constexpr decltype(std::end(Values)) end() const noexcept
 	{
 		return std::end(Values);
 	}
 
+	// Retrieves the number of elements
 	constexpr size_t size() const noexcept
 	{
 		return Size;
 	}
 	
+	// Retrieves a pointer to the underlying element data
 	inline decltype(std::data(Values)) data() noexcept
 	{
 		return std::data(Values);
 	}
 
+	// Retrieves a pointer to the underlying element data
 	constexpr decltype(std::data(Values)) data() const noexcept
 	{
 		return std::data(Values);
 	}
 
+	#pragma endregion
+
 public:
-	// Explicitly set a span of values
+	// Sets a span of values explicitly
 	template<class Arg, class... Args, typename = std::enable_if_t<(detail::Span<Arg, Args...>::Value == Size)>>
-	inline void Reset(Arg&& arg, Args&&... args) noexcept
+	inline Type& Reset(Arg&& arg, Args&&... args) noexcept
 	{
 		Construct(std::forward<Arg>(arg), std::forward<Args>(args)...);
+
+		return *this;
+	}
+
+	// Fills this vector with 'value'
+	inline Type& Fill(const T& value) noexcept
+	{
+		ForEach<Size>([&](size_t n) { Values[n] = value; });
+
+		return *this;
+	}
+
+	// Sets this vector to an origin vector whose last element is 1
+	inline Type& Origin() noexcept
+	{
+		const auto z = T(0);
+
+		ForEach<Size - 1>([&](size_t n) { Values[n] = z; });
+		Values[Size - 1] = T(1);
+
+		return *this;
 	}
 
 public:
-	// Calculate the dot product of this Vector and 'vec'
+	// Calculates the dot product of this vector and 'vec'
 	template<class U>
 	inline T Dot(const Vector<U, Size>& vec) const noexcept
 	{
@@ -160,60 +227,61 @@ public:
 		return result;
 	}
 
-	// Calculate the squared length of this vector
+	// Calculates the squared length of this vector
 	inline T MagnitudeSq() const noexcept
 	{
 		return this->Dot(*this);
 	}
 
-	// Calculate the length of this Vector
+	// Calculates the length of this vector
 	inline T Magnitude() const noexcept
 	{
 		return { std::sqrt(MagnitudeSq()) };
 	}
 
-	// Convert this Vector to a unit vector
+	// Converts this vector to a unit vector
 	inline Type& Normalize() noexcept
 	{
 		return *this /= Magnitude();
 	}
 
-	// Convert this Vector to a unit vector (returns unmodified vector if magnitude is 0)
+	// Converts this vector to a unit vector 
+	// Returns unmodified vector if magnitude is 0.
 	inline Type& NormalizeSafe() noexcept
 	{
 		const auto m = Magnitude();
 		return (m == T(0)) ? (*this) : (*this /= m);
 	}
 
-	// Force all values to the range [minValue, maxValue]
+	// Forces all values to the range [minValue, maxValue]
 	inline Type& Clamp(const T& minValue, const T& maxValue) noexcept
 	{
 		ForEach<Size>([&](size_t n) { Values[n] = std::min(std::max(minValue, Values[n]), maxValue); });
 		return *this;
 	}
 
-	// Raise all values to the power 'pow'
+	// Raises all values to the power 'pow'
 	inline Type& Power(const T& pow) noexcept
 	{
 		ForEach<Size>([&](size_t n) { Values[n] = std::pow(Values[n], pow); });
 		return *this;
 	}
 
-	// Calculate the projection length of this Vector onto unit vector 'axis'
+	// Calculates the projection length of this vector onto unit vector 'axis'
 	template<typename U>
 	inline T ProjectionMagnitude(const Vector<U, Size>& axis) const noexcept
 	{
 		return { this->Dot(axis) / axis.MagnitudeSq() };
 	}
 
-	// Calculate the 2d cross product of this Vector and 'vec' (The z-component of the cross product of the vectors)
+	// Calculates the 2d cross product of this vector and 'vec' (The z-component of the cross product of the vectors)
 	template<typename U, typename EnabledForVector2 = std::enable_if_t<(Size == 2)>>
 	constexpr T Cross(const Vector<U, 2>& vec) const noexcept
 	{
 		return { Values[0] * vec[1] - Values[1] * vec[0] };
 	}
 
-	// Calculate the 3d cross product of this Vector and 'vec'
+	// Calculates the 3d cross product of this vector and 'vec'
 	template<typename U, typename EnabledForVector3OrLarger = std::enable_if_t<(Size >= 3)>>
 	constexpr Type Cross(const Vector<U, Size>& vec) const noexcept
 	{
@@ -225,7 +293,7 @@ public:
 		};
 	}
 
-	// Calculate the projection of this Vector onto unit vector 'axis'
+	// Calculates the projection of this vector onto unit vector 'axis'
 	template<typename U>
 	inline Type Project(const Vector<U, Size>& axis) const noexcept
 	{
@@ -234,7 +302,7 @@ public:
 		return result;
 	}
 
-	// Calculate the projection of this Vector onto non-unit vector 'axis'
+	// Calculates the projection of this vector onto non-unit vector 'axis'
 	template<typename U>
 	inline Type ProjectN(const Vector<U, Size>& axis) const noexcept
 	{
@@ -243,7 +311,7 @@ public:
 		return result;
 	}
 
-	// Calculate the reflection of this Vector off of the plane that is partially defined by unit vector 'normal'
+	// Calculates the reflection of this vector off of the plane that is partially defined by unit vector 'normal'
 	template<typename U>
 	inline Type Reflect(const Vector<U, Size>& normal) const noexcept
 	{
@@ -256,7 +324,7 @@ public:
 		return result;
 	}
 
-	// Calculate the refracted vector of this Vector off of the plane that is partially defined by unit vector 'normal'
+	// Calculates the refracted vector of this vector off of the plane that is partially defined by unit vector 'normal'
 	// 'eta' is the ratio of the refraction indexes
 	template<typename U, typename EnabledForFloatTypes = std::enable_if_t<std::is_floating_point<T>::value>>
 	inline Type Refract(const Vector<U, Size>& normal, const T eta) const noexcept
@@ -278,21 +346,24 @@ public:
 	}
 
 public:
-	// Calculate the normalized vector of 'vec'
+	// Calculates the normalized vector of 'vec'
 	static inline Type NormalOf(const Type& vec) noexcept
 	{
 		Type result(vec);
-		return result.Normalize();
+		result.Normalize();
+
+		return result;
 	}
 
-	// Calculate the normalized vector of 'vec' (returns 'vec' if magnitude is 0)
+	// Calculates the normalized vector of 'vec'
+	// Returns a copy of 'vec' if magnitude is 0
 	static inline Type SafeNormalOf(const Type& vec) noexcept
 	{
 		Type result(vec);
 		return result.NormalizeSafe();
 	}
 
-	// Calculate the linear interpolation of vectors 'vecA' and 'vecB' 
+	// Calculates the linear interpolation of vectors 'vecA' and 'vecB' 
 	template<typename EnabledForFloatTypes = std::enable_if_t<std::is_floating_point<T>::value>>
 	static inline Type MixOf(const Type& vecA, const Type& vecB, const T w = T(0.5)) noexcept
 	{
@@ -302,16 +373,16 @@ public:
 	}
 
 public:
-	// Transform this Vector by the Matrix 'mat'
-	inline Type& operator *= (const Epic::Matrix<T, S>& mat) noexcept;
+	// Transforms this vector by the Matrix 'mat'
+	inline Type& operator *= (const Matrix<T, S>& mat) noexcept;
 
-	// Transform this Vector by the Matrix 'mat' (auto-homogenized)
+	// Transforms this vector by the Matrix 'mat' (auto-homogenized)
 	inline Type& operator *= (const Matrix<T, S + 1>& mat) noexcept;
 
-	// Transform this Vector by the Quaternion 'quat'
+	// Transforms this vector by the Quaternion 'quat'
 	inline Type& operator *= (const Quaternion<T>& quat) noexcept;
 
-	// Copy this Vector with negated values
+	// Copies this vector with negated values
 	inline Type operator - () const noexcept
 	{
 		Type result;
@@ -319,7 +390,7 @@ public:
 		return result;
 	}
 
-	// Implicit conversion to T if this Vector contains only one value
+	// Implicitly converts to T (only available if this vector has just 1 element)
 	inline operator std::conditional_t<(Size == 1), T, struct OperationUnavailable>() const noexcept
 	{
 		return Values[0];
@@ -327,6 +398,15 @@ public:
 
 public:
 	#pragma region Assignment Operators
+
+	// Sets this vector to an origin vector whose last element is 1
+	inline Type& operator = (const IdentityTag&) noexcept
+	{
+		return Origin();
+	}
+
+	//////
+
 	#define CREATE_ASSIGNMENT_OPERATOR(Op)	\
 																							\
 	inline Type& operator Op (std::initializer_list<T> values) noexcept						\
@@ -336,7 +416,7 @@ public:
 		ForEach<Size>([&](size_t index)														\
 		{																					\
 			if (it != std::end(values))														\
-				m_Values[index] Op *it++;													\
+				Values[index] Op *it++;														\
 		});																					\
 																							\
 		return *this;																		\
@@ -370,7 +450,7 @@ public:
 			Epic::TMP::Sequence<size_t, Is...>>												\
 		::Apply([&](size_t iThis, size_t iOther)											\
 		{																					\
-			Values[iThis] Op vec.m_Values[iOther];											\
+			Values[iThis] Op vec.Values[iOther];											\
 		});																					\
 																							\
 		return *this;																		\
@@ -401,6 +481,7 @@ public:
 
 public:
 	#pragma region Arithmetic Operators
+
 	#define CREATE_ARITHMETIC_OPERATOR(Op) 	\
 																									\
 	inline Type operator Op (std::initializer_list<T> values) const	noexcept						\
@@ -442,8 +523,8 @@ public:
 																									\
 	friend inline Type operator Op (const T& value, const Type& vec) noexcept						\
 	{																								\
-		Type result{ vec };																			\
-		result Op= value;																			\
+		Type result{ value };																		\
+		result Op= vec;																				\
 		return result;																				\
 	}
 
@@ -746,4 +827,3 @@ namespace Epic
 	using Color4f = Vector<float, 4>;
 	using Color4i = Vector<int, 4>;
 }
-
