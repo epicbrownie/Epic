@@ -215,13 +215,20 @@ public:
 	template<size_t S, typename EnabledForVector3Or4 = std::enable_if_t<(S == 3) || (S == 4)>>
 	inline void Transform(Vector<T, S>& vec) const noexcept
 	{
-		Quaternion tquat{ vec[0], vec[1], vec[2], T(0) };
-		auto result = *this * tquat * ~(*this);
-// TODO: Reduce this formula
+		// vec.xyz = (*this * Quaternion{vec.xyz, 0} * ConjugateOf(*this)).xyz
 
-		vec[0] = result[0];
-		vec[1] = result[1];
-		vec[2] = result[2];
+		const auto tx = (Values[1] * vec[2]) - (Values[2] * vec[1]) + (Values[3] * vec[0]);
+		const auto ty = (Values[2] * vec[0]) - (Values[0] * vec[2]) + (Values[3] * vec[1]);
+		const auto tz = (Values[0] * vec[1]) - (Values[1] * vec[0]) + (Values[3] * vec[2]);
+		const auto tw = -((Values[0] * vec[0]) + (Values[1] * vec[1]) + (Values[2] * vec[2]));
+
+		const auto nx = -Values[0];
+		const auto ny = -Values[1];
+		const auto nz = -Values[2];
+
+		vec[0] = (ty * nz) - (tz * ny) + (tw * nx) + (tx * Values[3]);
+		vec[1] = (tz * nx) - (tx * nz) + (tw * ny) + (ty * Values[3]);
+		vec[2] = (tx * ny) - (ty * nx) + (tw * nz) + (tz * Values[3]);
 	}
 
 public:
@@ -524,16 +531,66 @@ public:
 	}
 
 public:
-	// Calculates a negated quaternion
-	inline Type operator - () const noexcept
+	// Calculates the linear interpolation of normalized quaternions 'from' and 'to'
+	template<typename EnabledForFloatingPoint = std::enable_if_t<std::is_floating_point<T>::value>>
+	static inline Type Lerp(const Type& from, const Type& to, const T t) noexcept
 	{
-		return{ -Values[0], -Values[1], -Values[2], -Values[3] };
+		return NormalOf((from * (T(1) - t)) + (to * t));
 	}
 
+	// Calculates the spherical linear interpolation of normalized quaternions 'from' and 'to'.
+	// Reduces spinning by checking if 'from' and 'to' are more than 90 deg apart.
+	template<typename EnabledForFloatingPoint = std::enable_if_t<std::is_floating_point<T>::value>>
+	static Type SlerpSR(const Type& from, const Type& to, const T t) noexcept
+	{
+		Type qt = to;
+		auto dot = from.Dot(to);
+
+		// Check if from and to are more than 90 degrees apart		
+		if (dot < T(0))
+		{
+			// Invert 'to'.  Since it's normalized, its conjugate will suffice 
+			dot = -dot;
+			qt.Conjugate();
+		}
+
+		// Interpolate
+		Radian<T> theta = acos(dot);
+		Radian<T> thetaFrom = theta.Value() * (T(1) - t);
+		Radian<T> thetaTo = theta.Value() * t;
+
+		return ( (from * thetaFrom.Sin()) + (qt * thetaTo.Sin()) ) / theta.Sin();
+	}
+
+	// Calculates the spherical linear interpolation of normalized quaternions 'from' and 'to'
+	template<typename EnabledForFloatingPoint = std::enable_if_t<std::is_floating_point<T>::value>>
+	static inline Type Slerp(const Type& from, const Type& to, const T t) noexcept
+	{
+		Radian<T> theta = acos(from.Dot(to));
+		Radian<T> thetaFrom = theta.Value() * (T(1) - t);
+		Radian<T> thetaTo = theta.Value() * t;
+
+		return ( (from * thetaFrom.Sin()) + (to * thetaTo.Sin()) ) / theta.Sin();
+	}
+
+	// Calculates the spherical cubic interpolation of normalized quaternions 'from', 'to', 'a', and 'b'
+	template<typename EnabledForFloatingPoint = std::enable_if_t<std::is_floating_point<T>::value>>
+	static inline Type Squad(const Type& from, const Type& to, const Type& a, const Type& b, const T t) noexcept
+	{
+		return Slerp(Slerp(from, to, t), Slerp(a, b, t), T(2) * t * (T(1) - t));
+	}
+
+public:
 	// Calculates a conjugate quaternion
-	inline Type operator ~ () const noexcept
+	inline Type operator - () const noexcept
 	{
 		return Type::ConjugateOf(*this);
+	}
+
+	// Calculates an inverted quaternion
+	inline Type operator ~ () const noexcept
+	{
+		return Type::InverseOf(*this);
 	}
 
 public:
@@ -554,9 +611,26 @@ public:
 	// Concatenates this quaternion with the inverse of 'quat'
 	inline Type& operator /= (const Type& quat) noexcept
 	{
-// TODO: Reduce formula
-		
-		return Concatenate(Type::InverseOf(quat));
+		// Concatenate(Type::InverseOf(quat))
+
+		const auto magSq = quat.MagnitudeSq();
+
+		const auto tqx = -quat[0] / magSq;
+		const auto tqy = -quat[1] / magSq;
+		const auto tqz = -quat[2] / magSq;
+		const auto tqw = quat[3] / magSq;
+
+		const auto tx = Values[0];
+		const auto ty = Values[1];
+		const auto tz = Values[2];
+		const auto tw = Values[3];
+
+		Values[0] = (ty * tqz) - (tz * tqy) + (tw * tqx) + (tx * tqw);
+		Values[1] = (tz * tqx) - (tx * tqz) + (tw * tqy) + (ty * tqw);
+		Values[2] = (tx * tqy) - (ty * tqx) + (tw * tqz) + (tz * tqw);
+		Values[3] = (tw * tqw) - ((tx * tqx) + (ty * tqy) + (tz * tqz));
+
+		return *this;
 	}
 
 	//////
