@@ -43,24 +43,24 @@ namespace Epic
 
 namespace Epic
 {
-	static OnesTag One;
-	static ZeroesTag Zero;
-	static IdentityTag Identity, Origin;
+	static OnesTag			One;
+	static ZeroesTag		Zero;
+	static IdentityTag		Identity, Origin;
 
-	static TranslationTag Translation;
-	static ScaleTag Scale;
+	static TranslationTag	Translation;
+	static ScaleTag			Scale;
 
-	static RotationTag Rotation;
-	static XRotationTag XRotation;
-	static YRotationTag YRotation;
-	static ZRotationTag ZRotation;
+	static RotationTag		Rotation;
+	static XRotationTag		XRotation;
+	static YRotationTag		YRotation;
+	static ZRotationTag		ZRotation;
 
-	static LookAtTag LookAt;
-	static FrustumTag Frustum;
-	static PerspectiveTag Perspective;
-	static OrthoTag Ortho;
-	static Ortho2DTag Ortho2D;
-	static ShearTag Shear;
-	static PickingTag Picking;
-	static ShadowTag Shadow;
+	static LookAtTag		LookAt;
+	static FrustumTag		Frustum;
+	static PerspectiveTag	Perspective;
+	static OrthoTag			Ortho;
+	static Ortho2DTag		Ortho2D;
+	static ShearTag			Shear;
+	static PickingTag		Picking;
+	static ShadowTag		Shadow;
 }

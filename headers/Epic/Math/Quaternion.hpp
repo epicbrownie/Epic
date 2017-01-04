@@ -217,14 +217,6 @@ public:
 	{
 		// vec.xyz = (*this * Quaternion{vec.xyz, 0} * ConjugateOf(*this)).xyz
 
-		/*Type tquat{ vec[0], vec[1], vec[2], T(0) };
-		
-		Type result = *this * tquat * -(*this);
-
-		vec[0] = result[0];
-		vec[1] = result[1];
-		vec[2] = result[2];
-*/
 		const auto tx = (Values[1] * vec[2]) - (Values[2] * vec[1]) + (Values[3] * vec[0]);
 		const auto ty = (Values[2] * vec[0]) - (Values[0] * vec[2]) + (Values[3] * vec[1]);
 		const auto tz = (Values[0] * vec[1]) - (Values[1] * vec[0]) + (Values[3] * vec[2]);
