@@ -281,9 +281,6 @@
     <ClInclude Include="src\Math\Constants.hpp">
       <Filter>Math</Filter>
     </ClInclude>
-    <ClInclude Include="src\Math\MatrixHelpers.hpp">
-      <Filter>Math</Filter>
-    </ClInclude>
     <ClInclude Include="src\Math\detail\QuaternionBase.hpp">
       <Filter>Math\detail</Filter>
     </ClInclude>
@@ -292,6 +289,9 @@
     </ClInclude>
     <ClInclude Include="src\Math\Quaternion.hpp">
       <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\detail\MathHelpers.hpp">
+      <Filter>Math\detail</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
