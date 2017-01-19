@@ -24,7 +24,7 @@
 
 namespace Epic
 {
-	class AppLock;
+	class AppGuard;
 
 	struct SemaphoreCreationFailedException;
 }
@@ -38,16 +38,16 @@ struct Epic::SemaphoreCreationFailedException : public std::runtime_error
 
 //////////////////////////////////////////////////////////////////////////////
 
-// AppLock
-class Epic::AppLock
+// AppGuard
+class Epic::AppGuard
 {
 public:
-	AppLock() = delete;
-	AppLock(const AppLock&) = delete;
-	AppLock(AppLock&&) = delete;
+	AppGuard() = delete;
+	AppGuard(const AppGuard&) = delete;
+	AppGuard(AppGuard&&) = delete;
 
 public:
-	AppLock(const char* name, unsigned int allowedInstances = 1) 
+	AppGuard(const char* name, unsigned int allowedInstances = 1) 
 	try : m_IOService{ },
 			m_Signals{ m_IOService },
 			m_IsLocked{ false },
@@ -73,7 +73,7 @@ public:
 		throw Epic::SemaphoreCreationFailedException("Failed to construct named semaphore.");
 	}
 	
-	~AppLock()
+	~AppGuard()
 	{
 		if (m_IsLocked)
 		{
@@ -87,8 +87,8 @@ public:
 		}
 	}
 
-	AppLock& operator = (const AppLock&) = delete;
-	AppLock& operator = (AppLock&&) = delete;
+	AppGuard& operator = (const AppGuard&) = delete;
+	AppGuard& operator = (AppGuard&&) = delete;
 
 public:
 	explicit constexpr operator bool() const

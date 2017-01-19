@@ -224,9 +224,6 @@
     <ClInclude Include="src\EON\Bin.hpp">
       <Filter>Utility\EON</Filter>
     </ClInclude>
-    <ClInclude Include="src\AppLock.hpp">
-      <Filter>Utility</Filter>
-    </ClInclude>
     <ClInclude Include="src\EON\Convert.hpp">
       <Filter>Utility\EON</Filter>
     </ClInclude>
@@ -313,6 +310,9 @@
     </ClInclude>
     <ClInclude Include="src\Core\Timer.hpp">
       <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AppGuard.hpp">
+      <Filter>Utility</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
