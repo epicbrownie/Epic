@@ -44,6 +44,9 @@
     <Filter Include="Math\detail">
       <UniqueIdentifier>{11ab25d8-4cfb-4c86-96fb-aa0204abbdb4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{075780f6-326f-4137-87a9-cebb0338c151}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Singleton.hpp">
@@ -293,6 +296,24 @@
     <ClInclude Include="src\Math\detail\MathHelpers.hpp">
       <Filter>Math\detail</Filter>
     </ClInclude>
+    <ClInclude Include="src\Core\Event.hpp">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\CPUInfo.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\OS.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Specs.hpp">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Clock.hpp">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Timer.hpp">
+      <Filter>Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Memory\NullAllocator.cpp">
@@ -303,6 +324,9 @@
     </ClCompile>
     <ClCompile Include="src\Memory\AlignedMallocator.cpp">
       <Filter>Memory\Allocators - Simple</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\Clock.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
