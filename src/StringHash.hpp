@@ -28,7 +28,7 @@ namespace Epic
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// StringHash<C, A>
+/// BasicStringHash<C, A>
 template<typename C, Epic::StringHashAlgorithms A>
 class Epic::BasicStringHash
 {
