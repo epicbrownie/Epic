@@ -47,6 +47,9 @@
     <Filter Include="Core">
       <UniqueIdentifier>{075780f6-326f-4137-87a9-cebb0338c151}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core\detail">
+      <UniqueIdentifier>{594e0832-119f-4fb7-8062-90b668a77d4b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Singleton.hpp">
@@ -313,6 +316,24 @@
     </ClInclude>
     <ClInclude Include="src\AppGuard.hpp">
       <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Vertex.hpp">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\VertexComponent.hpp">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\detail\VertexPosition.hpp">
+      <Filter>Core\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\detail\VertexTexture.hpp">
+      <Filter>Core\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\detail\VertexNormal.hpp">
+      <Filter>Core\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\detail\VertexColor.hpp">
+      <Filter>Core\detail</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

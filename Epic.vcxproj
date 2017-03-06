@@ -25,10 +25,16 @@
     <ClInclude Include="src\Config.hpp" />
     <ClInclude Include="src\Core\Clock.hpp" />
     <ClInclude Include="src\Core\CPUInfo.h" />
+    <ClInclude Include="src\Core\detail\VertexColor.hpp" />
+    <ClInclude Include="src\Core\detail\VertexNormal.hpp" />
+    <ClInclude Include="src\Core\detail\VertexPosition.hpp" />
+    <ClInclude Include="src\Core\detail\VertexTexture.hpp" />
     <ClInclude Include="src\Core\Event.hpp" />
     <ClInclude Include="src\Core\OS.h" />
     <ClInclude Include="src\Core\Specs.hpp" />
     <ClInclude Include="src\Core\Timer.hpp" />
+    <ClInclude Include="src\Core\Vertex.hpp" />
+    <ClInclude Include="src\Core\VertexComponent.hpp" />
     <ClInclude Include="src\detail\ReadConfig.hpp" />
     <ClInclude Include="src\EON\Bin.hpp" />
     <ClInclude Include="src\EON\Bind.hpp" />
@@ -119,7 +125,7 @@
     <ProjectGuid>{809D2707-DFB7-4E11-9CF6-FBBC1BD99797}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Epic</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.10240.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
