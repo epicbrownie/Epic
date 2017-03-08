@@ -18,6 +18,15 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-MAKE_VERTEX_COMPONENT(CmpNormal, Epic::Normal3f, Normal, 3);
-MAKE_VERTEX_COMPONENT(CmpTangent, Epic::Normal3f, Tangent, 3);
-MAKE_VERTEX_COMPONENT(CmpBitangent, Epic::Normal3f, Bitangent, 3);
+namespace Epic::Component
+{
+	struct CmpNormal;
+	struct CmpTangent;
+	struct CmpBitangent;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+MAKE_VERTEX_COMPONENT(Epic::Component::CmpNormal, Epic::Normal3f, Normal, 3);
+MAKE_VERTEX_COMPONENT(Epic::Component::CmpTangent, Epic::Normal3f, Tangent, 3);
+MAKE_VERTEX_COMPONENT(Epic::Component::CmpBitangent, Epic::Normal3f, Bitangent, 3);

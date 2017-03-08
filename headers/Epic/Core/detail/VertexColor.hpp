@@ -18,10 +18,22 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-MAKE_VERTEX_COMPONENT(CmpColor, Epic::Color4f, Color, 4);
-MAKE_VERTEX_COMPONENT(CmpColor2, Epic::Color4f, Color2, 4);
-MAKE_VERTEX_COMPONENT(CmpColor3, Epic::Color4f, Color3, 4);
-MAKE_VERTEX_COMPONENT(CmpColor4, Epic::Color4f, Color4, 4);
+namespace Epic::Component
+{
+	struct CmpColor;
+	struct CmpColor2;
+	struct CmpColor3;
+	struct CmpColor4;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+MAKE_VERTEX_COMPONENT(Epic::Component::CmpColor, Epic::Color4f, Color, 4);
+MAKE_VERTEX_COMPONENT(Epic::Component::CmpColor2, Epic::Color4f, Color2, 4);
+MAKE_VERTEX_COMPONENT(Epic::Component::CmpColor3, Epic::Color4f, Color3, 4);
+MAKE_VERTEX_COMPONENT(Epic::Component::CmpColor4, Epic::Color4f, Color4, 4);
+
+//////////////////////////////////////////////////////////////////////////////
 
 namespace Epic::Component
 {

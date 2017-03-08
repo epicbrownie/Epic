@@ -17,34 +17,34 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-namespace Epic::Component
+namespace Epic
 {
 	template<class ComponentTag>
-	struct VertexComponent;
+	class VertexComponent;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-#define MAKE_VERTEX_COMPONENT(TAG, DTYPE, DNAME, CMPS)					\
-																		\
-	namespace Epic::Component											\
-	{																	\
-		struct TAG;														\
-																		\
-		template<> struct VertexComponent<TAG>							\
-		{																\
-			static constexpr size_t Components = CMPS;					\
-																		\
-			using ValueType = DTYPE;									\
-			ValueType DNAME;											\
-																		\
-			constexpr static const char* GetName() noexcept				\
-			{ return #DNAME; }											\
-																		\
-			ValueType& Value() noexcept									\
-			{ return this->DNAME; }										\
-																		\
-			constexpr const ValueType& Value() const noexcept			\
-			{ return this->DNAME; }										\
-		};																\
-	}
+#define MAKE_VERTEX_COMPONENT_TAG(TAG)								\
+	struct TAG;
+	
+#define MAKE_VERTEX_COMPONENT(TAG, DTYPE, DNAME, CMPS)				\
+	template<> class Epic::VertexComponent<TAG>						\
+	{																\
+	protected:														\
+		using ValueType = DTYPE;									\
+		static constexpr size_t Components = CMPS;					\
+																	\
+	public:															\
+		ValueType DNAME;											\
+																	\
+	protected:														\
+		constexpr static const char* GetName() noexcept				\
+		{ return #DNAME; }											\
+																	\
+		ValueType& Value() noexcept									\
+		{ return this->DNAME; }										\
+																	\
+		constexpr const ValueType& Value() const noexcept			\
+		{ return this->DNAME; }										\
+	};

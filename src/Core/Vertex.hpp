@@ -35,7 +35,7 @@ namespace Epic
 	}
 
 	template<class... ComponentTags>
-	struct Vertex;
+	class Vertex;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -63,16 +63,19 @@ struct Epic::detail::VertexFormatNode
 
 // Vertex
 template<class... ComponentTags>
-struct Epic::Vertex : Epic::Component::VertexComponent<ComponentTags>...
+class Epic::Vertex : public Epic::VertexComponent<ComponentTags>...
 {
+public:
 	using Type = Epic::Vertex<ComponentTags...>;
 
 	template<class SearchTag>
 	using HasComponent = Epic::TMP::VariadicContains<SearchTag, ComponentTags...>;
 
+public:
 	constexpr Vertex() noexcept = default;
 	Vertex(const Type&) noexcept = default;
 
+public:
 	static Epic::VertexFormat GetFormat() noexcept
 	{
 		Epic::VertexFormat fmt;
@@ -104,7 +107,7 @@ private:
 		char pass[] =
 		{
 			(fn(Epic::VertexComponent<ComponentTags>::GetName(),
-				Epic::Vertex::OffsetOf<Epic::VertexComponent<ComponentTags>>(),
+				Type::OffsetOf<Epic::VertexComponent<ComponentTags>>(),
 				sizeof(typename Epic::VertexComponent<ComponentTags>::ValueType),
 				Epic::VertexComponent<ComponentTags>::Components
 				), '\0'
