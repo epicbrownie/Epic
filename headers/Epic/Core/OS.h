@@ -86,7 +86,10 @@
 // Windows headers
 #ifdef WindowsOS
 	#define WIN32_LEAN_AND_MEAN
-	#define NOMINMAX
+
+	#ifndef NOMINMAX
+		#define NOMINMAX
+	#endif
 
 	#ifndef STRICT
 		// some Windows headers define STRICT. In Visual C++ at least having it defined
