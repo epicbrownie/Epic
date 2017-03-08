@@ -210,7 +210,7 @@ public:
 
 				Tick();
 
-				if (m_Interval == Duration{ 0 })
+				if (m_Interval == Duration{ 0 } || !m_IsTiming)
 					break;
 			}
 		}
@@ -312,7 +312,7 @@ public:
 
 					Tick();
 
-					if (m_Interval == Duration{ 0 })
+					if (m_Interval == Duration{ 0 } || !m_IsTiming)
 						break;
 				}
 			}
@@ -338,7 +338,7 @@ namespace Epic::Timers
 	{
 		inline void Update() noexcept
 		{
-			auto itFn = [&](auto pInstance) { pInstance->Update(); };
+			auto itFn = [&](auto pTimer) { pTimer->Update(); };
 			Epic::detail::AutoTimer::IterateInstancesSafe(itFn);
 		}
 	}
