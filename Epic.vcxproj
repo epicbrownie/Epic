@@ -32,7 +32,6 @@
     <ClInclude Include="src\detail\VertexNormal.hpp" />
     <ClInclude Include="src\detail\VertexPosition.hpp" />
     <ClInclude Include="src\detail\VertexTexture.hpp" />
-    <ClInclude Include="src\detail\WindowFwd.hpp" />
     <ClInclude Include="src\detail\WindowTypes.hpp" />
     <ClInclude Include="src\EON\Bin.hpp" />
     <ClInclude Include="src\EON\Bind.hpp" />
