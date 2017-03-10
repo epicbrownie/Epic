@@ -13,7 +13,7 @@
 
 #pragma once
 
-#include <Epic/Core/OS.h>
+#include <Epic/OS.h>
 #include <Epic/STL/UniquePtr.hpp>
 #include <Epic/STL/Vector.hpp>
 #include <cstdint>

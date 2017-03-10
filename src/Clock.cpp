@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 //
-//            Copyright (c) 2017 Ronnie Brohn (EpicBrownie)      
+//            Copyright (c) 2016 Ronnie Brohn (EpicBrownie)      
 //
 //                Distributed under The MIT License (MIT).
 //             (See accompanying file License.txt or copy at 
@@ -11,13 +11,10 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#pragma once
-
-#include <Epic/Core/detail/WindowTypes.hpp>
-
-//////////////////////////////////////////////////////////////////////////////	
+#include <Epic/Clock.hpp>
 
 namespace Epic
 {
-	class Window;
+	decltype(HighResolutionClock) HighResolutionClock;
+	decltype(StandardClock) StandardClock;
 }

@@ -13,7 +13,7 @@
 
 #pragma once
 
-#include <Epic/Core/VertexComponent.hpp>
+#include <Epic/VertexComponent.hpp>
 #include <Epic/Math/Vector.hpp>
 
 //////////////////////////////////////////////////////////////////////////////

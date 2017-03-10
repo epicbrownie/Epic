@@ -13,29 +13,29 @@
 
 #pragma once
 
-#include <Epic/Core/VertexComponent.hpp>
+#include <Epic/VertexComponent.hpp>
 #include <Epic/Math/Vector.hpp>
 
 //////////////////////////////////////////////////////////////////////////////
 
 namespace Epic::Component
 {
-	struct CmpColor;
-	struct CmpColor2;
-	struct CmpColor3;
-	struct CmpColor4;
+	struct CmpPos;
+	struct CmpPos2;
+	struct CmpPos3;
+	struct CmpPos4;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-MAKE_VERTEX_COMPONENT(Epic::Component::CmpColor, Epic::Color4f, Color, 4);
-MAKE_VERTEX_COMPONENT(Epic::Component::CmpColor2, Epic::Color4f, Color2, 4);
-MAKE_VERTEX_COMPONENT(Epic::Component::CmpColor3, Epic::Color4f, Color3, 4);
-MAKE_VERTEX_COMPONENT(Epic::Component::CmpColor4, Epic::Color4f, Color4, 4);
+MAKE_VERTEX_COMPONENT(Epic::Component::CmpPos, Epic::Point4f, Pos, 4);
+MAKE_VERTEX_COMPONENT(Epic::Component::CmpPos2, Epic::Point4f, Pos2, 4);
+MAKE_VERTEX_COMPONENT(Epic::Component::CmpPos3, Epic::Point4f, Pos3, 4);
+MAKE_VERTEX_COMPONENT(Epic::Component::CmpPos4, Epic::Point4f, Pos4, 4);
 
 //////////////////////////////////////////////////////////////////////////////
 
 namespace Epic::Component
 {
-	using CmpColor1 = CmpColor;
+	using CmpPos1 = CmpPos;
 }

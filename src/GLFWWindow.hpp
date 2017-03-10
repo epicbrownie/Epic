@@ -13,10 +13,10 @@
 
 #pragma once
 
-#include <Epic/Core/detail/GLFW.hpp>
-#include <Epic/Core/Event.hpp>
-#include <Epic/Core/GLFWContextTypes.hpp>
-#include <Epic/Core/Window.hpp>
+#include <Epic/detail/GLFW.hpp>
+#include <Epic/Event.hpp>
+#include <Epic/GLFWContextTypes.hpp>
+#include <Epic/Window.hpp>
 #include <Epic/Singleton.hpp>
 #include <cassert>
 #include <cstdint>

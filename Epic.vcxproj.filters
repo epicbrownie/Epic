@@ -302,64 +302,64 @@
     <ClInclude Include="src\Math\detail\MathHelpers.hpp">
       <Filter>Math\detail</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\Event.hpp">
-      <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Core\CPUInfo.h">
-      <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Core\OS.h">
-      <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Core\Specs.hpp">
-      <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Core\Clock.hpp">
-      <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Core\Timer.hpp">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="src\AppGuard.hpp">
       <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\Vertex.hpp">
+    <ClInclude Include="src\Clock.hpp">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\VertexComponent.hpp">
+    <ClInclude Include="src\CPUInfo.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\detail\VertexPosition.hpp">
-      <Filter>Core\detail</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Core\detail\VertexTexture.hpp">
-      <Filter>Core\detail</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Core\detail\VertexNormal.hpp">
-      <Filter>Core\detail</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Core\detail\VertexColor.hpp">
-      <Filter>Core\detail</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Core\detail\WindowTypes.hpp">
-      <Filter>Core\detail</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Core\Window.hpp">
+    <ClInclude Include="src\Event.hpp">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\detail\WindowFwd.hpp">
-      <Filter>Core\detail</Filter>
+    <ClInclude Include="src\OS.h">
+      <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\GLFWWindow.hpp">
+    <ClInclude Include="src\Specs.hpp">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Timer.hpp">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Vertex.hpp">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VertexComponent.hpp">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Window.hpp">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GLFWContextTypes.hpp">
       <Filter>Core\GLFW</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\GLFWContextTypes.hpp">
+    <ClInclude Include="src\GLFWWindow.hpp">
       <Filter>Core\GLFW</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\detail\GLFWInclude.h">
+    <ClInclude Include="src\detail\VertexColor.hpp">
+      <Filter>Core\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\VertexNormal.hpp">
+      <Filter>Core\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\VertexPosition.hpp">
+      <Filter>Core\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\VertexTexture.hpp">
+      <Filter>Core\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\WindowFwd.hpp">
+      <Filter>Core\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\WindowTypes.hpp">
+      <Filter>Core\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\GLFWInclude.h">
       <Filter>Core\GLFW\detail</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\detail\GLFW.hpp">
+    <ClInclude Include="src\detail\GLFW.hpp">
       <Filter>Core\GLFW\detail</Filter>
     </ClInclude>
   </ItemGroup>
@@ -373,10 +373,10 @@
     <ClCompile Include="src\Memory\AlignedMallocator.cpp">
       <Filter>Memory\Allocators - Simple</Filter>
     </ClCompile>
-    <ClCompile Include="src\Core\Clock.cpp">
+    <ClCompile Include="src\Clock.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="src\Core\detail\GLFW.cpp">
+    <ClCompile Include="src\detail\GLFW.cpp">
       <Filter>Core\GLFW\detail</Filter>
     </ClCompile>
   </ItemGroup>

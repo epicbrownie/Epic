@@ -13,8 +13,8 @@
 
 #pragma once
 
-#include <Epic/Core/detail/WindowFwd.hpp>
-#include <Epic/Core/Event.hpp>
+#include <Epic/detail/WindowFwd.hpp>
+#include <Epic/Event.hpp>
 #include <cstdint>
 
 //////////////////////////////////////////////////////////////////////////////	

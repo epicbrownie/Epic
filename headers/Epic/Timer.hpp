@@ -13,9 +13,9 @@
 
 #pragma once
 
-#include <Epic/Core/Clock.hpp>
-#include <Epic/Core/Event.hpp>
 #include <Epic/AutoList.hpp>
+#include <Epic/Clock.hpp>
+#include <Epic/Event.hpp>
 
 //////////////////////////////////////////////////////////////////////////////
 

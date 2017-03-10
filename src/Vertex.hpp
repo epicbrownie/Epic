@@ -13,11 +13,11 @@
 
 #pragma once
 
-#include <Epic/Core/VertexComponent.hpp>
-#include <Epic/Core/detail/VertexPosition.hpp>
-#include <Epic/Core/detail/VertexNormal.hpp>
-#include <Epic/Core/detail/VertexTexture.hpp>
-#include <Epic/Core/detail/VertexColor.hpp>
+#include <Epic/VertexComponent.hpp>
+#include <Epic/detail/VertexPosition.hpp>
+#include <Epic/detail/VertexNormal.hpp>
+#include <Epic/detail/VertexTexture.hpp>
+#include <Epic/detail/VertexColor.hpp>
 #include <Epic/TMP/VariadicContains.hpp>
 #include <Epic/STL/Vector.hpp>
 #include <cstdint>

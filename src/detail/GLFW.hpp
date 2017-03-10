@@ -13,7 +13,7 @@
 
 #pragma once
 
-#include <Epic/Core/detail/GLFWInclude.h>
+#include <Epic/detail/GLFWInclude.h>
 #include <cassert>
 
 //////////////////////////////////////////////////////////////////////////////

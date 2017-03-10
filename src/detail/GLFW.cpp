@@ -11,13 +11,23 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#pragma once
+#include <Epic/detail/GLFW.hpp>
 
-#include <Epic/Core/detail/WindowTypes.hpp>
+//////////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////////	
-
-namespace Epic
+Epic::detail::GLFWFacade::GLFWFacade() noexcept
+	: m_IsReady{ false }
 {
-	class Window;
+}
+
+Epic::detail::GLFWFacade::~GLFWFacade() noexcept
+{
+	if (m_IsReady)
+		glfwTerminate();
+}
+
+bool Epic::detail::GLFWFacade::Initialize() noexcept
+{
+	m_IsReady = (glfwInit() == GLFW_TRUE);
+	return m_IsReady;
 }
