@@ -25,16 +25,23 @@
     <ClInclude Include="src\Config.hpp" />
     <ClInclude Include="src\Core\Clock.hpp" />
     <ClInclude Include="src\Core\CPUInfo.h" />
+    <ClInclude Include="src\Core\detail\GLFW.hpp" />
+    <ClInclude Include="src\Core\detail\GLFWInclude.h" />
     <ClInclude Include="src\Core\detail\VertexColor.hpp" />
     <ClInclude Include="src\Core\detail\VertexNormal.hpp" />
     <ClInclude Include="src\Core\detail\VertexPosition.hpp" />
     <ClInclude Include="src\Core\detail\VertexTexture.hpp" />
+    <ClInclude Include="src\Core\detail\WindowFwd.hpp" />
+    <ClInclude Include="src\Core\detail\WindowTypes.hpp" />
     <ClInclude Include="src\Core\Event.hpp" />
+    <ClInclude Include="src\Core\GLFWContextTypes.hpp" />
+    <ClInclude Include="src\Core\GLFWWindow.hpp" />
     <ClInclude Include="src\Core\OS.h" />
     <ClInclude Include="src\Core\Specs.hpp" />
     <ClInclude Include="src\Core\Timer.hpp" />
     <ClInclude Include="src\Core\Vertex.hpp" />
     <ClInclude Include="src\Core\VertexComponent.hpp" />
+    <ClInclude Include="src\Core\Window.hpp" />
     <ClInclude Include="src\detail\ReadConfig.hpp" />
     <ClInclude Include="src\EON\Bin.hpp" />
     <ClInclude Include="src\EON\Bind.hpp" />
@@ -117,6 +124,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Core\Clock.cpp" />
+    <ClCompile Include="src\Core\detail\GLFW.cpp" />
     <ClCompile Include="src\Memory\AlignedMallocator.cpp" />
     <ClCompile Include="src\Memory\Mallocator.cpp" />
     <ClCompile Include="src\Memory\NullAllocator.cpp" />
@@ -184,7 +192,9 @@
     <Import Project="props\ReleaseDirectories x64.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LibraryPath>C:\Users\Epic Brownie\Source\Repos\Epic\bin;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>

@@ -50,6 +50,12 @@
     <Filter Include="Core\detail">
       <UniqueIdentifier>{594e0832-119f-4fb7-8062-90b668a77d4b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core\GLFW">
+      <UniqueIdentifier>{6802ce12-02ac-49b4-9b20-4aebfd5d00b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\GLFW\detail">
+      <UniqueIdentifier>{5cb140c9-0388-4eaa-9cf3-7c82e351fafb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Singleton.hpp">
@@ -335,6 +341,27 @@
     <ClInclude Include="src\Core\detail\VertexColor.hpp">
       <Filter>Core\detail</Filter>
     </ClInclude>
+    <ClInclude Include="src\Core\detail\WindowTypes.hpp">
+      <Filter>Core\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Window.hpp">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\detail\WindowFwd.hpp">
+      <Filter>Core\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\GLFWWindow.hpp">
+      <Filter>Core\GLFW</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\GLFWContextTypes.hpp">
+      <Filter>Core\GLFW</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\detail\GLFWInclude.h">
+      <Filter>Core\GLFW\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\detail\GLFW.hpp">
+      <Filter>Core\GLFW\detail</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Memory\NullAllocator.cpp">
@@ -348,6 +375,9 @@
     </ClCompile>
     <ClCompile Include="src\Core\Clock.cpp">
       <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\detail\GLFW.cpp">
+      <Filter>Core\GLFW\detail</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
