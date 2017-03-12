@@ -325,6 +325,16 @@ namespace Epic
 
 		#pragma endregion
 
+		#pragma region Epic::Lerp
+
+		template<class T, class F, typename EnabledForFloatingPoint = std::enable_if_t<std::is_floating_point<F>::value>>
+		inline auto Lerp(const T& from, const T& to, const F t) noexcept
+		{
+			return (from * (F(1) - t)) + (to * t);
+		}
+
+		#pragma endregion
+
 		// Calculate the angle between unit vectors 'vecA' and 'vecB'
 		template<class T, class U, size_t Size>
 		inline Radian<T> AngleOf(const Vector<T, Size>& vecA, const Vector<U, Size>& vecB) noexcept
