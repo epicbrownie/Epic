@@ -13,6 +13,7 @@
 
 #pragma once
 
+#include <Epic/Singleton.hpp>
 #include <Epic/detail/GLFWInclude.h>
 #include <cassert>
 
@@ -20,23 +21,37 @@
 
 namespace Epic::detail
 {
-	class GLFWFacade;
+	class GLFW;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-// GLFWFacade
-class Epic::detail::GLFWFacade
+// GLFW
+class Epic::detail::GLFW
 {
+public:
+	using Type = Epic::detail::GLFW;
+
 private:
 	bool m_IsReady;
 
 public:
-	GLFWFacade() noexcept;
-	~GLFWFacade() noexcept;
+	GLFW() noexcept
+		: m_IsReady{ false }
+	{ }
+
+	~GLFW() noexcept
+	{
+		if (m_IsReady)
+			glfwTerminate();
+	}
 
 public:
-	bool Initialize() noexcept;
+	bool Initialize() noexcept
+	{
+		m_IsReady = (glfwInit() == GLFW_TRUE);
+		return m_IsReady;
+	}
 	
 	inline bool IsReady() const noexcept 
 	{ 

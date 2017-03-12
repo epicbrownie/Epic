@@ -148,7 +148,7 @@ private:
 
 	#pragma region Window/Context Settings
 
-	void ApplyPreCreationWindowSettings(const GLFWvidmode* pVidMode)
+	void ApplyPreCreationWindowSettings(const GLFWvidmode* pVidMode) noexcept
 	{
 		glfwWindowHint(GLFW_RESIZABLE, m_Settings.IsResizable ? GLFW_TRUE : GLFW_FALSE);
 		glfwWindowHint(GLFW_FOCUSED, GLFW_TRUE);
@@ -196,7 +196,7 @@ private:
 		}
 	}
 
-	bool ApplyContextSettings()
+	bool ApplyContextSettings() noexcept
 	{
 		// Set active context
 		glfwMakeContextCurrent(m_pWindow);
@@ -223,9 +223,11 @@ private:
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
 		glfwSwapInterval(m_ContextSettings.WaitForRefresh ? 1 : 0);
+
+		return true;
 	}
 
-	void ApplyPostCreationWindowSettings()
+	void ApplyPostCreationWindowSettings() noexcept
 	{
 		if (m_Settings.WindowPosition.X != WindowSettings::OSDefaultPosition ||
 			m_Settings.WindowPosition.Y != WindowSettings::OSDefaultPosition)
@@ -270,10 +272,9 @@ private:
 		glfwSetCursorEnterCallback(m_pWindow, &GLFWWindow::_CursorEnterCallback);
 		glfwSetMouseButtonCallback(m_pWindow, &GLFWWindow::_MouseButtonCallback);
 		glfwSetScrollCallback(m_pWindow, &GLFWWindow::_ScrollCallback);
-
 	}
 
-	void PersistCreationSettings()
+	void PersistCreationSettings() noexcept
 	{
 		int x, y;
 
@@ -302,7 +303,7 @@ public:
 	bool Create() override
 	{
 		// Ensure the GLFW system is initialized
-		if (!Singleton<detail::GLFWFacade>::Instance().Initialize())
+		if (!Singleton<detail::GLFW>::Instance().Initialize())
 		{
 			// TODO: Log the failure
 			return false;
