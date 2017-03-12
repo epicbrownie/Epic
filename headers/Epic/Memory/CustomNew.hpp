@@ -48,7 +48,7 @@ private:
 		using AllocatorType = Epic::STLAllocatorAdapted<Epic::DefaultAllocatorFor<CRTP, eAllocatorFor::New>>;
 
 		const bool aligned = !detail::CanAllocate<AllocatorType>::value || 
-							 (AllocatorType::Alignment % alignof(CRTP)) != 0;
+							 (AllocatorType::Alignment % Epic::detail::AlignOf<CRTP>::value) != 0;
 
 		Blk blk;
 		size_t alignment;
@@ -61,7 +61,7 @@ private:
 				"CustomNew::_Allocate - This type requires an allocator that is capable of "
 				"performing allocations aligned to CRTP");
 
-			alignment = alignof(CRTP);
+			alignment = Epic::detail::AlignOf<CRTP>::value;
 			blk = detail::AllocateAlignedIf<AllocatorType>::apply(allocator, sz, alignment);
 		}
 		else
@@ -86,7 +86,7 @@ private:
 		using AllocatorType = Epic::STLAllocatorAdapted<Epic::DefaultAllocatorFor<CRTP, eAllocatorFor::New>>;
 
 		const bool aligned = !detail::CanAllocate<AllocatorType>::value || 
-							 (AllocatorType::Alignment % alignof(CRTP)) != 0;
+							 (AllocatorType::Alignment % Epic::detail::AlignOf<CRTP>::value) != 0;
 
 		AllocatorType allocator;
 
@@ -97,7 +97,7 @@ private:
 		if (aligned)
 		{
 			// AllocateAligned was used
-			const auto pPrefix = allocator.Allocator().GetPrefixObject(blk, alignof(CRTP));
+			const auto pPrefix = allocator.Allocator().GetPrefixObject(blk, Epic::detail::AlignOf<CRTP>::value);
 			blk.Size = pPrefix->Size;
 
 			detail::DeallocateAlignedIf<AllocatorType>::apply(allocator, blk);
