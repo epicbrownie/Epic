@@ -568,13 +568,13 @@ public:
 	// Buffer an invocation of the event
 	inline void operator() (Args... args) noexcept
 	{
-		m_Invocations.emplace_back(args...);
+		m_Invocations.emplace_back(std::forward<Args>(args)...);
 	}
 
 	// Buffer an invocation of the event
 	inline void Invoke(Args... args) noexcept
 	{
-		this->operator() (args...);
+		this->operator() (std::forward<Args>(args)...);
 	}
 
 private:
@@ -588,7 +588,7 @@ private:
 	template<class Return>
 	inline Return ForwardedInvoke(Args... args) noexcept
 	{
-		Invoke(args...);
+		Invoke(std::forward<Args>(args)...);
 		return Return();
 	}
 
@@ -637,6 +637,9 @@ private:
 	friend struct ScopeSuspend;
 
 public:
+	// Import base Connect overloads
+	using Base::Connect;
+
 	// Connect an event as a handler to this event
 	template<class Return>
 	inline void Connect(Event<Return(Args...)>& event) noexcept
@@ -737,13 +740,13 @@ public:
 		ScopeSuspend<Type> _suspend(*this);
 		
 		for (auto& listener : m_Listeners)
-			listener.second(args...);
+			listener.second(std::forward<Args>(args)...);
 	}
 
 	// Invoke the event (handler return values are ignored)
 	inline void Invoke(Args... args)
 	{
-		this->operator() (args...);
+		this->operator() (std::forward<Args>(args)...);
 	}
 
 	// Invoke the event and store listener return values into an accumulator
@@ -754,7 +757,7 @@ public:
 		Accumulator accum;
 
 		for (auto& listener : m_Listeners)
-			accum.emplace_back(listener.second(args...));
+			accum.emplace_back(listener.second(std::forward<Args>(args)...));
 
 		return accum;
 	}
@@ -766,7 +769,7 @@ public:
 		ScopeSuspend<Type> _suspend(*this);
 
 		for (auto& listener : m_Listeners)
-			*dest++ = listener.second(args...);
+			*dest++ = listener.second(std::forward<Args>(args)...);
 	}
 
 	// Listeners will be invoked and their return value fed to the predicate.
@@ -779,7 +782,7 @@ public:
 
 		for (auto& listener : m_Listeners)
 		{
-			if (predicate(listener.second(args...)))
+			if (predicate(listener.second(std::forward<Args>(args)...)))
 				return true;
 		}
 
@@ -795,7 +798,7 @@ public:
 
 		for (auto& listener : m_Listeners)
 		{
-			if (value == listener.second(args...))
+			if (value == listener.second(std::forward<Args>(args)...))
 				return true;
 		}
 
@@ -812,7 +815,7 @@ public:
 
 		for (auto& listener : m_Listeners)
 		{
-			if (!predicate(listener.second(args...)))
+			if (!predicate(listener.second(std::forward<Args>(args)...)))
 				return false;
 		}
 
@@ -828,7 +831,7 @@ public:
 
 		for (auto& listener : m_Listeners)
 		{
-			if (value != listener.second(args...))
+			if (value != listener.second(std::forward<Args>(args)...))
 				return false;
 		}
 
@@ -839,7 +842,7 @@ private:
 	template<class Return>
 	inline Return ForwardedInvoke(Args... args) noexcept
 	{
-		Invoke(args...);
+		Invoke(std::forward<Args>(args)...);
 		return Return();
 	}
 };
