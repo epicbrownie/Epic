@@ -114,20 +114,20 @@ public:
 	{
 		Blk blk;
 
-		if (!detail::CanAllocate<AllocatorType>::value || (AllocatorType::Alignment % alignof(T)) != 0)
+		if (!detail::CanAllocate<AllocatorType>::value || (AllocatorType::Alignment % Epic::detail::AlignOf<T>::value) != 0)
 		{
 			assert(detail::CanAllocateAligned<AllocatorType>::value &&
 				"STLAllocator::Allocate() - This type requires an allocator that is capable of "
 				"performing arbitrarily aligned allocations");
 
 			// Attempt to allocate aligned memory via AllocateAligned()
-			blk = detail::AllocateAlignedIf<AllocatorType>::apply(m_Allocator, sizeof(T) * n, alignof(T));
+			blk = detail::AllocateAlignedIf<AllocatorType>::apply(m_Allocator, sizeof(T) * n, Epic::detail::AlignOf<T>::value);
 
 			// Ensure memory was acquired
 			if (!blk) throw std::bad_alloc{};
 
 			// Store size in prefix object
-			auto pPrefix = m_Allocator.Allocator().GetPrefixObject(blk, alignof(T));
+			auto pPrefix = m_Allocator.Allocator().GetPrefixObject(blk, Epic::detail::AlignOf<T>::value);
 			pPrefix->Size = blk.Size;
 		}
 		else
@@ -157,10 +157,10 @@ public:
 		// prefix object from a pointer.  A temporary block will be used.
 		Blk blk{ p, 1 };
 
-		if (!detail::CanAllocate<AllocatorType>::value || (AllocatorType::Alignment % alignof(T)) != 0)
+		if (!detail::CanAllocate<AllocatorType>::value || (AllocatorType::Alignment % Epic::detail::AlignOf<T>::value) != 0)
 		{
 			// AllocateAligned was used
-			const auto pPrefix = m_Allocator.Allocator().GetPrefixObject(blk, alignof(T));
+			const auto pPrefix = m_Allocator.Allocator().GetPrefixObject(blk, Epic::detail::AlignOf<T>::value);
 			blk.Size = pPrefix->Size;
 
 			detail::DeallocateAlignedIf<AllocatorType>::apply(m_Allocator, blk);

@@ -83,6 +83,17 @@ namespace Epic::detail
 
 namespace Epic::detail
 {
+	template<class T, bool Enabled = std::is_abstract<T>::value>
+	struct AlignOf : std::integral_constant<size_t, alignof(T)> { };
+
+	template<class T>
+	struct AlignOf<T, false> : std::integral_constant<size_t, 0> { };
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+namespace Epic::detail
+{
 	template<class T>
 	struct Reallocator;
 

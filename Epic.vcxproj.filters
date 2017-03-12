@@ -44,6 +44,27 @@
     <Filter Include="Math\detail">
       <UniqueIdentifier>{11ab25d8-4cfb-4c86-96fb-aa0204abbdb4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{075780f6-326f-4137-87a9-cebb0338c151}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\detail">
+      <UniqueIdentifier>{594e0832-119f-4fb7-8062-90b668a77d4b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\GLFW">
+      <UniqueIdentifier>{6802ce12-02ac-49b4-9b20-4aebfd5d00b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\GLFW\detail">
+      <UniqueIdentifier>{5cb140c9-0388-4eaa-9cf3-7c82e351fafb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Input">
+      <UniqueIdentifier>{74e5eb65-f3d4-4d6d-b514-8d682e032de3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Input\Resolvers">
+      <UniqueIdentifier>{65f3a9d1-9ae6-42f6-893a-242e28b82ef8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Input\Devices">
+      <UniqueIdentifier>{cc4b907e-0e09-43e0-9a4b-f12831fd16ca}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Singleton.hpp">
@@ -221,9 +242,6 @@
     <ClInclude Include="src\EON\Bin.hpp">
       <Filter>Utility\EON</Filter>
     </ClInclude>
-    <ClInclude Include="src\AppLock.hpp">
-      <Filter>Utility</Filter>
-    </ClInclude>
     <ClInclude Include="src\EON\Convert.hpp">
       <Filter>Utility\EON</Filter>
     </ClInclude>
@@ -293,6 +311,123 @@
     <ClInclude Include="src\Math\detail\MathHelpers.hpp">
       <Filter>Math\detail</Filter>
     </ClInclude>
+    <ClInclude Include="src\AppGuard.hpp">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Clock.hpp">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CPUInfo.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Event.hpp">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\OS.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Specs.hpp">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Timer.hpp">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Vertex.hpp">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VertexComponent.hpp">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Window.hpp">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GLFWContextTypes.hpp">
+      <Filter>Core\GLFW</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GLFWWindow.hpp">
+      <Filter>Core\GLFW</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\VertexColor.hpp">
+      <Filter>Core\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\VertexNormal.hpp">
+      <Filter>Core\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\VertexPosition.hpp">
+      <Filter>Core\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\VertexTexture.hpp">
+      <Filter>Core\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\WindowTypes.hpp">
+      <Filter>Core\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\GLFWInclude.h">
+      <Filter>Core\GLFW\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\GLFW.hpp">
+      <Filter>Core\GLFW\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\InputData.hpp">
+      <Filter>Core\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\InputDevice.hpp">
+      <Filter>Core\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\InputContext.hpp">
+      <Filter>Core\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\InputAction.hpp">
+      <Filter>Core\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\InputResolver.hpp">
+      <Filter>Core\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\InputDeviceManager.hpp">
+      <Filter>Core\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\InputSystem.hpp">
+      <Filter>Core\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GLFWMouseInputDevice.hpp">
+      <Filter>Core\Input\Devices</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ButtonResolver.hpp">
+      <Filter>Core\Input\Resolvers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DeviceResolver.hpp">
+      <Filter>Core\Input\Resolvers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Axis1DResolver.hpp">
+      <Filter>Core\Input\Resolvers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Axis2DResolver.hpp">
+      <Filter>Core\Input\Resolvers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GLFWKeyboardInputDevice.hpp">
+      <Filter>Core\Input\Devices</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TextResolver.hpp">
+      <Filter>Core\Input\Resolvers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AlphaResolver.hpp">
+      <Filter>Core\Input\Resolvers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AlphaNumResolver.hpp">
+      <Filter>Core\Input\Resolvers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NumericalResolver.hpp">
+      <Filter>Core\Input\Resolvers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HexResolver.hpp">
+      <Filter>Core\Input\Resolvers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GLFWJoystickInputDevice.hpp">
+      <Filter>Core\Input\Devices</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Axis3DResolver.hpp">
+      <Filter>Core\Input\Resolvers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Memory\NullAllocator.cpp">
@@ -303,6 +438,12 @@
     </ClCompile>
     <ClCompile Include="src\Memory\AlignedMallocator.cpp">
       <Filter>Memory\Allocators - Simple</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Clock.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\InputSystem.cpp">
+      <Filter>Core\Input</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
