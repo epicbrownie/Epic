@@ -92,8 +92,8 @@ public:
 		m_PrevFrameTimePoint = m_FrameTimePoint;
 		m_FrameTimePoint = ClockType::now();
 
-		m_FrameTime = Elapsed(m_Epoch, m_FrameTimePoint);
-		m_DeltaTime = Elapsed(m_PrevFrameTimePoint, m_FrameTimePoint);
+		m_FrameTime = std::chrono::duration_cast<Unit>(m_FrameTimePoint - m_Epoch);
+		m_DeltaTime = std::chrono::duration_cast<Unit>(m_FrameTimePoint - m_PrevFrameTimePoint);
 	}
 
 private:
