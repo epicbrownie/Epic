@@ -11,23 +11,29 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#include <Epic/detail/GLFW.hpp>
+#pragma once
+
+#include <Epic/InputData.hpp>
 
 //////////////////////////////////////////////////////////////////////////////
 
-Epic::detail::GLFWFacade::GLFWFacade() noexcept
-	: m_IsReady{ false }
+namespace Epic
 {
+	class InputResolver;
 }
 
-Epic::detail::GLFWFacade::~GLFWFacade() noexcept
-{
-	if (m_IsReady)
-		glfwTerminate();
-}
+//////////////////////////////////////////////////////////////////////////////
 
-bool Epic::detail::GLFWFacade::Initialize() noexcept
+// InputResolver
+class Epic::InputResolver
 {
-	m_IsReady = (glfwInit() == GLFW_TRUE);
-	return m_IsReady;
-}
+public:
+	using Type = Epic::InputResolver;
+
+public:
+	InputResolver() noexcept = default;
+	virtual ~InputResolver() noexcept = default;
+
+public:
+	virtual bool Resolve(const InputData& data) const noexcept = 0;
+};

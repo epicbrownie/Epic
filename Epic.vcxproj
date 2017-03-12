@@ -19,9 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\AlphaNumResolver.hpp" />
+    <ClInclude Include="src\AlphaResolver.hpp" />
     <ClInclude Include="src\AppGuard.hpp" />
     <ClInclude Include="src\AutoList.hpp" />
     <ClInclude Include="src\AutoMap.hpp" />
+    <ClInclude Include="src\Axis1DResolver.hpp" />
+    <ClInclude Include="src\Axis2DResolver.hpp" />
+    <ClInclude Include="src\Axis3DResolver.hpp" />
+    <ClInclude Include="src\ButtonResolver.hpp" />
     <ClInclude Include="src\Clock.hpp" />
     <ClInclude Include="src\Config.hpp" />
     <ClInclude Include="src\CPUInfo.h" />
@@ -33,6 +39,7 @@
     <ClInclude Include="src\detail\VertexPosition.hpp" />
     <ClInclude Include="src\detail\VertexTexture.hpp" />
     <ClInclude Include="src\detail\WindowTypes.hpp" />
+    <ClInclude Include="src\DeviceResolver.hpp" />
     <ClInclude Include="src\EON\Bin.hpp" />
     <ClInclude Include="src\EON\Bind.hpp" />
     <ClInclude Include="src\EON\Convert.hpp" />
@@ -45,7 +52,18 @@
     <ClInclude Include="src\Event.hpp" />
     <ClInclude Include="src\Ext\Erase.hpp" />
     <ClInclude Include="src\GLFWContextTypes.hpp" />
+    <ClInclude Include="src\GLFWJoystickInputDevice.hpp" />
+    <ClInclude Include="src\GLFWKeyboardInputDevice.hpp" />
+    <ClInclude Include="src\GLFWMouseInputDevice.hpp" />
     <ClInclude Include="src\GLFWWindow.hpp" />
+    <ClInclude Include="src\HexResolver.hpp" />
+    <ClInclude Include="src\InputAction.hpp" />
+    <ClInclude Include="src\InputContext.hpp" />
+    <ClInclude Include="src\InputData.hpp" />
+    <ClInclude Include="src\InputDevice.hpp" />
+    <ClInclude Include="src\InputDeviceManager.hpp" />
+    <ClInclude Include="src\InputResolver.hpp" />
+    <ClInclude Include="src\InputSystem.hpp" />
     <ClInclude Include="src\Math\Algorithm.hpp" />
     <ClInclude Include="src\Math\Angle.hpp" />
     <ClInclude Include="src\Math\Constants.hpp" />
@@ -92,6 +110,7 @@
     <ClInclude Include="src\Memory\FallbackAllocator.hpp" />
     <ClInclude Include="src\NullAtomic.hpp" />
     <ClInclude Include="src\NullMutex.hpp" />
+    <ClInclude Include="src\NumericalResolver.hpp" />
     <ClInclude Include="src\OS.h" />
     <ClInclude Include="src\Singleton.hpp" />
     <ClInclude Include="src\Specs.hpp" />
@@ -110,6 +129,7 @@
     <ClInclude Include="src\STL\Vector.hpp" />
     <ClInclude Include="src\StringHash.hpp" />
     <ClInclude Include="src\StringHashAlgorithm.hpp" />
+    <ClInclude Include="src\TextResolver.hpp" />
     <ClInclude Include="src\Timer.hpp" />
     <ClInclude Include="src\TMP\List.hpp" />
     <ClInclude Include="src\TMP\PowerOf2.hpp" />
@@ -123,7 +143,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Clock.cpp" />
-    <ClCompile Include="src\detail\GLFW.cpp" />
+    <ClCompile Include="src\InputSystem.cpp" />
     <ClCompile Include="src\Memory\AlignedMallocator.cpp" />
     <ClCompile Include="src\Memory\Mallocator.cpp" />
     <ClCompile Include="src\Memory\NullAllocator.cpp" />

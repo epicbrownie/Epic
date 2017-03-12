@@ -56,6 +56,15 @@
     <Filter Include="Core\GLFW\detail">
       <UniqueIdentifier>{5cb140c9-0388-4eaa-9cf3-7c82e351fafb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core\Input">
+      <UniqueIdentifier>{74e5eb65-f3d4-4d6d-b514-8d682e032de3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Input\Resolvers">
+      <UniqueIdentifier>{65f3a9d1-9ae6-42f6-893a-242e28b82ef8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Input\Devices">
+      <UniqueIdentifier>{cc4b907e-0e09-43e0-9a4b-f12831fd16ca}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Singleton.hpp">
@@ -359,6 +368,66 @@
     <ClInclude Include="src\detail\GLFW.hpp">
       <Filter>Core\GLFW\detail</Filter>
     </ClInclude>
+    <ClInclude Include="src\InputData.hpp">
+      <Filter>Core\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\InputDevice.hpp">
+      <Filter>Core\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\InputContext.hpp">
+      <Filter>Core\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\InputAction.hpp">
+      <Filter>Core\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\InputResolver.hpp">
+      <Filter>Core\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\InputDeviceManager.hpp">
+      <Filter>Core\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\InputSystem.hpp">
+      <Filter>Core\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GLFWMouseInputDevice.hpp">
+      <Filter>Core\Input\Devices</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ButtonResolver.hpp">
+      <Filter>Core\Input\Resolvers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DeviceResolver.hpp">
+      <Filter>Core\Input\Resolvers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Axis1DResolver.hpp">
+      <Filter>Core\Input\Resolvers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Axis2DResolver.hpp">
+      <Filter>Core\Input\Resolvers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GLFWKeyboardInputDevice.hpp">
+      <Filter>Core\Input\Devices</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TextResolver.hpp">
+      <Filter>Core\Input\Resolvers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AlphaResolver.hpp">
+      <Filter>Core\Input\Resolvers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AlphaNumResolver.hpp">
+      <Filter>Core\Input\Resolvers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NumericalResolver.hpp">
+      <Filter>Core\Input\Resolvers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HexResolver.hpp">
+      <Filter>Core\Input\Resolvers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GLFWJoystickInputDevice.hpp">
+      <Filter>Core\Input\Devices</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Axis3DResolver.hpp">
+      <Filter>Core\Input\Resolvers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Memory\NullAllocator.cpp">
@@ -373,8 +442,8 @@
     <ClCompile Include="src\Clock.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="src\detail\GLFW.cpp">
-      <Filter>Core\GLFW\detail</Filter>
+    <ClCompile Include="src\InputSystem.cpp">
+      <Filter>Core\Input</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
