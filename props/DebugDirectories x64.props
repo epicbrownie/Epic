@@ -3,12 +3,12 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <IncludePath>$(HeadersDir);C:\C++ Libraries\boost_1_61_0;C:\C++ Libraries\glfw-3.2.1.bin.WIN64\include;C:\C++ Libraries\glew-2.0.0-win32\glew-2.0.0\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\C++ Libraries\boost_1_61_0\lib64-msvc-14.0;C:\C++ Libraries\glfw-3.2.1.bin.WIN64\lib-vc2015;C:\C++ Libraries\glew-2.0.0-win32\glew-2.0.0\lib\Release\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(HeadersDir);C:\C++ Libraries\boost_1_61_0;C:\C++ Libraries\glfw-3.2.1.bin.WIN64\include;C:\C++ Libraries\glew-2.0.0-win32\glew-2.0.0\include;C:\C++ Libraries\FMOD\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\C++ Libraries\boost_1_61_0\lib64-msvc-14.0;C:\C++ Libraries\glfw-3.2.1.bin.WIN64\lib-vc2015;C:\C++ Libraries\glew-2.0.0-win32\glew-2.0.0\lib\Release\x64;C:\C++ Libraries\FMOD\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <Link>
-      <AdditionalDependencies>glfw3dll.lib;opengl32.lib;glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fmodL64_vc.lib;fmodstudioL64_vc.lib;glfw3dll.lib;opengl32.lib;glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup />

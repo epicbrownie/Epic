@@ -105,6 +105,7 @@
 	#include <Windows.h>
 	#include <WindowsX.h>
 	#include <intrin.h>
+	#include <objbase.h>
 
 	#ifndef RI_MOUSE_HORIZONTAL_WHEEL
 	#define RI_MOUSE_HORIZONTAL_WHEEL 0x0800

@@ -22,7 +22,8 @@ namespace Epic::detail
 {
 	enum class eConfigProperty
 	{
-		DefaultAllocator
+		DefaultAllocator,
+		AudioAllocator
 	};
 }
 
@@ -32,6 +33,9 @@ namespace Epic::detail
 {
 	template<typename T, typename = void>
 	struct CheckDefaultAllocator;
+
+	template<typename T, typename = void>
+	struct CheckAudioAllocator;
 
 	template<typename T>
 	struct ConfigProperties;
@@ -59,10 +63,28 @@ struct Epic::detail::CheckDefaultAllocator<T, std::void_t<typename T::DefaultAll
 
 //////////////////////////////////////////////////////////////////////////////
 
+/// CheckAudioAllocator
+template<typename T, typename>
+struct Epic::detail::CheckAudioAllocator
+{
+	/* AudioAllocator not found in Epic::Config<true> */
+	using AudioAllocator = void;
+};
+
+template<typename T>
+struct Epic::detail::CheckAudioAllocator<T, std::void_t<typename T::AudioAllocator>>
+{
+	/* Import AudioAllocator from Epic::Config<true> */
+	using AudioAllocator = typename T::AudioAllocator;
+};
+
+//////////////////////////////////////////////////////////////////////////////
+
 /// ConfigProperties
 template<typename T>
 struct Epic::detail::ConfigProperties :
-	CheckDefaultAllocator<T>
+	CheckDefaultAllocator<T>,
+	CheckAudioAllocator<T>
 { 
 	/* Properties imported through inheritance */
 };
@@ -73,10 +95,17 @@ struct Epic::detail::ConfigProperties :
 template<class ConfigType>
 struct Epic::detail::GetConfigProperty<Epic::detail::eConfigProperty::DefaultAllocator, ConfigType>
 {
+	using Type = typename Epic::detail::ConfigProperties<ConfigType>::DefaultAllocator;
+};
+
+/// GetConfigProperty<AudioAllocator>
+template<class ConfigType>
+struct Epic::detail::GetConfigProperty<Epic::detail::eConfigProperty::AudioAllocator, ConfigType>
+{
 	//static_assert(std::is_same<ConfigType, Epic::Config<true>>::value &&
 	//			  !std::is_same<void, typename Epic::detail::ConfigProperties<ConfigType>::DefaultAllocator>::value,
 	//	"You must specialize structure Epic::Config and add a DefaultAllocator member. "
 	//	"See (https://github.com/epicbrownie/Epic/wiki) for details.");
 
-	using Type = typename Epic::detail::ConfigProperties<ConfigType>::DefaultAllocator;
+	using Type = typename Epic::detail::ConfigProperties<ConfigType>::AudioAllocator;
 };
