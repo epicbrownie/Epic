@@ -20,6 +20,7 @@
 #include <Epic/Singleton.hpp>
 #include <cassert>
 #include <cstdint>
+#include <iostream>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -204,19 +205,12 @@ private:
 		// Ensure glew is initialized
 		glewExperimental = GL_TRUE;
 
-		GLenum err = glewInit();
-		if (GLEW_OK != err)
-		{
-			// TODO: Log the error (glewGetErrorString(err)
+		if (!GLEWCHECK(glewInit()))
 			return false;
-		}
 
 		// Apply post-creation context settings
-		// TODO: Log this info
-		const GLubyte* renderer = glGetString(GL_RENDERER);
-		const GLubyte* version = glGetString(GL_VERSION);
-		printf("Renderer: %s\n", renderer);
-		printf("OpenGL version supported %s\n", version);
+		std::cerr << "INFO: Renderer " << glGetString(GL_RENDERER) << std::endl;
+		std::cerr << "INFO: OpenGL version supported " << glGetString(GL_VERSION) << std::endl;
 
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
@@ -289,6 +283,27 @@ private:
 
 	#pragma endregion
 
+	#pragma region Monitor Selection
+
+	GLFWmonitor* GetWindowMonitor() noexcept
+	{
+		if (m_Settings.PreferredMonitor == Epic::WindowSettings::PrimaryMonitor)
+			return glfwGetPrimaryMonitor();
+
+		int count;
+		GLFWmonitor** monitors = glfwGetMonitors(&count);
+
+		if (m_Settings.PreferredMonitor < 0 || m_Settings.PreferredMonitor >= count)
+		{
+			m_Settings.PreferredMonitor = Epic::WindowSettings::PrimaryMonitor;
+			return glfwGetPrimaryMonitor();
+		}
+
+		return monitors[m_Settings.PreferredMonitor];
+	}
+
+	#pragma endregion
+	
 public:
 	bool IsClosed() const override
 	{
@@ -304,19 +319,13 @@ public:
 	{
 		// Ensure the GLFW system is initialized
 		if (!Singleton<detail::GLFW>::Instance().Initialize())
-		{
-			// TODO: Log the failure
 			return false;
-		}
-
+		
 		// Destroy the window if it already exists
 		Destroy();
 
-		// TODO: Allow monitor selection (for fullscreen)
-		// Should probably be enumerable via the facade
-
 		// Apply pre-creation settings
-		GLFWmonitor* pMonitor = glfwGetPrimaryMonitor();
+		GLFWmonitor* pMonitor = GetWindowMonitor();
 		const GLFWvidmode* pVidMode = glfwGetVideoMode(pMonitor);
 		
 		ApplyPreCreationWindowSettings(pVidMode);
@@ -351,10 +360,7 @@ public:
 		}
 
 		if (!m_pWindow)
-		{
-			// TODO: Log the failure
 			return false;
-		}
 
 		glfwSetWindowUserPointer(m_pWindow, this);
 
@@ -455,13 +461,10 @@ public:
 
 	void SetFullscreenState(Epic::eFullscreenState state) override 
 	{
-		// TODO: Allow monitor selection (for fullscreen)
-		// Should probably be enumerable via the facade
-
 		assert(m_pWindow);
 
 		GLFWmonitor* pMonitor = glfwGetWindowMonitor(m_pWindow);
-		if (!pMonitor) pMonitor = glfwGetPrimaryMonitor();
+		if (!pMonitor) pMonitor = GetWindowMonitor();
 		const GLFWvidmode* pVidMode = glfwGetVideoMode(pMonitor);
 
 		switch (state)

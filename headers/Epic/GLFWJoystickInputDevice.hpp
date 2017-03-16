@@ -13,7 +13,7 @@
 
 #pragma once
 
-#include <Epic/detail/GLFWInclude.h>
+#include <Epic/detail/GLFWInclude.hpp>
 #include <Epic/Event.hpp>
 #include <Epic/InputDevice.hpp>
 #include <Epic/InputResolver.hpp>

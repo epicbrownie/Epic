@@ -74,6 +74,7 @@ struct Epic::WindowSize
 struct Epic::WindowSettings
 {
 	static constexpr WindowPosition::ValueType OSDefaultPosition = -1;
+	static constexpr int PrimaryMonitor = -1;
 
 	WindowSettings() noexcept
 		: WindowPosition{ OSDefaultPosition, OSDefaultPosition },
@@ -83,7 +84,8 @@ struct Epic::WindowSettings
 		  CursorState{ Epic::eCursorState::Normal },
 		  ScrollMultiplier{ 40.0 },
 		  IsResizable{ true },
-		  IsAlwaysOnTop{ false }
+		  IsAlwaysOnTop{ false },
+		  PreferredMonitor{ PrimaryMonitor }
 	{ }
 
 	Epic::WindowPosition	WindowPosition;		// Default: OSDefaultPosition, OSDefaultPosition
@@ -95,6 +97,7 @@ struct Epic::WindowSettings
 	double					ScrollMultiplier;	// Default: 40.0
 	bool					IsResizable;		// Default: true
 	bool					IsAlwaysOnTop;		// Default: false
+	int						PreferredMonitor;	// Default: PrimaryMonitor
 };
 
 //////////////////////////////////////////////////////////////////////////////	

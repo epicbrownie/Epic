@@ -14,8 +14,9 @@
 #pragma once
 
 #include <Epic/Singleton.hpp>
-#include <Epic/detail/GLFWInclude.h>
+#include <Epic/detail/GLFWInclude.hpp>
 #include <cassert>
+#include <iostream>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -38,12 +39,26 @@ private:
 public:
 	GLFW() noexcept
 		: m_IsReady{ false }
-	{ }
+	{ 
+		glfwSetErrorCallback(&Type::OnError);
+	}
 
 	~GLFW() noexcept
 	{
 		if (m_IsReady)
 			glfwTerminate();
+	}
+
+private:
+	static void OnError(int errCode, const char* description) noexcept
+	{
+		std::cerr << "ERROR in GLFW"
+				  << std::endl
+				  << "\tError "
+				  << errCode
+				  << " - "
+				  << description
+				  << std::endl;
 	}
 
 public:
