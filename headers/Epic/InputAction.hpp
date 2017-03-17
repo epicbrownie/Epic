@@ -41,7 +41,7 @@ public:
 public:
 	using Slot = size_t;
 	static constexpr Slot Slots = 4;
-	using InputResolverPtr = Epic::UniquePtr<InputResolver>;
+	using InputResolverPtr = Epic::ImplPtr<InputResolver>;
 
 private:
 	using ResolverList = std::array<InputResolverPtr, Slots>;
