@@ -71,6 +71,12 @@
     <Filter Include="Core\Audio\detail">
       <UniqueIdentifier>{4e3156a0-2663-46cc-833d-ee12c37030e2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core\Entity">
+      <UniqueIdentifier>{1ebb5ec9-2484-4fa4-b936-7632f3c45a1e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Entity\detail">
+      <UniqueIdentifier>{cd97c1d4-6fdf-4844-af20-d1cc70b3cc08}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Singleton.hpp">
@@ -460,6 +466,42 @@
     </ClInclude>
     <ClInclude Include="src\detail\WindowTypes.hpp">
       <Filter>Core\Window/Context\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ECS.hpp">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Entity.hpp">
+      <Filter>Core\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\EntityComponentContainer.hpp">
+      <Filter>Core\Entity\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\EntityComponent.hpp">
+      <Filter>Core\Entity\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\EntityComponentView.hpp">
+      <Filter>Core\Entity\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\EntityComponentIterator.hpp">
+      <Filter>Core\Entity\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EntityManager.hpp">
+      <Filter>Core\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\EntityManagerFwd.hpp">
+      <Filter>Core\Entity\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\EntityHelpers.hpp">
+      <Filter>Core\Entity\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EntityController.hpp">
+      <Filter>Core\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EntityControllerSystem.hpp">
+      <Filter>Core\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\EntityControllerSystemFwd.hpp">
+      <Filter>Core\Entity\detail</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
