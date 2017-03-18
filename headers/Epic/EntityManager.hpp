@@ -54,11 +54,7 @@ public:
 
 	~EntityManager() noexcept
 	{
-		for (auto& pEntity : m_Entities)
-			OnEntityDestroyed(pEntity.get());
-
-		m_NameEntityMap.clear();
-		m_Entities.clear();
+		Clear();
 	}
 
 private:
