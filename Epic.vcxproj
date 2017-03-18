@@ -47,13 +47,13 @@
     <ClInclude Include="src\detail\GLFW.hpp" />
     <ClInclude Include="src\detail\GLFWInclude.hpp" />
     <ClInclude Include="src\detail\ReadConfig.hpp" />
+    <ClInclude Include="src\detail\StateSystemFwd.hpp" />
     <ClInclude Include="src\detail\VertexColor.hpp" />
     <ClInclude Include="src\detail\VertexNormal.hpp" />
     <ClInclude Include="src\detail\VertexPosition.hpp" />
     <ClInclude Include="src\detail\VertexTexture.hpp" />
     <ClInclude Include="src\detail\WindowTypes.hpp" />
     <ClInclude Include="src\DeviceResolver.hpp" />
-    <ClInclude Include="src\ECS.hpp" />
     <ClInclude Include="src\Entity.hpp" />
     <ClInclude Include="src\EntityController.hpp" />
     <ClInclude Include="src\EntityControllerSystem.hpp" />
@@ -134,6 +134,9 @@
     <ClInclude Include="src\Singleton.hpp" />
     <ClInclude Include="src\Sound.hpp" />
     <ClInclude Include="src\Specs.hpp" />
+    <ClInclude Include="src\State.hpp" />
+    <ClInclude Include="src\StateSystem.hpp" />
+    <ClInclude Include="src\StateTypes.hpp" />
     <ClInclude Include="src\STL\Deque.hpp" />
     <ClInclude Include="src\STL\Allocator.hpp" />
     <ClInclude Include="src\STL\ForwardList.hpp" />
