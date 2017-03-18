@@ -91,10 +91,17 @@ public:
 	template<class Controller, class... Args>
 	Controller* CreateController(Args&&... args) noexcept
 	{
-		m_Controllers.emplace_back(
-			Epic::MakeImpl<Epic::EntityController, Controller>(
-				m_pEntityManager, std::forward<Args>(args)...));
-		
+		auto pController = Epic::MakeImpl<Epic::EntityController, Controller>
+			(std::forward<Args>(args)...);
+
+		pController->m_pEntityManager = m_pEntityManager;
+		m_pEntityManager->EntityCreated.Connect(pController.get(), 
+			&Epic::EntityController::OnEntityCreated);
+		m_pEntityManager->EntityDestroyed.Connect(pController.get(), 
+			&Epic::EntityController::OnEntityDestroyed);
+
+		m_Controllers.emplace_back(std::move(pController));
+
 		return static_cast<Controller*>(m_Controllers.back().get());
 	}
 
@@ -102,11 +109,22 @@ public:
 	{
 		auto it = _GetControllerByPtr(pController);
 		if (it != std::end(m_Controllers))
+		{
+			m_pEntityManager->EntityDestroyed.DisconnectAll(pController);
+			m_pEntityManager->EntityCreated.DisconnectAll(pController);
+
 			m_Controllers.erase(it);
+		}
 	}
 
 	void DestroyAllControllers() noexcept
 	{
+		for (auto& pController : m_Controllers)
+		{
+			m_pEntityManager->EntityDestroyed.DisconnectAll(pController.get());
+			m_pEntityManager->EntityCreated.DisconnectAll(pController.get());
+		}
+
 		m_Controllers.clear();
 	}
 };

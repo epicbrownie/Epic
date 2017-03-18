@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include <Epic/detail/EntityControllerSystemFwd.hpp>
 #include <Epic/EntityManager.hpp>
 #include <Epic/Event.hpp>
 #include <cassert>
@@ -37,23 +38,15 @@ public:
 	using Type = Epic::EntityController;
 
 private:
+	friend class Epic::EntityControllerSystem;
+
+private:
+	// This member will be set by EntityControllerSystem owner
 	Epic::EntityManager* m_pEntityManager;
 	
 public:
-	explicit EntityController(Epic::EntityManager* pEntityManager) noexcept
-		: m_pEntityManager{ pEntityManager }
-	{
-		assert(m_pEntityManager);
-
-		m_pEntityManager->EntityCreated.Connect(this, &Type::OnEntityCreated);
-		m_pEntityManager->EntityDestroyed.Connect(this, &Type::OnEntityDestroyed);
-	}
-
-	virtual ~EntityController()
-	{
-		m_pEntityManager->EntityCreated.DisconnectAll(this);
-		m_pEntityManager->EntityDestroyed.DisconnectAll(this);
-	}
+	EntityController() noexcept { }
+	virtual ~EntityController() { }
 
 public:
 	constexpr Epic::EntityManager* GetEntityManager() const noexcept
