@@ -36,7 +36,7 @@ public:
 	using Type = Epic::InputDeviceManager;
 
 private:
-	using DevicePtr = Epic::ImplPtr<Epic::InputDevice>;
+	using DevicePtr = Epic::UniquePtr<Epic::InputDevice>;
 	using DeviceList = Epic::STLVector<DevicePtr>;
 	
 private:

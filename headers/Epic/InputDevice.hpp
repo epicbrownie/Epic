@@ -37,7 +37,7 @@ public:
 	using Type = Epic::InputDevice;
 	
 public:
-	using InputResolverPtr = Epic::ImplPtr<Epic::InputResolver>;
+	using InputResolverPtr = Epic::UniquePtr<Epic::InputResolver>;
 
 private:
 	Epic::StringHash m_DeviceName;

@@ -46,7 +46,7 @@ public:
 	constexpr static Epic::StringHash NoEntityName = Epic::Hash("");
 
 private:
-	using ComponentPtr = Epic::ImplPtr<Epic::detail::EntityComponentContainerBase>;
+	using ComponentPtr = Epic::UniquePtr<Epic::detail::EntityComponentContainerBase>;
 	using ComponentMap = Epic::STLUnorderedMap<Epic::detail::EntityComponentID, ComponentPtr>;
 
 private:

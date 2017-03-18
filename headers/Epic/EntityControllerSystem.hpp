@@ -35,7 +35,7 @@ public:
 	using Type = Epic::EntityControllerSystem;
 
 private:
-	using ControllerPtr = Epic::ImplPtr<Epic::EntityController>;
+	using ControllerPtr = Epic::UniquePtr<Epic::EntityController>;
 	using ControllerList = Epic::STLVector<ControllerPtr>;
 	
 private:

@@ -77,6 +77,9 @@
     <Filter Include="Core\Entity\detail">
       <UniqueIdentifier>{cd97c1d4-6fdf-4844-af20-d1cc70b3cc08}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core\State">
+      <UniqueIdentifier>{9befd8a9-c4e2-40ca-87aa-eb9331d4ffdf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Singleton.hpp">
