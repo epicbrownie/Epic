@@ -33,7 +33,7 @@ namespace Epic
 	template<class CRTP, bool Sync = false, template<class> class Store = AutoListDefaultStore>
 	class AutoList;
 
-	struct AutoListIgnoreT { };
+	enum AutoListIgnoreT { AutoListIgnore };
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -248,12 +248,3 @@ public:
 // AutoListVectorStore Static Initializers
 template<class T>
 decltype(Epic::AutoListVectorStore<T>::s_Data) Epic::AutoListVectorStore<T>::s_Data;
-
-//////////////////////////////////////////////////////////////////////////////
-
-namespace Epic
-{
-	// Pass this to the constructor of AutoList to instruct it to NOT add the 
-	// current instance to the AutoList
-	AutoListIgnoreT AutoListIgnore;
-}

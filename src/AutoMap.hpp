@@ -29,7 +29,7 @@ namespace Epic
 	template<class CRTP, class Key = Epic::StringHash, bool Sync = false, template<class, class> class Store = AutoMapDefaultStore>
 	class AutoMap;
 
-	struct AutoMapIgnoreT{ };
+	enum AutoMapIgnoreT { AutoMapIgnore };
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -154,12 +154,3 @@ public:
 // AutoMapDefaultStore Static Initializers
 template<class K, class V>
 decltype(Epic::AutoMapDefaultStore<K, V>::s_Data) Epic::AutoMapDefaultStore<K, V>::s_Data;
-
-//////////////////////////////////////////////////////////////////////////////
-
-namespace Epic
-{
-	// Pass this to the constructor of AutoMap to instruct it to NOT add the 
-	// current instance to the AutoMap
-	AutoMapIgnoreT AutoMapIgnore;
-}
