@@ -70,6 +70,10 @@ public:
 	inline BasicStringHash(const std::basic_string<C, Traits, Allocator>& str) noexcept
 		: _Hash{ Epic::StringHashAlgorithm<C, A>::Hash(str.c_str()) } { }
 
+	template<class C2>
+	constexpr BasicStringHash(const BasicStringHash<C2, A>& other) noexcept
+		: _Hash{ other.Value() } { }
+
 public:
 	constexpr operator HashType (void) const noexcept
 	{
@@ -96,6 +100,13 @@ public:
 		return *this;
 	}
 
+	template<class C2>
+	inline Type& operator = (const BasicStringHash<C2, A>& other) noexcept
+	{
+		_Hash = other.Value();
+		return *this;
+	}
+
 public:
 	constexpr HashType Value() const noexcept
 	{
@@ -104,7 +115,8 @@ public:
 
 public:
 	#define CREATE_COMPARISON_OPERATOR(Op)	\
-		constexpr bool operator Op (const Epic::BasicStringHash<C, A>& rhs) const noexcept	\
+		template<class C2>																		\
+		constexpr bool operator Op (const Epic::BasicStringHash<C2, A>& rhs) const noexcept		\
 		{																						\
 			return _Hash Op rhs._Hash;															\
 		}
