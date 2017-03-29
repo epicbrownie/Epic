@@ -27,6 +27,6 @@ namespace Epic::Component
 
 //////////////////////////////////////////////////////////////////////////////
 
-MAKE_VERTEX_COMPONENT(Epic::Component::CmpNormal, Epic::Normal3f, Normal, 3);
-MAKE_VERTEX_COMPONENT(Epic::Component::CmpTangent, Epic::Normal3f, Tangent, 3);
-MAKE_VERTEX_COMPONENT(Epic::Component::CmpBitangent, Epic::Normal3f, Bitangent, 3);
+MAKE_VERTEX_COMPONENT(Epic::Component::CmpNormal, Epic::Normal3f, Normal, 3, Epic::eComponentType::Float, false);
+MAKE_VERTEX_COMPONENT(Epic::Component::CmpTangent, Epic::Normal3f, Tangent, 3, Epic::eComponentType::Float, false);
+MAKE_VERTEX_COMPONENT(Epic::Component::CmpBitangent, Epic::Normal3f, Bitangent, 3, Epic::eComponentType::Float, false);

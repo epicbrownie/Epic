@@ -28,10 +28,10 @@ namespace Epic::Component
 
 //////////////////////////////////////////////////////////////////////////////
 
-MAKE_VERTEX_COMPONENT(Epic::Component::CmpPos, Epic::Point4f, Pos, 4);
-MAKE_VERTEX_COMPONENT(Epic::Component::CmpPos2, Epic::Point4f, Pos2, 4);
-MAKE_VERTEX_COMPONENT(Epic::Component::CmpPos3, Epic::Point4f, Pos3, 4);
-MAKE_VERTEX_COMPONENT(Epic::Component::CmpPos4, Epic::Point4f, Pos4, 4);
+MAKE_VERTEX_COMPONENT(Epic::Component::CmpPos, Epic::Point3f, Position, 3, Epic::eComponentType::Float, false);
+MAKE_VERTEX_COMPONENT(Epic::Component::CmpPos2, Epic::Point3f, Position2, 3, Epic::eComponentType::Float, false);
+MAKE_VERTEX_COMPONENT(Epic::Component::CmpPos3, Epic::Point3f, Position3, 3, Epic::eComponentType::Float, false);
+MAKE_VERTEX_COMPONENT(Epic::Component::CmpPos4, Epic::Point3f, Position4, 3, Epic::eComponentType::Float, false);
 
 //////////////////////////////////////////////////////////////////////////////
 

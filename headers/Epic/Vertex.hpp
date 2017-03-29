@@ -52,11 +52,14 @@ struct Epic::VertexFormat
 // VertexFormatNode
 struct Epic::detail::VertexFormatNode
 {
-	const char* Name;				// The name of the component
-	const std::uintptr_t Offset;	// The byte-offset of the component
-	const size_t Components;		// The number of data components 
-									//  (eg: 3 for an xyz position component)
-	const size_t Size;				// The size (in bytes) of the component
+	const char* Semantic;					// The semantic name of the component
+	const std::uintptr_t Offset;			// The byte-offset of the component
+	const size_t Components;				// The number of data components 
+											//   (eg: 3 for an xyz position component)
+	const size_t Size;						// The size (in bytes) of the component
+	const Epic::eComponentType DataType;	// The data type for each data component
+	const bool Normalize;					// Whether or not this component should 
+											//   be normalized automatically.
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -82,9 +85,12 @@ public:
 		fmt.Stride = sizeof(Type);
 
 		IterateComponents(
-			[&](const char* name, std::uintptr_t offset, size_t dataSize, size_t components)
+			[&](const char* semantic, std::uintptr_t offset, size_t dataSize, size_t components, Epic::eComponentType cmpType, bool normalize)
 			{
-				fmt.Components.emplace_back(Epic::detail::VertexFormatNode{ name, offset, components, dataSize });
+				fmt.Components.emplace_back(Epic::detail::VertexFormatNode
+				{ 
+					semantic, offset, components, dataSize, cmpType, normalize 
+				});
 			});
 
 		return fmt;
@@ -106,10 +112,12 @@ private:
 		// for an unused array (which the optimizer is nice enough to discard)
 		char pass[] =
 		{
-			(fn(Epic::VertexComponent<ComponentTags>::GetName(),
+			(fn(Epic::VertexComponent<ComponentTags>::GetSemantic(),
 				Type::OffsetOf<Epic::VertexComponent<ComponentTags>>(),
 				sizeof(typename Epic::VertexComponent<ComponentTags>::ValueType),
-				Epic::VertexComponent<ComponentTags>::Components
+				Epic::VertexComponent<ComponentTags>::Components,
+				Epic::VertexComponent<ComponentTags>::DataType,
+				Epic::VertexComponent<ComponentTags>::Normalize
 				), '\0'
 			)...
 		};

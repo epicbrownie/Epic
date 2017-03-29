@@ -28,23 +28,23 @@ namespace Epic::Component
 
 //////////////////////////////////////////////////////////////////////////////
 
-MAKE_VERTEX_COMPONENT(Epic::Component::Cmp2DTex, Epic::TexCoord2f, Tex, 2);
-MAKE_VERTEX_COMPONENT(Epic::Component::Cmp2DTex2, Epic::TexCoord2f, Tex2, 2);
-MAKE_VERTEX_COMPONENT(Epic::Component::Cmp2DTex3, Epic::TexCoord2f, Tex3, 2);
-MAKE_VERTEX_COMPONENT(Epic::Component::Cmp2DTex4, Epic::TexCoord2f, Tex4, 2);
-MAKE_VERTEX_COMPONENT(Epic::Component::Cmp2DTex5, Epic::TexCoord2f, Tex5, 2);
-MAKE_VERTEX_COMPONENT(Epic::Component::Cmp2DTex6, Epic::TexCoord2f, Tex6, 2);
-MAKE_VERTEX_COMPONENT(Epic::Component::Cmp2DTex7, Epic::TexCoord2f, Tex7, 2);
-MAKE_VERTEX_COMPONENT(Epic::Component::Cmp2DTex8, Epic::TexCoord2f, Tex8, 2);
+MAKE_VERTEX_COMPONENT(Epic::Component::Cmp2DTex, Epic::TexCoord2f, Texture, 2, Epic::eComponentType::Float, false);
+MAKE_VERTEX_COMPONENT(Epic::Component::Cmp2DTex2, Epic::TexCoord2f, Texture2, 2, Epic::eComponentType::Float, false);
+MAKE_VERTEX_COMPONENT(Epic::Component::Cmp2DTex3, Epic::TexCoord2f, Texture3, 2, Epic::eComponentType::Float, false);
+MAKE_VERTEX_COMPONENT(Epic::Component::Cmp2DTex4, Epic::TexCoord2f, Texture4, 2, Epic::eComponentType::Float, false);
+MAKE_VERTEX_COMPONENT(Epic::Component::Cmp2DTex5, Epic::TexCoord2f, Texture5, 2, Epic::eComponentType::Float, false);
+MAKE_VERTEX_COMPONENT(Epic::Component::Cmp2DTex6, Epic::TexCoord2f, Texture6, 2, Epic::eComponentType::Float, false);
+MAKE_VERTEX_COMPONENT(Epic::Component::Cmp2DTex7, Epic::TexCoord2f, Texture7, 2, Epic::eComponentType::Float, false);
+MAKE_VERTEX_COMPONENT(Epic::Component::Cmp2DTex8, Epic::TexCoord2f, Texture8, 2, Epic::eComponentType::Float, false);
 					  
-MAKE_VERTEX_COMPONENT(Epic::Component::Cmp3DTex, Epic::TexCoord3f, Tex, 3);
-MAKE_VERTEX_COMPONENT(Epic::Component::Cmp3DTex2, Epic::TexCoord3f, Tex2, 3);
-MAKE_VERTEX_COMPONENT(Epic::Component::Cmp3DTex3, Epic::TexCoord3f, Tex3, 3);
-MAKE_VERTEX_COMPONENT(Epic::Component::Cmp3DTex4, Epic::TexCoord3f, Tex4, 3);
-MAKE_VERTEX_COMPONENT(Epic::Component::Cmp3DTex5, Epic::TexCoord3f, Tex5, 3);
-MAKE_VERTEX_COMPONENT(Epic::Component::Cmp3DTex6, Epic::TexCoord3f, Tex6, 3);
-MAKE_VERTEX_COMPONENT(Epic::Component::Cmp3DTex7, Epic::TexCoord3f, Tex7, 3);
-MAKE_VERTEX_COMPONENT(Epic::Component::Cmp3DTex8, Epic::TexCoord3f, Tex8, 3);
+MAKE_VERTEX_COMPONENT(Epic::Component::Cmp3DTex, Epic::TexCoord3f, Texture, 3, Epic::eComponentType::Float, false);
+MAKE_VERTEX_COMPONENT(Epic::Component::Cmp3DTex2, Epic::TexCoord3f, Texture2, 3, Epic::eComponentType::Float, false);
+MAKE_VERTEX_COMPONENT(Epic::Component::Cmp3DTex3, Epic::TexCoord3f, Texture3, 3, Epic::eComponentType::Float, false);
+MAKE_VERTEX_COMPONENT(Epic::Component::Cmp3DTex4, Epic::TexCoord3f, Texture4, 3, Epic::eComponentType::Float, false);
+MAKE_VERTEX_COMPONENT(Epic::Component::Cmp3DTex5, Epic::TexCoord3f, Texture5, 3, Epic::eComponentType::Float, false);
+MAKE_VERTEX_COMPONENT(Epic::Component::Cmp3DTex6, Epic::TexCoord3f, Texture6, 3, Epic::eComponentType::Float, false);
+MAKE_VERTEX_COMPONENT(Epic::Component::Cmp3DTex7, Epic::TexCoord3f, Texture7, 3, Epic::eComponentType::Float, false);
+MAKE_VERTEX_COMPONENT(Epic::Component::Cmp3DTex8, Epic::TexCoord3f, Texture8, 3, Epic::eComponentType::Float, false);
 
 //////////////////////////////////////////////////////////////////////////////
 
