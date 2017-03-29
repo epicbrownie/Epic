@@ -209,12 +209,24 @@ private:
 			return false;
 
 		// Apply post-creation context settings
-		std::cerr << "INFO: Renderer " << glGetString(GL_RENDERER) << std::endl;
-		std::cerr << "INFO: OpenGL version supported " << glGetString(GL_VERSION) << std::endl;
+		std::clog << "Renderer " << glGetString(GL_RENDERER) << std::endl;
+		std::clog << "OpenGL version supported " << glGetString(GL_VERSION) << std::endl;
+		std::clog << std::endl;
+
+		int fbw, fbh;
+		glfwGetFramebufferSize(m_pWindow, &fbw, &fbh);
+		glViewport(0, 0, fbw, fbh);
 
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		
+		glClearColor
+		(
+			m_Settings.BackgroundColor.x,
+			m_Settings.BackgroundColor.y,
+			m_Settings.BackgroundColor.z,
+			1.0f
+		);
 
 		glfwSwapInterval(m_ContextSettings.WaitForRefresh ? 1 : 0);
 
@@ -547,6 +559,13 @@ public:
 		}
 	}
 
+	void SetBackgroundColor(const float& r, const float& g, const float& b) override
+	{
+		assert(m_pWindow);
+		glClearColor(r, g, b, 1.0f);
+		OnBackgroundColorChanged();
+	}
+
 public:
 	const GLFWFramebufferSize GetFramebufferSize() const noexcept
 	{
@@ -560,6 +579,12 @@ public:
 	}
 
 public:
+	inline void Clear() noexcept
+	{
+		assert(m_pWindow);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
+
 	inline void Display() noexcept
 	{
 		assert(m_pWindow);

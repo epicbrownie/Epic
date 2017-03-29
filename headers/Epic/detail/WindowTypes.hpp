@@ -14,6 +14,7 @@
 #pragma once
 
 #include <Epic/STL/String.hpp>
+#include <Epic/Math/Vector.hpp>
 #include <cstdint>
 
 //////////////////////////////////////////////////////////////////////////////
@@ -85,7 +86,8 @@ struct Epic::WindowSettings
 		  ScrollMultiplier{ 40.0 },
 		  IsResizable{ true },
 		  IsAlwaysOnTop{ false },
-		  PreferredMonitor{ PrimaryMonitor }
+		  PreferredMonitor{ PrimaryMonitor },
+		  BackgroundColor{ 0.0f }
 	{ }
 
 	Epic::WindowPosition	WindowPosition;		// Default: OSDefaultPosition, OSDefaultPosition
@@ -98,6 +100,7 @@ struct Epic::WindowSettings
 	bool					IsResizable;		// Default: true
 	bool					IsAlwaysOnTop;		// Default: false
 	int						PreferredMonitor;	// Default: PrimaryMonitor
+	Epic::Color3f			BackgroundColor;	// Default: (0, 0, 0)
 };
 
 //////////////////////////////////////////////////////////////////////////////	
