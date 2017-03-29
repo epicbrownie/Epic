@@ -464,9 +464,6 @@
     <ClInclude Include="src\AudioBus.hpp">
       <Filter>Core\Audio</Filter>
     </ClInclude>
-    <ClInclude Include="src\detail\GLFWInclude.hpp">
-      <Filter>Core\Window/Context\detail</Filter>
-    </ClInclude>
     <ClInclude Include="src\detail\WindowTypes.hpp">
       <Filter>Core\Window/Context\detail</Filter>
     </ClInclude>
@@ -520,6 +517,9 @@
     </ClInclude>
     <ClInclude Include="src\VertexComponent.hpp">
       <Filter>Core\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\GLFWInclude.hpp">
+      <Filter>Core\Window/Context\detail</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
