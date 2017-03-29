@@ -66,7 +66,8 @@ public:
 		return std::chrono::duration_cast<Unit>(ClockType::now() - m_Epoch);
 	}
 
-	// Get the timestamp from the last call to Update()
+	// Get the amount of time that has passed since the last call to Reset().
+	// This time is updated every time Update() is called.
 	inline Unit FrameTime() const noexcept
 	{
 		return m_FrameTime;
