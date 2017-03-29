@@ -57,6 +57,16 @@ private:
 public:
 	inline StateSystem() noexcept { }
 
+	~StateSystem()
+	{
+		while (!m_StateStack.empty())
+		{
+			m_StateStack.back()->Leave();
+			m_StateStack.pop_back();
+		}
+	}
+
+private:
 	StateSystem(const Type&) = delete;
 	Type& operator= (const Type&) = delete;
 
