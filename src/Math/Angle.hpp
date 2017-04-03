@@ -111,12 +111,12 @@ public:
 public:
 	constexpr Type operator - () const
 	{
-		return{ -m_Value };
+		return { -m_Value };
 	}
 
 public:
-#pragma region Assignment Operators
-#define CREATE_ASSIGNMENT_OPERATOR(Op)	\
+	#pragma region Assignment Operators
+	#define CREATE_ASSIGNMENT_OPERATOR(Op)	\
 																		\
 	inline Type& operator Op (const ValueType& value) noexcept			\
 	{																	\
@@ -158,12 +158,12 @@ public:
 	CREATE_ASSIGNMENT_OPERATOR(<<= );
 	CREATE_ASSIGNMENT_OPERATOR(>>= );
 
-#undef CREATE_ASSIGNMENT_OPERATOR
-#pragma endregion
+	#undef CREATE_ASSIGNMENT_OPERATOR
+	#pragma endregion
 
 public:
-#pragma region Arithmetic Operators
-#define CREATE_ARITHMETIC_OPERATOR(Op) 	\
+	#pragma region Arithmetic Operators
+	#define CREATE_ARITHMETIC_OPERATOR(Op) 	\
 																						\
 	inline Type operator Op (const ValueType& value) const noexcept						\
 	{																					\
@@ -205,22 +205,22 @@ public:
 	CREATE_ARITHMETIC_OPERATOR(+);
 	CREATE_ARITHMETIC_OPERATOR(-);
 	CREATE_ARITHMETIC_OPERATOR(*);
-	CREATE_ARITHMETIC_OPERATOR(/ );
+	CREATE_ARITHMETIC_OPERATOR(/);
 
 	// The following arithmetic operators are only defined for integral types
-	CREATE_ARITHMETIC_OPERATOR(| );
+	CREATE_ARITHMETIC_OPERATOR(|);
 	CREATE_ARITHMETIC_OPERATOR(&);
 	CREATE_ARITHMETIC_OPERATOR(^);
 	CREATE_ARITHMETIC_OPERATOR(%);
-	CREATE_ARITHMETIC_OPERATOR(<< );
-	CREATE_ARITHMETIC_OPERATOR(>> );
+	CREATE_ARITHMETIC_OPERATOR(<<);
+	CREATE_ARITHMETIC_OPERATOR(>>);
 
-#undef CREATE_ARITHMETIC_OPERATOR
-#pragma endregion
+	#undef CREATE_ARITHMETIC_OPERATOR
+	#pragma endregion
 
 public:
-#pragma region Comparison Operators
-#define CREATE_COMPARISON_OPERATOR(Op)	\
+	#pragma region Comparison Operators
+	#define CREATE_COMPARISON_OPERATOR(Op)	\
 																		\
 	constexpr bool operator Op (const ValueType& value) const noexcept	\
 	{																	\
@@ -238,15 +238,15 @@ public:
 		return m_Value Op value.Value();								\
 	}
 
-	CREATE_COMPARISON_OPERATOR(<);
+	CREATE_COMPARISON_OPERATOR(< );
 	CREATE_COMPARISON_OPERATOR(<= );
-	CREATE_COMPARISON_OPERATOR(>);
+	CREATE_COMPARISON_OPERATOR(> );
 	CREATE_COMPARISON_OPERATOR(>= );
 	CREATE_COMPARISON_OPERATOR(== );
 	CREATE_COMPARISON_OPERATOR(!= );
-
-#undef CREATE_COMPARISON_OPERATOR
-#pragma endregion
+	
+	#undef CREATE_COMPARISON_OPERATOR
+	#pragma endregion
 
 public:
 	static const Radian Zero;
@@ -256,7 +256,7 @@ public:
 	static const Radian Circle;
 };
 
-template<class T>
+template<class T> 
 decltype(Epic::Radian<T>::Zero) Epic::Radian<T>::Zero(T(0));
 
 template<class T>
@@ -266,7 +266,7 @@ template<class T>
 decltype(Epic::Radian<T>::HalfCircle) Epic::Radian<T>::HalfCircle(Epic::Pi<T>);
 
 template<class T>
-decltype(Epic::Radian<T>::ThreeQuarterCircle) Epic::Radian<T>::ThreeQuarterCircle(Epic::Pi<T> +Epic::HalfPi<T>);
+decltype(Epic::Radian<T>::ThreeQuarterCircle) Epic::Radian<T>::ThreeQuarterCircle(Epic::Pi<T> + Epic::HalfPi<T>);
 
 template<class T>
 decltype(Epic::Radian<T>::Circle) Epic::Radian<T>::Circle(Epic::TwoPi<T>);
@@ -331,12 +331,12 @@ public:
 public:
 	constexpr Type operator - () const
 	{
-		return{ -m_Value };
+		return { -m_Value };
 	}
 
 public:
-#pragma region Assignment Operators
-#define CREATE_ASSIGNMENT_OPERATOR(Op)	\
+	#pragma region Assignment Operators
+	#define CREATE_ASSIGNMENT_OPERATOR(Op)	\
 																		\
 	Type& operator Op (const ValueType& value) noexcept					\
 	{																	\
@@ -378,12 +378,12 @@ public:
 	CREATE_ASSIGNMENT_OPERATOR(<<= );
 	CREATE_ASSIGNMENT_OPERATOR(>>= );
 
-#undef CREATE_ASSIGNMENT_OPERATOR
-#pragma endregion
+	#undef CREATE_ASSIGNMENT_OPERATOR
+	#pragma endregion
 
 public:
-#pragma region Arithmetic Operators
-#define CREATE_ARITHMETIC_OPERATOR(Op) 	\
+	#pragma region Arithmetic Operators
+	#define CREATE_ARITHMETIC_OPERATOR(Op) 	\
 																						\
 	inline Type operator Op (const ValueType& value) const noexcept						\
 	{																					\
@@ -425,22 +425,22 @@ public:
 	CREATE_ARITHMETIC_OPERATOR(+);
 	CREATE_ARITHMETIC_OPERATOR(-);
 	CREATE_ARITHMETIC_OPERATOR(*);
-	CREATE_ARITHMETIC_OPERATOR(/ );
+	CREATE_ARITHMETIC_OPERATOR(/);
 
 	// The following arithmetic operators are only defined for integral types
-	CREATE_ARITHMETIC_OPERATOR(| );
+	CREATE_ARITHMETIC_OPERATOR(|);
 	CREATE_ARITHMETIC_OPERATOR(&);
 	CREATE_ARITHMETIC_OPERATOR(^);
 	CREATE_ARITHMETIC_OPERATOR(%);
-	CREATE_ARITHMETIC_OPERATOR(<< );
-	CREATE_ARITHMETIC_OPERATOR(>> );
+	CREATE_ARITHMETIC_OPERATOR(<<);
+	CREATE_ARITHMETIC_OPERATOR(>>);
 
-#undef CREATE_ARITHMETIC_OPERATOR
-#pragma endregion
+	#undef CREATE_ARITHMETIC_OPERATOR
+	#pragma endregion
 
 public:
-#pragma region Comparison Operators
-#define CREATE_COMPARISON_OPERATOR(Op)	\
+	#pragma region Comparison Operators
+	#define CREATE_COMPARISON_OPERATOR(Op)	\
 																				\
 	constexpr bool operator Op (const ValueType& value) const noexcept			\
 	{																			\
@@ -458,15 +458,15 @@ public:
 		return m_Value Op value.Value();										\
 	}
 
-	CREATE_COMPARISON_OPERATOR(<);
+	CREATE_COMPARISON_OPERATOR(< );
 	CREATE_COMPARISON_OPERATOR(<= );
-	CREATE_COMPARISON_OPERATOR(>);
+	CREATE_COMPARISON_OPERATOR(> );
 	CREATE_COMPARISON_OPERATOR(>= );
 	CREATE_COMPARISON_OPERATOR(== );
 	CREATE_COMPARISON_OPERATOR(!= );
-
-#undef CREATE_COMPARISON_OPERATOR
-#pragma endregion
+	
+	#undef CREATE_COMPARISON_OPERATOR
+	#pragma endregion
 
 public:
 	static const Degree Zero;
@@ -556,7 +556,7 @@ namespace Epic
 		{
 			return{ float(value) };
 		}
-
+		
 		constexpr Epic::DegreeF operator "" _deg(long double value)
 		{
 			return{ float(value) };
