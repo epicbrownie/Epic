@@ -32,6 +32,10 @@ public:
 	using Type = Epic::Matrix<T, S>;
 
 public:
+	template<class, size_t>
+	friend class Epic::Matrix;
+
+public:
 	using ValueType = typename Base::ValueType;
 	constexpr static size_t Size = Base::Size;
 
@@ -87,27 +91,17 @@ public:
 	}
 
 	// Constructs a matrix from a list of rows.
-	// Unspecified rows are left default initialized.
-	inline Matrix(std::initializer_list<RowType> rows) noexcept
+	inline Matrix(const RowType(&rows)[Size]) noexcept
 	{
-		std::copy
-		(
-			std::begin(rows),
-			std::next(std::begin(rows), std::min(rows.size(), RowCount)),
-			std::begin(Rows)
-		);
+		ForEach<RowCount>([&](size_t n) { Rows[n] = rows[n]; });
 	}
 
 	// Constructs a matrix from a list of values.
 	// Unspecified values are left default initialized.
-	inline Matrix(std::initializer_list<ValueType> values) noexcept
+	template<class U, size_t Sz>
+	inline Matrix(const U(&values)[Sz]) noexcept
 	{
-		std::copy
-		(
-			std::begin(values),
-			std::next(std::begin(values), std::min(values.size(), Size)),
-			std::begin(Values)
-		);
+		ForEach<Sz>([&](size_t n) { Values[n] = values[n]; });
 	}
 
 	// Constructs a matrix whose values are all set to a value
@@ -174,7 +168,7 @@ public:
 	// Constructs a Z-axis rotation matrix
 	template<typename EnabledFor2x2OrGreater = std::enable_if_t<(S >= 2)>>
 	inline Matrix(const ZRotationTag&, const Radian<T>& psi) noexcept
-		: Matrix(IdentityMatrix)
+		: Matrix(Identity)
 	{
 		const T sinx = psi.Sin();
 		const T cosx = psi.Cos();
@@ -202,7 +196,7 @@ public:
 	// Constructs a shear matrix from a shear amount and the target row/column coordinates
 	template<typename EnabledFor2x2OrGreater = std::enable_if_t<(S >= 2)>>
 	inline Matrix(const ShearTag&, const T shear, const size_t row, const size_t column) noexcept
-		: Matrix(IdentityMatrix)
+		: Matrix(Identity)
 	{
 		assert(row >= 0 && row < RowCount);
 		assert(column >= 0 && column < RowType::Size);
@@ -278,7 +272,7 @@ public:
 	// Constructs a homogeneous orthographic matrix from boundary values ([near, far] preset to [-1, 1])
 	template<typename EnabledFor4x4 = std::enable_if_t<(S == 4)>>
 	inline Matrix(const Ortho2DTag&, const T left, const T right, const T top, const T bottom) noexcept
-		: Matrix(OrthoMatrix, left, right, top, bottom, T(-1), T(1))
+		: Matrix(Ortho, left, right, top, bottom, T(-1), T(1))
 	{ }
 
 	// Constructs a homogeneous projective picking matrix from a window coordinate, picking region, and viewport boundaries
@@ -286,7 +280,7 @@ public:
 	inline Matrix(const PickingTag&, 
 				  const T pickx, const T picky, const T pickw, const T pickh, 
 				  const T vpX, const T vpY, const T vpW, const T vpH) noexcept
-		: Matrix(IdentityMatrix)
+		: Matrix(Identity)
 	{
 		assert(pickw > T(0));
 		assert(pickh > T(0));
@@ -347,27 +341,21 @@ public:
 	}
 
 	// Retrieves an iterator to the first row
-	inline decltype(std::begin(Rows)) begin() noexcept
+	inline decltype(Rows.begin()) begin() noexcept
 	{
-		return std::begin(Rows);
+		return Rows.begin();
 	}
 
 	// Retrieves an iterator to the first row
-	constexpr decltype(std::begin(Rows)) begin() const noexcept
+	constexpr decltype(Rows.begin()) begin() const noexcept
 	{
-		return std::begin(Rows);
+		return Rows.begin();
 	}
 
 	// Retrieves an iterator to one past the last row
-	inline decltype(std::end(Rows)) end() noexcept
+	constexpr decltype(Rows.end()) end() const noexcept
 	{
-		return std::end(Rows);
-	}
-
-	// Retrieves an iterator to one past the last row
-	constexpr decltype(std::end(Rows)) end() const noexcept
-	{
-		return std::end(Rows);
+		return Rows.end();
 	}
 
 	// Retrieves the number of rows
@@ -377,15 +365,15 @@ public:
 	}
 
 	// Retrieves a pointer to the underlying row data
-	inline decltype(std::data(Rows)) data() noexcept
+	inline decltype(Rows.data()) data() noexcept
 	{
-		return std::data(Rows);
+		return Rows.data();
 	}
 
 	// Retrieves a pointer to the underlying row data
-	constexpr decltype(std::data(Rows)) data() const noexcept
+	constexpr decltype(Rows.data()) data() const noexcept
 	{
-		return std::data(Rows);
+		return Rows.data();
 	}
 
 	#pragma endregion
@@ -585,14 +573,14 @@ public:
 				const Normal3<T>& up = { T(0), T(1), T(0) }) noexcept
 	{
 		const auto zaxis = Vector3<T>::SafeNormalOf(target - eye);
-		const auto xaxis = Vector3<T>::SafeNormalOf(up.Cross(zaxis));
-		const auto yaxis = zaxis.Cross(xaxis);
+		const auto xaxis = Vector3<T>::SafeNormalOf(zaxis.Cross(up));
+		const auto yaxis = xaxis.Cross(zaxis);
 		const auto z = T(0);
 
-		Rows[0].Reset(xaxis.x, yaxis.x, zaxis.x, z);
-		Rows[1].Reset(xaxis.y, yaxis.y, zaxis.y, z);
-		Rows[2].Reset(xaxis.z, yaxis.z, zaxis.z, z);
-		Rows[3].Reset(-xaxis.Dot(eye), -yaxis.Dot(eye), -zaxis.Dot(eye), T(1));
+		Rows[0].Reset(xaxis.x, yaxis.x, -zaxis.x, z);
+		Rows[1].Reset(xaxis.y, yaxis.y, -zaxis.y, z);
+		Rows[2].Reset(xaxis.z, yaxis.z, -zaxis.z, z);
+		Rows[3].Reset(-xaxis.Dot(eye), -yaxis.Dot(eye), zaxis.Dot(eye), T(1));
 
 		return *this;
 	}
@@ -620,18 +608,12 @@ public:
 	// Multiplies this matrix and 'mat' together. (M' = M * m)
 	Type& Compose(const Type& mat) noexcept
 	{
-		Type result;
-		
-		ForEach<RowCount>([&](size_t r) 
-		{
-			for (size_t c = 0; c < RowType::Size; ++c)
-			{
-				const size_t vi = (r * RowType::Size) + c;
-				result.Values[vi] = T(0);
+		Type result = Epic::Zero;
 
-				for (size_t v = 0; v < RowType::Size; ++v)
-					result.Values[vi] += Values[(r * RowType::Size) + v] * mat.Values[(v * RowType::Size) + c];
-			}
+		ForEach<RowCount>([&](size_t r)
+		{
+			for (size_t j = 0; j < RowType::Size; ++j)
+				result[r] += Rows[j] * mat.Rows[r][j];
 		});
 
 		return (*this = result);
@@ -1001,14 +983,12 @@ public:
 		return *this;																		\
 	}																						\
 																							\
-	inline Type& operator Op (std::initializer_list<T> values) noexcept						\
+	template<class U>																		\
+	inline Type& operator Op (const U(&values)[Size]) noexcept								\
 	{																						\
-		auto it = std::begin(values);														\
-																							\
 		ForEach<Size>([&](size_t index)														\
 		{																					\
-			if (it != std::end(values))														\
-				Values[index] Op *it++;														\
+			Values[index] Op values[index];													\
 		});																					\
 																							\
 		return *this;																		\
@@ -1090,7 +1070,8 @@ public:
 		return result;																				\
 	}																								\
 																									\
-	inline Type operator Op (std::initializer_list<T> values) const	noexcept						\
+	template<class U>																				\
+	inline Type operator Op (const U(&values)[Size]) const	noexcept								\
 	{																								\
 		Type result{ *this };																		\
 		result Op= values;																			\
@@ -1184,13 +1165,31 @@ private:
 	}
 
 	template<class Val>
-	inline void PlaceAt(size_t offset, Val&& value) noexcept
+	inline void PlaceAt(size_t offset, Val& value) noexcept
 	{
 		Values[offset] = value;
 	}
 
+	template<class Val>
+	inline void PlaceAt(size_t offset, const Val& value) noexcept
+	{
+		Values[offset] = value;
+	}
+
+	template<class Val>
+	inline void PlaceAt(size_t offset, Val&& value) noexcept
+	{
+		Values[offset] = std::move(value);
+	}
+
 	template<class U, size_t Sz>
 	inline void PlaceAt(size_t offset, Vector<U, Sz>& value) noexcept
+	{
+		ForEach<Sz>([&](size_t n) { Values[offset++] = value[n]; });
+	}
+
+	template<class U, size_t Sz>
+	inline void PlaceAt(size_t offset, const Vector<U, Sz>& value) noexcept
 	{
 		ForEach<Sz>([&](size_t n) { Values[offset++] = value[n]; });
 	}
@@ -1208,6 +1207,12 @@ private:
 	}
 
 	template<class VectorT, class TArray, size_t... Is>
+	inline void PlaceAt(size_t offset, const VectorSwizzler<VectorT, TArray, Is...>& value) noexcept
+	{
+		PlaceAt(offset, value.ToVector());
+	}
+
+	template<class VectorT, class TArray, size_t... Is>
 	inline void PlaceAt(size_t offset, VectorSwizzler<VectorT, TArray, Is...>&& value) noexcept
 	{
 		PlaceAt(offset, value.ToVector());
@@ -1220,7 +1225,7 @@ private:
 	}
 
 	template<class U, size_t Sz>
-	void inline PlaceAt(size_t offset, std::array<U, Sz>& value) noexcept
+	void inline PlaceAt(size_t offset, const std::array<U, Sz>& value) noexcept
 	{
 		ForEach<Sz>([&](size_t n) { Values[offset++] = value[n]; });
 	}
