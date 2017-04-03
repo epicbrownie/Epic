@@ -37,6 +37,10 @@ public:
 	using Type = Epic::Vector<T, S>;
 
 public:
+	template<class, size_t>
+	friend class Epic::Vector;
+
+public:
 	using ValueType = T;
 	constexpr static size_t Size = S;
 
@@ -63,15 +67,10 @@ public:
 	}
 
 	// Constructs a vector from a list of values.
-	// Unspecified values are left default initialized.
-	inline Vector(std::initializer_list<T> values) noexcept
+	template<class U>
+	inline Vector(const U(&values)[Size]) noexcept
 	{
-		std::copy
-		(
-			std::begin(values),
-			std::next(std::begin(values), std::min(values.size(), Size)),
-			std::begin(Values)
-		);
+		ForEach<Size>([&](size_t n) { Values[n] = values[n]; });
 	}
 
 	// Constructs a vector whose values are all set to a value
@@ -145,27 +144,21 @@ public:
 	}
 
 	// Retrieves an iterator to the first element
-	inline decltype(std::begin(Values)) begin() noexcept
+	inline decltype(Values.begin()) begin() noexcept
 	{
-		return std::begin(Values);
+		return Values.begin();
 	}
 
 	// Retrieves an iterator to the first element
-	constexpr decltype(std::begin(Values)) begin() const noexcept
+	constexpr decltype(Values.begin()) begin() const noexcept
 	{
-		return std::begin(Values);
+		return Values.begin();
 	}
 
 	// Retrieves an iterator to one past the last element
-	inline decltype(std::end(Values)) end() noexcept
+	constexpr decltype(Values.end()) end() const noexcept
 	{
-		return std::end(Values);
-	}
-
-	// Retrieves an iterator to one past the last element
-	constexpr decltype(std::end(Values)) end() const noexcept
-	{
-		return std::end(Values);
+		return Values.end();
 	}
 
 	// Retrieves the number of elements
@@ -175,15 +168,15 @@ public:
 	}
 	
 	// Retrieves a pointer to the underlying element data
-	inline decltype(std::data(Values)) data() noexcept
+	inline T* data() noexcept
 	{
-		return std::data(Values);
+		return Values.data();
 	}
 
 	// Retrieves a pointer to the underlying element data
-	constexpr decltype(std::data(Values)) data() const noexcept
+	constexpr const T* data() const noexcept
 	{
-		return std::data(Values);
+		return Values.data();
 	}
 
 	#pragma endregion
@@ -409,16 +402,10 @@ public:
 
 	#define CREATE_ASSIGNMENT_OPERATOR(Op)	\
 																							\
-	inline Type& operator Op (std::initializer_list<T> values) noexcept						\
+	template<class U>																		\
+	inline Type& operator Op (const U(&values)[Size]) noexcept								\
 	{																						\
-		auto it = std::begin(values);														\
-																							\
-		ForEach<Size>([&](size_t index)														\
-		{																					\
-			if (it != std::end(values))														\
-				Values[index] Op *it++;														\
-		});																					\
-																							\
+		ForEach<Size>([&](size_t index) { Values[index] Op values[index]; });				\
 		return *this;																		\
 	}																						\
 																							\
@@ -484,7 +471,8 @@ public:
 
 	#define CREATE_ARITHMETIC_OPERATOR(Op) 	\
 																									\
-	inline Type operator Op (std::initializer_list<T> values) const	noexcept						\
+	template<class U>																				\
+	inline Type operator Op (const U(&values)[Size]) const	noexcept								\
 	{																								\
 		Type result{ *this };																		\
 		result Op= values;																			\
@@ -582,13 +570,31 @@ private:
 	}
 
 	template<class Val>
-	inline void PlaceAt(size_t offset, Val&& value) noexcept
+	inline void PlaceAt(size_t offset, Val& value) noexcept
 	{
 		Values[offset] = value;
 	}
 
+	template<class Val>
+	inline void PlaceAt(size_t offset, const Val& value) noexcept
+	{
+		Values[offset] = value;
+	}
+
+	template<class Val>
+	inline void PlaceAt(size_t offset, Val&& value) noexcept
+	{
+		Values[offset] = std::move(value);
+	}
+
 	template<class U, size_t Sz>
 	inline void PlaceAt(size_t offset, Vector<U, Sz>& value) noexcept
+	{
+		ForEach<Sz>([&](size_t n) { Values[offset++] = value[n]; });
+	}
+
+	template<class U, size_t Sz>
+	inline void PlaceAt(size_t offset, const Vector<U, Sz>& value) noexcept
 	{
 		ForEach<Sz>([&](size_t n) { Values[offset++] = value[n]; });
 	}
@@ -606,6 +612,12 @@ private:
 	}
 
 	template<class VectorT, class TArray, size_t... Is>
+	inline void PlaceAt(size_t offset, const VectorSwizzler<VectorT, TArray, Is...>& value) noexcept
+	{
+		PlaceAt(offset, value.ToVector());
+	}
+
+	template<class VectorT, class TArray, size_t... Is>
 	inline void PlaceAt(size_t offset, VectorSwizzler<VectorT, TArray, Is...>&& value) noexcept
 	{
 		PlaceAt(offset, value.ToVector());
@@ -618,7 +630,7 @@ private:
 	}
 
 	template<class U, size_t Sz>
-	void inline PlaceAt(size_t offset, std::array<U, Sz>& value) noexcept
+	void inline PlaceAt(size_t offset, const std::array<U, Sz>& value) noexcept
 	{
 		ForEach<Sz>([&](size_t n) { Values[offset++] = value[n]; });
 	}
