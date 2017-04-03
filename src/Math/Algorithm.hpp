@@ -366,66 +366,30 @@ namespace Epic
 		}
 
 		// Calculate the weighted average value of Vector 'vec'
-		template<class T, size_t SizeV, class U, size_t SizeW, 
-				 typename = std::enable_if_t<(SizeV > 0)>>
-		inline auto WeightedMean(const Vector<T, SizeV>& vec, const U(&weights)[SizeW]) noexcept
+		template<class T, size_t Size, class U, 
+				 typename = std::enable_if_t<(Size > 0)>>
+		inline auto WeightedMean(const Vector<T, Size>& vec, const U(&weights)[Size]) noexcept
 		{
 			T result = T(0);
 			T tweights = T(0);
 			
-			Epic::TMP::ForEach2<
-				Epic::TMP::MakeSequence<size_t, SizeV>,
-				Epic::TMP::MakeSequence<size_t, SizeW>>
-			::Apply([&](size_t nv, size_t nw)
-					{
-						result += vec[nv] * weights[nw];
-						tweights += weights[nw];
-					});
-
-			assert(tweights != T(0));
-
-			return result / tweights;
-		}
-
-		// Calculate the weighted average value of Vector 'vec'
-		template<class T, size_t Size, class U, 
-				 typename = std::enable_if_t<(Size > 0)>>
-		inline auto WeightedMean(const Vector<T, Size>& vec, std::initializer_list<U> weights) noexcept
-		{
-			T result = T(0);
-			T tweights = T(0);
-			auto it = std::begin(weights);
-
 			Epic::TMP::ForEach<Epic::TMP::MakeSequence<size_t, Size>>
 				::Apply([&](size_t n)
-						{
-							if (it != std::end(weights))
-							{
-								result += vec[n] * (*it);
-								tweights += (*it);
-								++it;
-							}
-						});
+				{
+					result += vec[n] * weights[n];
+					tweights += weights[n];
+				});
 
 			assert(tweights != T(0));
 
 			return result / tweights;
-		}
-
-		// Calculate the weighted average value of VectorSwizzler 'vec'
-		template<class VectorType, class TArray, size_t... Indices, class U, size_t Size, 
-				 typename = std::enable_if_t<(sizeof...(Indices) > 0)>>
-		inline auto WeightedMean(const VectorSwizzler<VectorType, TArray, Indices...>& vec, 
-								 const U(&weights)[Size]) noexcept
-		{
-			return WeightedMean(vec.ToVector(), weights);
 		}
 
 		// Calculate the weighted average value of VectorSwizzler 'vec'
 		template<class VectorType, class TArray, size_t... Indices, class U, 
 				 typename = std::enable_if_t<(sizeof...(Indices) > 0)>>
 		inline auto WeightedMean(const VectorSwizzler<VectorType, TArray, Indices...>& vec, 
-								 std::initializer_list<U> weights) noexcept
+								 const U(&weights)[sizeof...(Indices)]) noexcept
 		{
 			return WeightedMean(vec.ToVector(), weights);
 		}
