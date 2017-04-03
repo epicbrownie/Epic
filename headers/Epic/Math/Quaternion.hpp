@@ -36,6 +36,10 @@ public:
 	using Type = Epic::Quaternion<T>;
 
 public:
+	template<class U>
+	friend class Epic::Quaternion;
+
+public:
 	using ValueType = T;
 	constexpr static size_t Size = 4;
 
@@ -66,14 +70,13 @@ public:
 
 	// Constructs a quaternion from a list of values.
 	// Unspecified values are left default initialized.
-	inline Quaternion(std::initializer_list<T> values) noexcept
+	template<class U>
+	inline Quaternion(const U(&values)[4]) noexcept
 	{
-		std::copy
-		(
-			std::begin(values),
-			std::next(std::begin(values), std::min(values.size(), Size)),
-			std::begin(Values)
-		);
+		Values[0] = values[0];
+		Values[1] = values[1];
+		Values[2] = values[2];
+		Values[3] = values[3];
 	}
 	
 	// Constructs with explicit values
@@ -167,27 +170,21 @@ public:
 	}
 
 	// Retrieves an iterator to the first element
-	inline decltype(std::begin(Values)) begin() noexcept
+	inline decltype(Values.begin()) begin() noexcept
 	{
-		return std::begin(Values);
+		return Values.begin();
 	}
 
 	// Retrieves an iterator to the first element
-	constexpr decltype(std::begin(Values)) begin() const noexcept
+	constexpr decltype(Values.begin()) begin() const noexcept
 	{
-		return std::begin(Values);
+		return Values.begin();
 	}
 
 	// Retrieves an iterator to one past the last element
-	inline decltype(std::end(Values)) end() noexcept
+	constexpr decltype(Values.end()) end() const noexcept
 	{
-		return std::end(Values);
-	}
-
-	// Retrieves an iterator to one past the last element
-	constexpr decltype(std::end(Values)) end() const noexcept
-	{
-		return std::end(Values);
+		return Values.end();
 	}
 
 	// Retrieves the number of elements
@@ -197,15 +194,15 @@ public:
 	}
 	
 	// Retrieves a pointer to the underlying element data
-	inline decltype(std::data(Values)) data() noexcept
+	inline T* data() noexcept
 	{
-		return std::data(Values);
+		return Values.data();
 	}
 
 	// Retrieves a pointer to the underlying element data
-	constexpr decltype(std::data(Values)) data() const noexcept
+	constexpr const T* data() const noexcept
 	{
-		return std::data(Values);
+		return Values.data();
 	}
 
 	#pragma endregion
@@ -656,9 +653,10 @@ public:
 
 	#define CREATE_ASSIGNMENT_OPERATOR(Op)													\
 																							\
-	inline Type& operator Op (std::initializer_list<T> values) noexcept						\
+	template<class U>																		\
+	inline Type& operator Op (const U(&values)[Size]) noexcept								\
 	{																						\
-		for(size_t i = 0; i < std::min(values.size(), Size); ++i)							\
+		for (size_t i = 0; i < Size; ++i)													\
 			Values[i] Op values[i];															\
 																							\
 		return *this;																		\
@@ -666,7 +664,7 @@ public:
 																							\
 	inline Type& operator Op (const Type& quat) noexcept									\
 	{																						\
-		for(size_t i = 0; i < Size; ++i)													\
+		for (size_t i = 0; i < Size; ++i)													\
 			Values[i] Op quat[i];															\
 																							\
 		return *this;																		\
@@ -730,7 +728,8 @@ public:
 
 	#define CREATE_ARITHMETIC_OPERATOR(Op) 	\
 																									\
-	inline Type operator Op (std::initializer_list<T> values) const	noexcept						\
+	template<class U>																				\
+	inline Type operator Op (const U(&values)[Size]) const noexcept									\
 	{																								\
 		Type result = *this;																		\
 		result Op= values;																			\
