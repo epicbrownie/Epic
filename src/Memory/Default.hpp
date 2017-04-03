@@ -35,7 +35,9 @@ namespace Epic
 		Map,
 		Set,
 
-		StringStream, IStringStream, OStringStream
+		StringStream, IStringStream, OStringStream,
+
+		TemporaryBuffer, StorageBuffer
 	};
 }
 
