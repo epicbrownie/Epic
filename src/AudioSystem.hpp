@@ -608,7 +608,7 @@ public:
 		// Load the bank		
 		FMOD::Studio::Bank* pBank = nullptr;
 
-		auto result = m_pFMOD->loadBankMemory(pBuffer, length, FMOD_STUDIO_LOAD_MEMORY, FMOD_STUDIO_LOAD_BANK_NORMAL, &pBank);
+		auto result = m_pFMOD->loadBankMemory(pBuffer, static_cast<int>(length), FMOD_STUDIO_LOAD_MEMORY, FMOD_STUDIO_LOAD_BANK_NORMAL, &pBank);
 		if (result != FMOD_OK)
 		{
 			FMODCHECK(result);
@@ -653,7 +653,7 @@ public:
 		// Load the bank		
 		FMOD::Studio::Bank* pBank = nullptr;
 
-		auto result = m_pFMOD->loadBankMemory(pBuffer, length, FMOD_STUDIO_LOAD_MEMORY, FMOD_STUDIO_LOAD_BANK_NONBLOCKING, &pBank);
+		auto result = m_pFMOD->loadBankMemory(pBuffer, static_cast<int>(length), FMOD_STUDIO_LOAD_MEMORY, FMOD_STUDIO_LOAD_BANK_NONBLOCKING, &pBank);
 		if (result != FMOD_OK)
 		{
 			FMODCHECK(result);
