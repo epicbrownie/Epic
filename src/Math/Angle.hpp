@@ -538,11 +538,19 @@ namespace Epic
 {
 	using RadianF = Radian<float>;
 	using RadianD = Radian<double>;
+	
+	using Radianf = RadianF;
+	using Radiand = RadianD;
 
 	using DegreeF = Degree<float>;
 	using DegreeD = Degree<double>;
 	using DegreeI = Degree<int>;
 	using DegreeL = Degree<long>;
+
+	using Degreef = DegreeF;
+	using Degreed = DegreeD;
+	using Degreei = DegreeI;
+	using Degreel = DegreeL;
 }
 
 //////////////////////////////////////////////////////////////////////////////
