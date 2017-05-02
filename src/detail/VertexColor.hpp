@@ -13,29 +13,29 @@
 
 #pragma once
 
-#include <Epic/VertexComponent.hpp>
+#include <Epic/VertexAttribute.hpp>
 #include <Epic/Math/Vector.hpp>
 
 //////////////////////////////////////////////////////////////////////////////
 
-namespace Epic::Component
+namespace Epic::Attribute
 {
-	struct CmpColor;
-	struct CmpColor2;
-	struct CmpColor3;
-	struct CmpColor4;
+	struct AttrColor1;
+	struct AttrColor2;
+	struct AttrColor3;
+	struct AttrColor4;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-MAKE_VERTEX_COMPONENT(Epic::Component::CmpColor, Epic::Color4f, Color, 4, Epic::eComponentType::Float, false);
-MAKE_VERTEX_COMPONENT(Epic::Component::CmpColor2, Epic::Color4f, Color2, 4, Epic::eComponentType::Float, false);
-MAKE_VERTEX_COMPONENT(Epic::Component::CmpColor3, Epic::Color4f, Color3, 4, Epic::eComponentType::Float, false);
-MAKE_VERTEX_COMPONENT(Epic::Component::CmpColor4, Epic::Color4f, Color4, 4, Epic::eComponentType::Float, false);
+MAKE_VERTEX_ATTRIBUTE(Epic::Attribute::AttrColor1, Epic::Color4f, Color,  4, Epic::eComponentType::Float, false);
+MAKE_VERTEX_ATTRIBUTE(Epic::Attribute::AttrColor2, Epic::Color4f, Color2, 4, Epic::eComponentType::Float, false);
+MAKE_VERTEX_ATTRIBUTE(Epic::Attribute::AttrColor3, Epic::Color4f, Color3, 4, Epic::eComponentType::Float, false);
+MAKE_VERTEX_ATTRIBUTE(Epic::Attribute::AttrColor4, Epic::Color4f, Color4, 4, Epic::eComponentType::Float, false);
 
 //////////////////////////////////////////////////////////////////////////////
 
-namespace Epic::Component
+namespace Epic::Attribute
 {
-	using CmpColor1 = CmpColor;
+	using AttrColor = AttrColor1;
 }
