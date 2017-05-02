@@ -473,9 +473,6 @@
     <ClInclude Include="src\detail\EntityComponentContainer.hpp">
       <Filter>Core\Entity\detail</Filter>
     </ClInclude>
-    <ClInclude Include="src\detail\EntityComponent.hpp">
-      <Filter>Core\Entity\detail</Filter>
-    </ClInclude>
     <ClInclude Include="src\detail\EntityComponentView.hpp">
       <Filter>Core\Entity\detail</Filter>
     </ClInclude>
@@ -489,15 +486,6 @@
       <Filter>Core\Entity\detail</Filter>
     </ClInclude>
     <ClInclude Include="src\detail\EntityHelpers.hpp">
-      <Filter>Core\Entity\detail</Filter>
-    </ClInclude>
-    <ClInclude Include="src\EntityController.hpp">
-      <Filter>Core\Entity</Filter>
-    </ClInclude>
-    <ClInclude Include="src\EntityControllerSystem.hpp">
-      <Filter>Core\Entity</Filter>
-    </ClInclude>
-    <ClInclude Include="src\detail\EntityControllerSystemFwd.hpp">
       <Filter>Core\Entity\detail</Filter>
     </ClInclude>
     <ClInclude Include="src\StateSystem.hpp">
@@ -515,11 +503,23 @@
     <ClInclude Include="src\Vertex.hpp">
       <Filter>Core\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="src\VertexComponent.hpp">
-      <Filter>Core\Graphics</Filter>
-    </ClInclude>
     <ClInclude Include="src\detail\GLFWInclude.hpp">
       <Filter>Core\Window/Context\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VertexAttribute.hpp">
+      <Filter>Core\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EntityComponent.hpp">
+      <Filter>Core\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\VertexSkin.hpp">
+      <Filter>Core\Graphics\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EntitySystem.hpp">
+      <Filter>Core\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EntityController.hpp">
+      <Filter>Core\Entity</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
