@@ -64,22 +64,12 @@ private:
 		pWindow->Close();
 	}
 
-	static void _SizeCallback(GLFWwindow* pGLFWWnd, int width, int height)
+	static void _FramebufferSizeCallback(GLFWwindow* pGLFWWnd, int width, int height)
 	{
 		auto pWindow = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(pGLFWWnd));
 		pWindow->m_Settings.ClientSize.Width = static_cast<WindowSize::ValueType>(width);
 		pWindow->m_Settings.ClientSize.Height = static_cast<WindowSize::ValueType>(height);
 		pWindow->OnWindowSizeChanged();
-	}
-
-	static void _FramebufferSizeCallback(GLFWwindow* pGLFWWnd, int width, int height)
-	{
-		auto pWindow = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(pGLFWWnd));
-		pWindow->OnFramebufferSizeChanged(
-		{ 
-			static_cast<GLFWFramebufferSize::ValueType>(width),
-			static_cast<GLFWFramebufferSize::ValueType>(height)
-		});
 	}
 
 	static void _PositionCallback(GLFWwindow* pGLFWWnd, int x, int y)
@@ -269,7 +259,6 @@ private:
 
 		// Set window event callbacks
 		glfwSetWindowCloseCallback(m_pWindow, &GLFWWindow::_CloseCallback);
-		glfwSetWindowSizeCallback(m_pWindow, &GLFWWindow::_SizeCallback);
 		glfwSetFramebufferSizeCallback(m_pWindow, &GLFWWindow::_FramebufferSizeCallback);
 		glfwSetWindowPosCallback(m_pWindow, &GLFWWindow::_PositionCallback);
 		glfwSetKeyCallback(m_pWindow, &GLFWWindow::_KeyCallback);
@@ -288,7 +277,7 @@ private:
 		m_Settings.WindowPosition.X = static_cast<WindowPosition::ValueType>(x);
 		m_Settings.WindowPosition.Y = static_cast<WindowPosition::ValueType>(y);
 
-		glfwGetWindowSize(m_pWindow, &x, &y);
+		glfwGetFramebufferSize(m_pWindow, &x, &y);
 		m_Settings.ClientSize.Width = static_cast<WindowSize::ValueType>(x);
 		m_Settings.ClientSize.Height = static_cast<WindowSize::ValueType>(y);
 	}
@@ -567,15 +556,15 @@ public:
 	}
 
 public:
-	const GLFWFramebufferSize GetFramebufferSize() const noexcept
+	const WindowSize GetFramebufferSize() const noexcept
 	{
 		assert(m_pWindow);
 
 		int width, height;
 		glfwGetFramebufferSize(m_pWindow, &width, &height);
 
-		return{ static_cast<GLFWFramebufferSize::ValueType>(width), 
-				static_cast<GLFWFramebufferSize::ValueType>(height) };
+		return{ static_cast<WindowSize::ValueType>(width), 
+				static_cast<WindowSize::ValueType>(height) };
 	}
 
 public:
@@ -604,23 +593,15 @@ public:
 			glfwSetWindowShouldClose(m_pWindow, GLFW_FALSE);
 	}
 
-protected:
-	inline void OnFramebufferSizeChanged(const GLFWFramebufferSize& sz)
-	{
-		this->FramebufferSizeChanged(*this, sz);
-	}
-
 	inline void OnCursorEntered(bool entered)
 	{
 		this->CursorEntered(*this, entered);
 	}
 
 public:
-	typedef Epic::Event<void(GLFWWindow &, const GLFWFramebufferSize&)> FramebufferSizeChangedDelegate;
-	typedef Epic::Event<void(GLFWWindow &, bool)>						CursorEnteredDelegate;
+	typedef Epic::Event<void(GLFWWindow &, bool)> CursorEnteredDelegate;
 
 public:
-	FramebufferSizeChangedDelegate	FramebufferSizeChanged;
-	CursorEnteredDelegate			CursorEntered;
+	CursorEnteredDelegate CursorEntered;
 };
 
