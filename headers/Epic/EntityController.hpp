@@ -17,9 +17,8 @@
 
 #pragma once
 
-#include <Epic/detail/EntityControllerSystemFwd.hpp>
-#include <Epic/EntityManager.hpp>
-#include <Epic/Event.hpp>
+#include <Epic/detail/EntityManagerFwd.hpp>
+#include <Epic/Entity.hpp>
 #include <cassert>
 
 //////////////////////////////////////////////////////////////////////////////
@@ -38,14 +37,15 @@ public:
 	using Type = Epic::EntityController;
 
 private:
-	friend class Epic::EntityControllerSystem;
-
-private:
-	// This member will be set by EntityControllerSystem owner
 	Epic::EntityManager* m_pEntityManager;
-	
+
 public:
-	EntityController() noexcept { }
+	EntityController(Epic::EntityManager* pEntityManager) noexcept 
+		: m_pEntityManager{ pEntityManager }
+	{
+		assert(m_pEntityManager);
+	}
+
 	virtual ~EntityController() { }
 
 public:
@@ -55,9 +55,6 @@ public:
 	}
 
 public:
-	virtual void Update() = 0;
-
-protected:
-	virtual void OnEntityCreated(Epic::Entity*) { }
-	virtual void OnEntityDestroyed(Epic::Entity*) { }
+	virtual void PreUpdate() { }
+	virtual void PostUpdate() { }
 };

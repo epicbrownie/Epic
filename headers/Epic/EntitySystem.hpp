@@ -25,28 +25,31 @@
 
 namespace Epic
 {
-	class EntityController;
+	class EntitySystem;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-// EntityController
-class Epic::EntityController
+// EntitySystem
+class Epic::EntitySystem
 {
 public:
-	using Type = Epic::EntityController;
+	using Type = Epic::EntitySystem;
+
+private:
+	friend class Epic::EntityManager;
 
 private:
 	Epic::EntityManager* m_pEntityManager;
 
 public:
-	EntityController(Epic::EntityManager* pEntityManager) noexcept 
+	EntitySystem(Epic::EntityManager* pEntityManager) noexcept 
 		: m_pEntityManager{ pEntityManager }
 	{
 		assert(m_pEntityManager);
 	}
 
-	virtual ~EntityController() { }
+	virtual ~EntitySystem() { }
 
 public:
 	constexpr Epic::EntityManager* GetEntityManager() const noexcept
@@ -54,7 +57,31 @@ public:
 		return m_pEntityManager;
 	}
 
+private:
+	void OnEntityCreated(Epic::Entity* pEntity)
+	{ 
+		pEntity->ComponentAttached.Connect(this, &Type::EntityComponentAttached);
+		pEntity->ComponentDetached.Connect(this, &Type::EntityComponentDetached);
+
+		EntityCreated(pEntity);
+	}
+
+	void OnEntityDestroyed(Epic::Entity* pEntity)
+	{ 
+		pEntity->ComponentAttached.DisconnectAll(this);
+		pEntity->ComponentDetached.DisconnectAll(this);
+
+		EntityDestroyed(pEntity);
+	}
+
 public:
-	virtual void PreUpdate() { }
-	virtual void PostUpdate() { }
+	virtual void Update() = 0;
+
+protected:
+	virtual void InitialUpdate() { };
+
+	virtual void EntityCreated(Epic::Entity*) { }
+	virtual void EntityDestroyed(Epic::Entity*) { }
+	virtual void EntityComponentAttached(Epic::Entity* pEntity, Epic::EntityComponentID id) { }
+	virtual void EntityComponentDetached(Epic::Entity* pEntity, Epic::EntityComponentID id) { }
 };

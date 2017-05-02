@@ -22,4 +22,5 @@
 namespace Epic
 {
 	class EntityManager;
+	class EntitySystem;
 }

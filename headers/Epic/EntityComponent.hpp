@@ -21,22 +21,13 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-namespace Epic::detail
+namespace Epic
 {
 	using EntityComponentID = Epic::StringHash::HashType;
 
 	template<class T>
 	struct EntityComponentTraits;
 }
-
-//////////////////////////////////////////////////////////////////////////////
-
-#define MAKE_ENTITY_COMPONENT(type)	 \
-	template<>																	\
-	struct Epic::detail::EntityComponentTraits<type>							\
-	{																			\
-		static constexpr auto ID = Epic::detail::MakeEntityComponentID(#type);	\
-	};
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -55,8 +46,17 @@ namespace Epic::detail
 
 //////////////////////////////////////////////////////////////////////////////
 
+#define MAKE_ENTITY_COMPONENT(type)	 \
+	template<>																	\
+	struct Epic::EntityComponentTraits<type>									\
+	{																			\
+		static constexpr auto ID = Epic::detail::MakeEntityComponentID(#type);	\
+	};
+
+//////////////////////////////////////////////////////////////////////////////
+
 template<class T>
-struct Epic::detail::EntityComponentTraits
+struct Epic::EntityComponentTraits
 {
 	static_assert(!std::is_same<T, T>::value, 
 		"EntityComponentTraits<T> has not been defined."
