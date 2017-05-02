@@ -330,7 +330,7 @@ namespace Epic
 		template<class T, class F, typename EnabledForFloatingPoint = std::enable_if_t<std::is_floating_point<F>::value>>
 		inline auto Lerp(const T& from, const T& to, const F t) noexcept
 		{
-			return (from * (F(1) - t)) + (to * t);
+			return from + ((to - from) * t);
 		}
 
 		#pragma endregion
