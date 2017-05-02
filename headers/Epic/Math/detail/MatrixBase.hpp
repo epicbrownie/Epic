@@ -36,12 +36,12 @@ public:
 	using ValueType = T;
 	static constexpr size_t Size = S * S;
 	
-	using RowType = Epic::Vector<T, S>;
-	static constexpr size_t RowCount = S;
+	using ColumnType = Epic::Vector<T, S>;
+	static constexpr size_t ColumnCount = S;
 
 	union
 	{
-		std::array<RowType, RowCount> Rows;
+		std::array<ColumnType, ColumnCount> Columns;
 		std::array<ValueType, Size> Values;
 	};
 };
@@ -58,17 +58,17 @@ public:
 	using ValueType = T;
 	static constexpr size_t Size = 1;
 
-	using RowType = Epic::Vector<T, 1>;
-	static constexpr size_t RowCount = 1;
+	using ColumnType = Epic::Vector<T, 1>;
+	static constexpr size_t ColumnCount = 1;
 
 	union
 	{
-		std::array<RowType, RowCount> Rows;
+		std::array<ColumnType, ColumnCount> Columns;
 		std::array<ValueType, Size> Values;
 
 		struct
 		{
-			RowType rx;
+			ColumnType cx;
 		};
 	};
 };
@@ -85,18 +85,18 @@ public:
 	using ValueType = T;
 	static constexpr size_t Size = 4;
 
-	using RowType = Epic::Vector<T, 2>;
-	static constexpr size_t RowCount = 2;
+	using ColumnType = Epic::Vector<T, 2>;
+	static constexpr size_t ColumnCount = 2;
 
 	union
 	{
-		std::array<RowType, RowCount> Rows;
+		std::array<ColumnType, ColumnCount> Columns;
 		std::array<ValueType, Size> Values;
 
 		struct
 		{
-			RowType rx;
-			RowType ry;
+			ColumnType cx;
+			ColumnType cy;
 		};
 	};
 };
@@ -113,19 +113,19 @@ public:
 	using ValueType = T;
 	static constexpr size_t Size = 9;
 
-	using RowType = Epic::Vector<T, 3>;
-	static constexpr size_t RowCount = 3;
+	using ColumnType = Epic::Vector<T, 3>;
+	static constexpr size_t ColumnCount = 3;
 
 	union
 	{
-		std::array<RowType, RowCount> Rows;
+		std::array<ColumnType, ColumnCount> Columns;
 		std::array<ValueType, Size> Values;
 
 		struct
 		{
-			RowType rx;
-			RowType ry;
-			RowType rz;
+			ColumnType cx;
+			ColumnType cy;
+			ColumnType cz;
 		};
 	};
 };
@@ -142,20 +142,20 @@ public:
 	using ValueType = T;
 	static constexpr size_t Size = 16;
 
-	using RowType = Epic::Vector<T, 4>;
-	static constexpr size_t RowCount = 4;
+	using ColumnType = Epic::Vector<T, 4>;
+	static constexpr size_t ColumnCount = 4;
 
 	union
 	{
-		std::array<RowType, RowCount> Rows;
+		std::array<ColumnType, ColumnCount> Columns;
 		std::array<ValueType, Size> Values;
 
 		struct
 		{
-			RowType rx;
-			RowType ry;
-			RowType rz;
-			RowType rw;
+			ColumnType cx;
+			ColumnType cy;
+			ColumnType cz;
+			ColumnType cw;
 		};
 	};
 };
