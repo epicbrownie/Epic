@@ -20,21 +20,6 @@
 
 namespace Epic::TMP
 {
-	/*	Derives from std::true_type if Expr<T> is valid and evaluates to the type R.  
-		Derives from std::false_type otherwise. */
-	
-	template<typename T, class R, template <typename> class Expr, typename = void>
-	struct IsValidExpr : std::false_type { };
-
-	template<typename T, class R, template <typename> class Expr>
-	struct IsValidExpr<T, R, Expr, std::void_t<Expr<T>>>
-		: std::is_same<R, Expr<T>> { };
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
-namespace Epic::TMP
-{
 	/*	Derives from std::true_type if Function(Args...) could be called and would result in
 		a type that is implicitly convertible to ReturnType.  Derives from std::false_type otherwise. */
 
