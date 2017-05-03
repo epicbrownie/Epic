@@ -14,8 +14,8 @@
 #pragma once
 
 #include <Epic/Memory/MemoryBlock.hpp>
-#include <Epic/TMP/TypeTraits.hpp>
 #include <cstdint>
+#include <type_traits>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -24,39 +24,49 @@ namespace Epic
 	namespace detail
 	{
 		// CanAllocate - Tests for T::Allocate(size_t) -> Blk
-		template<class T> using AllocateExpr = decltype(std::declval<T>().Allocate(size_t()));
-		template<class T> using CanAllocate = Epic::TMP::IsValidExpr<T, Blk, AllocateExpr>;
+		template<class T, typename = void> struct CanAllocate : std::false_type { };
+		template<class T> struct CanAllocate<T, std::void_t<decltype(std::declval<T>().Allocate(size_t()))>> 
+			: std::is_same<decltype(std::declval<T>().Allocate(size_t())), Blk>::type { };
 
 		// CanAllocateAligned - Tests for T::AllocateAligned(size_t, size_t) -> Blk
-		template<class T> using AllocateAlignedExpr = decltype(std::declval<T>().AllocateAligned(size_t(), size_t()));
-		template<class T> using CanAllocateAligned = Epic::TMP::IsValidExpr<T, Blk, AllocateAlignedExpr>;
+		template<class T, typename = void> struct CanAllocateAligned : std::false_type { };
+		template<class T> struct CanAllocateAligned<T, std::void_t<decltype(std::declval<T>().AllocateAligned(size_t(), size_t()))>> 
+			: std::is_same<decltype(std::declval<T>().AllocateAligned(size_t(), size_t())), Blk>::type { };
 
 		// CanReallocate - Tests for T::Reallocate(Blk&, size_t) -> bool
-		template<class T> using ReallocateExpr = decltype(std::declval<T>().Reallocate(Blk(), size_t()));
-		template<class T> using CanReallocate = Epic::TMP::IsValidExpr<T, bool, ReallocateExpr>;
+		template<class T, typename = void> struct CanReallocate : std::false_type { };
+		template<class T> struct CanReallocate<T, std::void_t<decltype(std::declval<T>().Reallocate(Blk(), size_t()))>> 
+			: std::is_same<decltype(std::declval<T>().Reallocate(Blk(), size_t())), bool>::type { };
 
 		// CanReallocateAligned - Tests for T::ReallocateAligned(Blk&, size_t, size_t) -> bool
-		template<class T> using ReallocateAlignedExpr = decltype(std::declval<T>().ReallocateAligned(Blk(), size_t(), size_t()));
-		template<class T> using CanReallocateAligned = Epic::TMP::IsValidExpr<T, bool, ReallocateAlignedExpr>;
+		template<class T, typename = void> struct CanReallocateAligned : std::false_type { };
+		template<class T> struct CanReallocateAligned<T, std::void_t<decltype(std::declval<T>().ReallocateAligned(Blk(), size_t(), size_t()))>> 
+			: std::is_same<decltype(std::declval<T>().ReallocateAligned(Blk(), size_t(), size_t())), bool>::type { };
 
 		// CanAllocateAll - Tests for T::AllocateAll() -> Blk
-		template<class T> using AllocateAllExpr = decltype(std::declval<T>().AllocateAll());
-		template<class T> using CanAllocateAll = Epic::TMP::IsValidExpr<T, Blk, AllocateAllExpr>;
+		template<class T, typename = void> struct CanAllocateAll : std::false_type { };
+		template<class T> struct CanAllocateAll<T, std::void_t<decltype(std::declval<T>().AllocateAll())>> 
+			: std::is_same<decltype(std::declval<T>().AllocateAll()), Blk>::type { };
 
 		// CanAllocateAllAligned - Tests for T::AllocateAllAligned(size_t) -> Blk
-		template<class T> using AllocateAllAlignedExpr = decltype(std::declval<T>().AllocateAllAligned(size_t()));
-		template<class T> using CanAllocateAllAligned = Epic::TMP::IsValidExpr<T, Blk, AllocateAllAlignedExpr>;
+		template<class T, typename = void> struct CanAllocateAllAligned : std::false_type { };
+		template<class T> struct CanAllocateAllAligned<T, std::void_t<decltype(std::declval<T>().AllocateAllAligned(size_t()))>> 
+			: std::is_same<decltype(std::declval<T>().AllocateAllAligned(size_t())), Blk>::type { };
 
 		// CanDeallocate - Tests for T::Deallocate(Blk) -> void
-		template<class T> using DeallocateExpr = decltype(std::declval<T>().Deallocate(Blk()));
-		template<class T> using CanDeallocate = Epic::TMP::IsValidExpr<T, void, DeallocateExpr>;
+		template<class T, typename = void> struct CanDeallocate : std::false_type { };
+		template<class T> struct CanDeallocate<T, std::void_t<decltype(std::declval<T>().Deallocate(Blk()))>> 
+			: std::is_same<decltype(std::declval<T>().Deallocate(Blk())), void>::type { };
 
 		// CanDeallocateAligned - Tests for T::DeallocateAligned(Blk) -> void
-		template<class T> using DeallocateAlignedExpr = decltype(std::declval<T>().DeallocateAligned(Blk()));
-		template<class T> using CanDeallocateAligned = Epic::TMP::IsValidExpr<T, void, DeallocateAlignedExpr>;
+		template<class T, typename = void> struct CanDeallocateAligned : std::false_type { };
+		template<class T> struct CanDeallocateAligned<T, std::void_t<decltype(std::declval<T>().DeallocateAligned(Blk()))>> 
+			: std::is_same<decltype(std::declval<T>().DeallocateAligned(Blk())), void>::type { };
 
 		// CanDeallocateAll - Tests for T::DeallocateAll() -> void
-		template<class T> using DeallocateAllExpr = decltype(std::declval<T>().DeallocateAll());
-		template<class T> using CanDeallocateAll = Epic::TMP::IsValidExpr<T, void, DeallocateAllExpr>;
+		template<class T, typename = void> struct CanDeallocateAll : std::false_type { };
+		template<class T> struct CanDeallocateAll<T, std::void_t<decltype(std::declval<T>().DeallocateAll())>> 
+			: std::is_same<decltype(std::declval<T>().DeallocateAll()), void>::type { };
+
 	}
 }
