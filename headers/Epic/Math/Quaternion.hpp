@@ -90,8 +90,7 @@ public:
 	// Constructs an identity quaternion
 	inline Quaternion(const IdentityTag&) noexcept
 	{ 
-		Values[0] = Values[1] = Values[2] = T(0);
-		Values[3] = T(1);
+		MakeIdentity();
 	}
 
 	// Constructs an X-axis rotation quaternion
@@ -321,7 +320,7 @@ public:
 		auto t = xv * xv + yv * yv + zv * zv;
 
 		if (t == T(0))
-			return Identity();
+			return MakeIdentity();
 
 		const auto a = angle / T(2);
 		t = a.Sin() / std::sqrt(t);
@@ -346,9 +345,9 @@ public:
 	inline T Dot(const Quaternion& quat) const noexcept
 	{
 		return (Values[0] * quat[0]) + 
-			   (Values[1] * quat[1]) + 
-			   (Values[2] * quat[2]) +
-			   (Values[3] * quat[3]);
+			(Values[1] * quat[1]) + 
+			(Values[2] * quat[2]) +
+			(Values[3] * quat[3]);
 	}
 
 	// Calculates the squared length of this quaternion
@@ -450,7 +449,54 @@ public:
 		return result;
 	}
 
-	// Calculates the pitch, heading, and roll values of this quaternion
+public:
+	// Calculates the axis of rotation
+	inline Vector<T, 3> Axis() const noexcept
+	{
+		T t = T(1) - Values[3] * Values[3];
+		if (t <= T(0))
+			return Identity;
+
+		t = T(1) / std::sqrt(t);
+		return{ Values[0] * t, Values[1] * t, Values[2] * t };
+	}
+
+	// Calculates the angle of rotation
+	inline Radian<T> Angle() const noexcept
+	{
+		return std::acos(Values[3]) * T(2);
+	}
+
+	// Calculates the pitch (X-axis) Euler angle of this quaternion
+	inline Radian<T> Pitch() const noexcept
+	{
+		const T y = T(2) * (Values[1] * Values[2] + Values[3] * Values[0]);
+		const T x = (Values[3] * Values[3]) - (Values[0] * Values[0]) - 
+					(Values[1] * Values[1]) + (Values[2] * Values[2]);
+
+		if(y == T(0) && x == T(0))
+			return Radian<T>(static_cast<T>(T(2) * std::atan2(Values[0], Values[3])));
+
+		return Radian<T>(static_cast<T>(std::atan2(y, x)));
+	}
+
+	// Calculates the heading (Y-axis) Euler angle of this quaternion
+	inline Radian<T> Heading() const noexcept
+	{
+		return Radian<T>(static_cast<T>(std::asin(T(-2) * (Values[0] * Values[2] - Values[3] * Values[1]))));
+	}
+
+	// Calculates the roll (Z-axis) Euler angle of this quaternion
+	inline Radian<T> Roll() const noexcept
+	{
+		const T x = (Values[3] * Values[3]) + (Values[0] * Values[0]) - 
+			(Values[1] * Values[1]) - (Values[2] * Values[2]);
+		const T y = T(2) * (Values[0] * Values[1] + Values[3] * Values[2]);
+
+		return Radian<T>(static_cast<T>(std::atan2(y, x)));
+	}
+
+	// Calculates the pitch, heading, and roll (XYZ-axes) angles of this quaternion
 	void Euler(Radian<T>& pitch, Radian<T>& heading, Radian<T>& roll) const noexcept
 	{
 		const T sqx = Values[0] * Values[0];
@@ -458,22 +504,20 @@ public:
 		const T sqz = Values[2] * Values[2];
 		const T sqw = Values[3] * Values[3];
 
-		const T two = T(2);
 		const T r11 = sqw + sqx - sqy - sqz;
-		const T r21 = two * (Values[0] * Values[1] + Values[3] * Values[2]);
-		const T r31 = two * (Values[0] * Values[2] - Values[3] * Values[1]);
-		const T r32 = two * (Values[1] * Values[2] + Values[3] * Values[0]);
+		const T r21 = T(2) * (Values[0] * Values[1] + Values[3] * Values[2]);
+		const T r31 = T(2) * (Values[0] * Values[2] - Values[3] * Values[1]);
+		const T r32 = T(2) * (Values[1] * Values[2] + Values[3] * Values[0]);
 		const T r33 = sqw - sqx - sqy + sqz;
+		const T one = T(1) - Epsilon<T>;
 
-		const T tmp = std::abs(r31);
-
-		if (tmp > T(0.999999))
+		if (std::abs(r31) > one)
 		{
-			const T r12 = two * (Values[0] * Values[1] - Values[3] * Values[2]);
-			const T r13 = two * (Values[0] * Values[2] + Values[3] * Values[1]);
+			const T r12 = T(2) * (Values[0] * Values[1] - Values[3] * Values[2]);
+			const T r13 = T(2) * (Values[0] * Values[2] + Values[3] * Values[1]);
 
 			pitch = T(0);
-			heading = -Epic::HalfPi<T> * r31 / tmp;
+			heading = -Epic::HalfPi<T> * r31 / std::abs(r31);
 			roll = T(std::atan2(-r12, -r31 * r13));
 		}
 		else
@@ -482,6 +526,17 @@ public:
 			heading = T(std::asin(-r31));
 			roll = T(std::atan2(r21, r11));
 		}
+	}
+
+	// Calculates the pitch, heading, and roll (XYZ-axes) angles of this quaternion
+	void Euler(Degree<T>& pitch, Degree<T>& heading, Degree<T>& roll) const noexcept
+	{
+		Radian<T> p, h, r;
+		Euler(p, h, r);
+
+		pitch = p;
+		heading = h;
+		roll = r;
 	}
 
 public:
@@ -547,11 +602,7 @@ public:
 		Type qt = to;
 		auto dot = from.Dot(to);
 
-		// Check if from and to are equal
-		if (dot >= T(1))
-			return qt;
-
-		// Check if from and to are more than 90 degrees apart		
+		// When from and to > 90 deg apart, perform spin reduction
 		if (dot < T(0))
 		{
 			// Invert 'to'.  Since it's normalized, its conjugate will suffice 
@@ -559,7 +610,11 @@ public:
 			qt.Conjugate();
 		}
 
-		// Interpolate
+		// Linear interpolation when sin(acos(dot)) close to 0
+		if(dot > T(1) - Epsilon<T>)
+			return Lerp(from, to, t);
+
+		// Spherical interpolation
 		Radian<T> theta = acos(dot);
 		Radian<T> thetaFrom = theta.Value() * (T(1) - t);
 		Radian<T> thetaTo = theta.Value() * t;
@@ -573,9 +628,9 @@ public:
 	{
 		auto dot = from.Dot(to);
 
-		// Check if from and to are equal
-		if (dot >= T(1))
-			return Type{ from };
+		// Linear interpolation when sin(acos(dot)) close to 0
+		if(dot > T(1) - Epsilon<T>)
+			return Lerp(from, to, t);
 
 		Radian<T> theta = acos(dot);
 		Radian<T> thetaFrom = theta.Value() * (T(1) - t);
@@ -610,7 +665,7 @@ public:
 	// Sets this quaternion to an identity quaternion
 	inline Type& operator = (const IdentityTag&) noexcept
 	{
-		return Identity();
+		return MakeIdentity();
 	}
 
 	// Concatenates this quaternion with 'quat'
