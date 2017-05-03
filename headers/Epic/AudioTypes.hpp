@@ -13,8 +13,28 @@
 
 #pragma once
 
-#define GLFW_DLL
-#define GLEW_STATIC
+//////////////////////////////////////////////////////////////////////////////
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
+namespace Epic
+{
+	enum class eSpeakerMode
+	{
+		Default = 0,
+		Mono,
+		Stereo,
+		Quad,
+		Surround,
+		FiveOne,
+		SevenOne
+	};
+
+	enum class eSoundStatus
+	{
+		Invalid = 0,
+		Playing,
+		Sustaining,
+		Stopped,
+		Starting,
+		Stopping
+	};
+}

@@ -13,20 +13,20 @@
 
 #pragma once
 
-#include <Epic/VertexComponent.hpp>
+#include <Epic/VertexAttribute.hpp>
 #include <Epic/Math/Vector.hpp>
 
 //////////////////////////////////////////////////////////////////////////////
 
-namespace Epic::Component
+namespace Epic::Attribute
 {
-	struct CmpNormal;
-	struct CmpTangent;
-	struct CmpBitangent;
+	struct AttrNormal;
+	struct AttrTangent;
+	struct AttrBitangent;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-MAKE_VERTEX_COMPONENT(Epic::Component::CmpNormal, Epic::Normal3f, Normal, 3);
-MAKE_VERTEX_COMPONENT(Epic::Component::CmpTangent, Epic::Normal3f, Tangent, 3);
-MAKE_VERTEX_COMPONENT(Epic::Component::CmpBitangent, Epic::Normal3f, Bitangent, 3);
+MAKE_VERTEX_ATTRIBUTE(Epic::Attribute::AttrNormal,    Epic::Normal3f, Normal,    3, Epic::eComponentType::Float, false);
+MAKE_VERTEX_ATTRIBUTE(Epic::Attribute::AttrTangent,   Epic::Normal3f, Tangent,   3, Epic::eComponentType::Float, false);
+MAKE_VERTEX_ATTRIBUTE(Epic::Attribute::AttrBitangent, Epic::Normal3f, Bitangent, 3, Epic::eComponentType::Float, false);

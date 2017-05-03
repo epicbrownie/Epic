@@ -36,6 +36,10 @@ public:
 	using Type = Epic::Quaternion<T>;
 
 public:
+	template<class U>
+	friend class Epic::Quaternion;
+
+public:
 	using ValueType = T;
 	constexpr static size_t Size = 4;
 
@@ -65,17 +69,15 @@ public:
 	}
 
 	// Constructs a quaternion from a list of values.
-	// Unspecified values are left default initialized.
-	inline Quaternion(std::initializer_list<T> values) noexcept
+	template<class U>
+	inline Quaternion(const U(&values)[4]) noexcept
 	{
-		std::copy
-		(
-			std::begin(values),
-			std::next(std::begin(values), std::min(values.size(), Size)),
-			std::begin(Values)
-		);
+		Values[0] = values[0];
+		Values[1] = values[1];
+		Values[2] = values[2];
+		Values[3] = values[3];
 	}
-	
+
 	// Constructs with explicit values
 	inline Quaternion(const T xv, const T yv, const T zv, const T wv) noexcept
 	{
@@ -95,38 +97,38 @@ public:
 	// Constructs an X-axis rotation quaternion
 	inline Quaternion(const XRotationTag&, const Radian<T>& phi) noexcept
 	{
-		RotateX(phi);
+		MakeXRotation(phi);
 	}
 
 	// Constructs a Y-axis rotation quaternion
 	inline Quaternion(const YRotationTag&, const Radian<T>& theta) noexcept
 	{
-		RotateY(theta);
+		MakeYRotation(theta);
 	}
 
 	// Constructs a Z-axis rotation quaternion
 	inline Quaternion(const ZRotationTag&, const Radian<T>& psi) noexcept
 	{
-		RotateZ(psi);
+		MakeZRotation(psi);
 	}
 
 	// Constructs a rotation quaternion from euler heading, pitch, and roll angles
-	inline Quaternion(const Radian<T>& heading, const Radian<T>& pitch, const Radian<T>& roll) noexcept
+	inline Quaternion(const Radian<T>& pitch, const Radian<T>& heading, const Radian<T>& roll) noexcept
 	{
-		Rotate(heading, pitch, roll);
+		MakeRotation(pitch, heading, roll);
 	}
 
 	// Constructs a rotation quaternion from an axis and angle
 	inline Quaternion(const T& xv, const T& yv, const T& zv, const Radian<T>& angle) noexcept
 	{
-		Rotate(xv, yv, zv, angle);
+		MakeRotation(xv, yv, zv, angle);
 	}
 
 	// Constructs a rotation quaternion from an axis and angle
 	template<size_t S, typename EnabledForVector3OrGreater = std::enable_if_t<(S >= 3)>>
 	inline Quaternion(const Vector<T, S>& axis, const Radian<T>& angle) noexcept
 	{
-		Rotate(axis[0], axis[1], axis[2], angle);
+		MakeRotation(axis[0], axis[1], axis[2], angle);
 	}
 
 	#pragma endregion
@@ -167,27 +169,21 @@ public:
 	}
 
 	// Retrieves an iterator to the first element
-	inline decltype(std::begin(Values)) begin() noexcept
+	inline decltype(Values.begin()) begin() noexcept
 	{
-		return std::begin(Values);
+		return Values.begin();
 	}
 
 	// Retrieves an iterator to the first element
-	constexpr decltype(std::begin(Values)) begin() const noexcept
+	constexpr decltype(Values.begin()) begin() const noexcept
 	{
-		return std::begin(Values);
+		return Values.begin();
 	}
 
 	// Retrieves an iterator to one past the last element
-	inline decltype(std::end(Values)) end() noexcept
+	constexpr decltype(Values.end()) end() const noexcept
 	{
-		return std::end(Values);
-	}
-
-	// Retrieves an iterator to one past the last element
-	constexpr decltype(std::end(Values)) end() const noexcept
-	{
-		return std::end(Values);
+		return Values.end();
 	}
 
 	// Retrieves the number of elements
@@ -195,17 +191,17 @@ public:
 	{
 		return Size;
 	}
-	
+
 	// Retrieves a pointer to the underlying element data
-	inline decltype(std::data(Values)) data() noexcept
+	inline T* data() noexcept
 	{
-		return std::data(Values);
+		return Values.data();
 	}
 
 	// Retrieves a pointer to the underlying element data
-	constexpr decltype(std::data(Values)) data() const noexcept
+	constexpr const T* data() const noexcept
 	{
-		return std::data(Values);
+		return Values.data();
 	}
 
 	#pragma endregion
@@ -217,18 +213,23 @@ public:
 	{
 		// vec.xyz = (*this * Quaternion{vec.xyz, 0} * ConjugateOf(*this)).xyz
 
-		const auto tx = (Values[1] * vec[2]) - (Values[2] * vec[1]) + (Values[3] * vec[0]);
-		const auto ty = (Values[2] * vec[0]) - (Values[0] * vec[2]) + (Values[3] * vec[1]);
-		const auto tz = (Values[0] * vec[1]) - (Values[1] * vec[0]) + (Values[3] * vec[2]);
-		const auto tw = -((Values[0] * vec[0]) + (Values[1] * vec[1]) + (Values[2] * vec[2]));
+		const auto t1 = Values[0] * T(2);
+		const auto t2 = Values[1] * T(2);
+		const auto t3 = Values[2] * T(2);
+		const auto t4 = Values[0] * t1;
+		const auto t5 = Values[1] * t2;
+		const auto t6 = Values[2] * t3;
+		const auto t7 = Values[0] * t2;
+		const auto t8 = Values[0] * t3;
+		const auto t9 = Values[1] * t3;
+		const auto t10 = Values[3] * t1;
+		const auto t11 = Values[3] * t2;
+		const auto t12 = Values[3] * t3;
 
-		const auto nx = -Values[0];
-		const auto ny = -Values[1];
-		const auto nz = -Values[2];
-
-		vec[0] = (ty * nz) - (tz * ny) + (tw * nx) + (tx * Values[3]);
-		vec[1] = (tz * nx) - (tx * nz) + (tw * ny) + (ty * Values[3]);
-		vec[2] = (tx * ny) - (ty * nx) + (tw * nz) + (tz * Values[3]);
+		const auto src = vec;
+		vec[0] = (T(1) - (t5 + t6)) * src[0] + (t7 - t12) * src[1] + (t8 + t11) * src[2];
+		vec[1] = (t7 + t12) * src[0] + (T(1) - (t4 + t6)) * src[1] + (t9 - t10) * src[2];
+		vec[2] = (t8 - t11) * src[0] + (t9 + t10) * src[1] + (T(1) - (t4 + t5)) * src[2];
 	}
 
 public:
@@ -244,7 +245,7 @@ public:
 	}
 
 	// Sets this quaternion to an identity quaternion
-	inline Type& Identity() noexcept
+	inline Type& MakeIdentity() noexcept
 	{
 		Values[0] = Values[1] = Values[2] = T(0);
 		Values[3] = T(1);
@@ -253,7 +254,7 @@ public:
 	}
 
 	// Sets this quaternion to an X-axis rotation quaternion
-	inline Type& RotateX(const Radian<T>& phi) noexcept
+	inline Type& MakeXRotation(const Radian<T>& phi) noexcept
 	{
 		const Radian<T> a = phi / T(2);
 
@@ -266,7 +267,7 @@ public:
 	}
 
 	// Sets this quaternion to a Y-axis rotation quaternion
-	inline Type& RotateY(const Radian<T>& theta) noexcept
+	inline Type& MakeYRotation(const Radian<T>& theta) noexcept
 	{
 		const Radian<T> a = theta / T(2);
 
@@ -279,7 +280,7 @@ public:
 	}
 
 	// Sets this quaternion to a Z-axis rotation quaternion
-	inline Type& RotateZ(const Radian<T>& psi) noexcept
+	inline Type& MakeZRotation(const Radian<T>& psi) noexcept
 	{
 		const Radian<T> a = psi / T(2);
 
@@ -291,8 +292,8 @@ public:
 		return *this;
 	}
 
-	// Sets this quaternion to a rotation quaternion using euler heading, pitch, and roll angles
-	inline Type& Rotate(const Radian<T>& heading, const Radian<T>& pitch, const Radian<T>& roll) noexcept
+	// Sets this quaternion to a rotation quaternion using euler pitch, heading, and roll angles
+	inline Type& MakeRotation(const Radian<T>& pitch, const Radian<T>& heading, const Radian<T>& roll) noexcept
 	{
 		const auto pitch_half = pitch / T(2);
 		const auto heading_half = heading / T(2);
@@ -315,9 +316,9 @@ public:
 	}
 
 	// Sets this quaternion to a rotation quaternion using an axis and an angle
-	inline Type& Rotate(const T& xv, const T& yv, const T& zv, const Radian<T>& angle) noexcept
+	inline Type& MakeRotation(const T& xv, const T& yv, const T& zv, const Radian<T>& angle) noexcept
 	{
-		const auto t = xv * xv + yv * yv + zv * zv;
+		auto t = xv * xv + yv * yv + zv * zv;
 
 		if (t == T(0))
 			return Identity();
@@ -329,15 +330,15 @@ public:
 		Values[1] = yv * t;
 		Values[2] = zv * t;
 		Values[3] = a.Cos();
-		
+
 		return *this;
 	}
 
-	// Constructs a rotation quaternion from an axis and angle
+	// Sets this quaternion to a rotation quaternion using an axis and an angle
 	template<size_t S, typename EnabledForVector3OrGreater = std::enable_if_t<(S >= 3)>>
-	inline Type& Rotate(const Vector<T, S>& axis, const Radian<T>& angle) noexcept
+	inline Type& MakeRotation(const Vector<T, S>& axis, const Radian<T>& angle) noexcept
 	{
-		return Rotate(axis[0], axis[1], axis[2], angle);
+		return MakeRotation(axis[0], axis[1], axis[2], angle);
 	}
 
 public:
@@ -414,7 +415,7 @@ public:
 		const T z = T(0);
 		const T a{ std::acos(Values[3]) };
 		const T sina{ std::sin(a) };
-		
+
 		Type result(z, z, z, z);
 
 		if (sina > z)
@@ -432,7 +433,7 @@ public:
 	{
 		const T z = T(0);
 		const T a{ std::sqrt((Values[0] * Values[0]) + 
-							 (Values[1] * Values[1]) + 
+			(Values[1] * Values[1]) + 
 							 (Values[2] * Values[2])) };
 		const T sina{ std::sin(a) };
 		const T cosa{ std::cos(a) };
@@ -449,8 +450,8 @@ public:
 		return result;
 	}
 
-	// Calculates the heading, pitch, and roll values of this quaternion
-	void Euler(Radian<T>& heading, Radian<T>& pitch, Radian<T>& roll) const noexcept
+	// Calculates the pitch, heading, and roll values of this quaternion
+	void Euler(Radian<T>& pitch, Radian<T>& heading, Radian<T>& roll) const noexcept
 	{
 		const T sqx = Values[0] * Values[0];
 		const T sqy = Values[1] * Values[1];
@@ -546,6 +547,10 @@ public:
 		Type qt = to;
 		auto dot = from.Dot(to);
 
+		// Check if from and to are equal
+		if (dot >= T(1))
+			return qt;
+
 		// Check if from and to are more than 90 degrees apart		
 		if (dot < T(0))
 		{
@@ -566,7 +571,13 @@ public:
 	template<typename EnabledForFloatingPoint = std::enable_if_t<std::is_floating_point<T>::value>>
 	static inline Type Slerp(const Type& from, const Type& to, const T t) noexcept
 	{
-		Radian<T> theta = acos(from.Dot(to));
+		auto dot = from.Dot(to);
+
+		// Check if from and to are equal
+		if (dot >= T(1))
+			return Type{ from };
+
+		Radian<T> theta = acos(dot);
 		Radian<T> thetaFrom = theta.Value() * (T(1) - t);
 		Radian<T> thetaTo = theta.Value() * t;
 
@@ -656,9 +667,10 @@ public:
 
 	#define CREATE_ASSIGNMENT_OPERATOR(Op)													\
 																							\
-	inline Type& operator Op (std::initializer_list<T> values) noexcept						\
+	template<class U>																		\
+	inline Type& operator Op (const U(&values)[Size]) noexcept								\
 	{																						\
-		for(size_t i = 0; i < std::min(values.size(), Size); ++i)							\
+		for (size_t i = 0; i < Size; ++i)													\
 			Values[i] Op values[i];															\
 																							\
 		return *this;																		\
@@ -666,7 +678,7 @@ public:
 																							\
 	inline Type& operator Op (const Type& quat) noexcept									\
 	{																						\
-		for(size_t i = 0; i < Size; ++i)													\
+		for (size_t i = 0; i < Size; ++i)													\
 			Values[i] Op quat[i];															\
 																							\
 		return *this;																		\
@@ -730,7 +742,8 @@ public:
 
 	#define CREATE_ARITHMETIC_OPERATOR(Op) 	\
 																									\
-	inline Type operator Op (std::initializer_list<T> values) const	noexcept						\
+	template<class U>																				\
+	inline Type operator Op (const U(&values)[Size]) const noexcept									\
 	{																								\
 		Type result = *this;																		\
 		result Op= values;																			\
@@ -746,7 +759,7 @@ public:
 
 	CREATE_ARITHMETIC_OPERATOR(+);
 	CREATE_ARITHMETIC_OPERATOR(-);
-	
+
 	#undef CREATE_ARITHMETIC_OPERATOR
 
 	#pragma endregion
@@ -792,11 +805,11 @@ namespace Epic
 	inline std::ostream& operator << (std::ostream& stream, const Quaternion<U>& quat)
 	{
 		stream << '[' 
-			   << quat[0] << ", "
-			   << quat[1] << ", "
-			   << quat[2] << ", "
-			   << quat[3]
-			   << ']';
+			<< quat[0] << ", "
+			<< quat[1] << ", "
+			<< quat[2] << ", "
+			<< quat[3]
+			<< ']';
 
 		return stream;
 	}
@@ -805,11 +818,11 @@ namespace Epic
 	inline std::wostream& operator << (std::wostream& stream, const Quaternion<U>& quat)
 	{
 		stream << L'['
-			   << quat[0] << L", "
-			   << quat[1] << L", "
-			   << quat[2] << L", "
-			   << quat[3]
-			   << L']';
+			<< quat[0] << L", "
+			<< quat[1] << L", "
+			<< quat[2] << L", "
+			<< quat[3]
+			<< L']';
 
 		return stream;
 	}
@@ -827,7 +840,7 @@ namespace Epic
 		stream >> quat[2];
 		if (stream.peek() == ',') stream.ignore(1);
 		stream >> quat[3];
-		
+
 		if (stream.peek() == ']')
 			stream.ignore(1);
 

@@ -20,6 +20,7 @@
 #include <boost/variant/apply_visitor.hpp>
 #include <boost/variant/static_visitor.hpp>
 #include <type_traits>
+#include <utility>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -123,18 +124,24 @@ struct Epic::EON::detail::Assign
 	struct DirectAssignTag { };
 	struct CastAssignTag { };
 	struct ConvertAssignTag { };
+	struct EnumAssignTag { };
 
 	template<class SrcType>
 	struct SelectTag
 	{
 		using Type =
 			std::conditional_t<
-				!std::is_convertible<SrcType, DestType>::value,
-				ConvertAssignTag,
+				std::is_enum<DestType>::value && std::is_same<SrcType, Epic::EON::Integer>::value,
+				EnumAssignTag,
 				std::conditional_t<
-					Epic::TMP::IsExplicitlyConvertible<SrcType, DestType>::value,
-					DirectAssignTag,
-					CastAssignTag>
+					!std::is_convertible<SrcType, DestType>::value,
+					ConvertAssignTag,
+					std::conditional_t<
+						Epic::TMP::IsExplicitlyConvertible<SrcType, DestType>::value,
+						DirectAssignTag,
+						CastAssignTag
+					>
+				>
 			>;
 	};
 
@@ -172,6 +179,12 @@ private:
 	{
 		return Epic::EON::Convert<SrcType, DestType>::Apply(src, dest);
 	}
+
+	inline bool _Assign(const Epic::EON::Integer& src, DestType& dest, EnumAssignTag) const
+	{
+		dest = static_cast<DestType>(static_cast<std::underlying_type<DestType>::type>(src.Value));
+		return true;
+	}
 };
 
 // Assign<Container<DestType, Alloc>>
@@ -183,18 +196,24 @@ struct Epic::EON::detail::Assign<Container<DestType, Alloc>>
 	struct DirectAssignTag { };
 	struct CastAssignTag { };
 	struct ConvertAssignTag { };
+	struct EnumAssignTag { };
 
 	template<class SrcType>
 	struct SelectTag
 	{
 		using Type =
 			std::conditional_t<
-				!std::is_convertible<SrcType, DestType>::value,
-				ConvertAssignTag,
+				std::is_enum<DestType>::value && std::is_same<SrcType, Epic::EON::Integer>::value,
+				EnumAssignTag,
+				std::conditional_t<
+					!std::is_convertible<SrcType, DestType>::value,
+					ConvertAssignTag,
 					std::conditional_t<
-					Epic::TMP::IsExplicitlyConvertible<SrcType, DestType>::value,
-					DirectAssignTag,
-					CastAssignTag>
+						Epic::TMP::IsExplicitlyConvertible<SrcType, DestType>::value,
+						DirectAssignTag,
+						CastAssignTag
+					>
+				>
 			>;
 	};
 
@@ -239,6 +258,72 @@ private:
 
 		return false;
 	}
+
+	inline bool _Assign(const Epic::EON::Integer& src, ContainerType& dest, EnumAssignTag) const
+	{
+		dest.emplace_back(static_cast<DestType>(static_cast<std::underlying_type<DestType>::type>(src.Value)));
+		return true;
+	}
+};
+
+// Assign<Container<KeyType, DestType, HashFn, CompareFn, Alloc>>
+// Implicit support for unordered maps
+template<class DestType, class KeyType, class HashFn, class CompareFn, class Alloc, template<class, class, class, class, class> class Container>
+struct Epic::EON::detail::Assign<Container<KeyType, DestType, HashFn, CompareFn, Alloc>>
+{
+	using ContainerType = Container<KeyType, DestType, HashFn, CompareFn, Alloc>;
+
+	// Named assign attempts to default construct a KeyType and DestType, delegate 
+	// their assignments to Assign<KeyType> and Assign<DestType>, and then adds them
+	// to the container.
+	template<class SrcType>
+	inline bool operator() (const Epic::EON::Name& name, const SrcType& src, ContainerType& dest) const
+	{
+		KeyType key;
+		DestType value;
+
+		if (Assign<KeyType>() (name, key) && Assign<DestType>() (src, value))
+			return (dest.emplace(std::make_pair(key, value)).first != std::end(dest));
+
+		return false;
+	}
+
+	// Unnamed assign always fails
+	template<class SrcType>
+	inline bool operator() (const SrcType&, ContainerType&) const
+	{
+		return false;
+	}
+};
+
+// Assign<Container<KeyType, DestType, CompareFn, Alloc>>
+// Implicit support for maps
+template<class DestType, class KeyType, class CompareFn, class Alloc, template<class, class, class, class> class Container>
+struct Epic::EON::detail::Assign<Container<KeyType, DestType, CompareFn, Alloc>>
+{
+	using ContainerType = Container<KeyType, DestType, CompareFn, Alloc>;
+
+	// Named assign attempts to default construct a KeyType and DestType, delegate 
+	// their assignments to Assign<KeyType> and Assign<DestType>, and then adds them
+	// to the container.
+	template<class SrcType>
+	inline bool operator() (const Epic::EON::Name& name, const SrcType& src, ContainerType& dest) const
+	{
+		KeyType key;
+		DestType value;
+
+		if (Assign<KeyType>() (name, key) && Assign<DestType>() (src, value))
+			return (dest.emplace(std::make_pair(key, value)).first != std::end(dest));
+
+		return false;
+	}
+
+	// Unnamed assign always fails
+	template<class SrcType>
+	inline bool operator() (const SrcType&, ContainerType&) const
+	{
+		return false;
+	}
 };
 
 // Assign<SmallVector<DestType, N, Alloc>>
@@ -272,7 +357,7 @@ struct Epic::EON::detail::Default
 	struct DirectAssignTag { };
 	struct CastAssignTag { };
 	struct ConvertAssignTag { };
-
+	
 	template<class SrcType>
 	struct SelectTag
 	{

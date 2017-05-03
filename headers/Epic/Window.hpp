@@ -76,6 +76,11 @@ public:
 		return m_Settings.WindowTitle;
 	}
 
+	inline const Epic::Vector3f& GetBackgroundColor() const noexcept
+	{
+		return m_Settings.BackgroundColor;
+	}
+
 public:
 	inline void SetWindowPosition(const Epic::WindowPosition& pos)
 	{
@@ -85,6 +90,11 @@ public:
 	inline void SetWindowSize(const Epic::WindowSize& size)
 	{
 		SetWindowSize(size.Width, size.Height);
+	}
+
+	inline void SetBackgroundColor(const Epic::Vector3f& color)
+	{
+		SetBackgroundColor(color.x, color.y, color.z);
 	}
 
 public:
@@ -100,6 +110,7 @@ public:
 	virtual void SetFullscreenState(Epic::eFullscreenState state) = 0;
 	virtual void SetCursorState(Epic::eCursorState state) = 0;
 	virtual void SetWindowTitle(const WindowString& title) = 0;
+	virtual void SetBackgroundColor(const float& r, const float& g, const float& b) = 0;
 
 protected:
 	inline bool OnCloseWindow() noexcept
@@ -178,6 +189,11 @@ protected:
 		this->FullscreenStateChanged(*this, m_Settings);
 	}
 
+	inline void OnBackgroundColorChanged()
+	{
+		this->BackgroundColorChanged(*this, m_Settings);
+	}
+
 public:
 	typedef Epic::Event<void(Window &, const WindowSettings &)>		WindowSettingChangedDelegate;
 	typedef Epic::Event<bool(Window &)>								WindowClosingDelegate;
@@ -203,6 +219,7 @@ public:
 	WindowSettingChangedDelegate	WindowStateChanged;
 	WindowSettingChangedDelegate	WindowTitleChanged;
 	WindowSettingChangedDelegate	FullscreenStateChanged;
+	WindowSettingChangedDelegate	BackgroundColorChanged;
 
 protected:
 	WindowSettings m_Settings;

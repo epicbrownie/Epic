@@ -668,6 +668,9 @@ public:
 		Base::Connect(&event, &PolledEvent<Return(Args...)>::ForwardedInvoke<R>, handle);
 	}
 
+	// Import base Disconnect overloads
+	using Base::Disconnect;
+
 	// Disconnect an event handler
 	template<class Return>
 	inline void Disconnect(const Event<Return(Args...)>& event) noexcept

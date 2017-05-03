@@ -38,7 +38,7 @@ private:
 private:
 	struct InstructionSet
 	{
-		Epic::String Vendor, Brand;
+		Epic::STLString<char> Vendor, Brand;
 		Epic::STLVector<std::array<int, 4>> Data, ExtData;
 		std::bitset<32> Fn1ECX, Fn1EDX, Fn7EBX, Fn7ECX, Fn81ECX, Fn81EDX;
 		int IDs, ExIDs;
@@ -120,8 +120,8 @@ private:
 	};
 
 public:
-	static inline const Epic::String& Vendor() noexcept	{ return s_InstructionSet.Vendor; }
-	static inline const Epic::String& Brand() noexcept	{ return s_InstructionSet.Brand; }
+	static inline const Epic::STLSTring<char>& Vendor() noexcept	{ return s_InstructionSet.Vendor; }
+	static inline const Epic::STLString<char>& Brand() noexcept		{ return s_InstructionSet.Brand; }
 
 	static inline bool SSE3() noexcept			{ return s_InstructionSet.Fn1ECX[0]; }
 	static inline bool PCLMULQDQ() noexcept		{ return s_InstructionSet.Fn1ECX[1]; }

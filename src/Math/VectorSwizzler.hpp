@@ -44,6 +44,11 @@ private:
 			struct UnassignableLValue>;
 
 public:
+	inline auto operator() () const noexcept
+	{
+		return ToVector();
+	}
+
 	inline VectorType ToVector() const noexcept
 	{
 		VectorType result;
@@ -60,28 +65,29 @@ public:
 	}
 
 public:
-	#pragma region Assignment Operators
-	#define CREATE_ASSIGNMENT_OPERATOR(Op)	\
+#pragma region Assignment Operators
+#define CREATE_ASSIGNMENT_OPERATOR(Op)	\
 																									\
-	inline AssignableThis operator Op (std::initializer_list<ScalarType> values) noexcept			\
+	template<class T>																				\
+	inline AssignableThis operator Op (const T(&values)[sizeof...(Indices)]) noexcept				\
 	{																								\
-		auto it = std::begin(values);																\
-																									\
-		ForEach([&](size_t index)																	\
+		Epic::TMP::ForEach2<																		\
+			Epic::TMP::Sequence<size_t, Indices...>,												\
+			Epic::TMP::MakeSequence<size_t, sizeof...(Indices)>>									\
+			::Apply([&](size_t iThis, size_t iOther)												\
 		{																							\
-			if (it != std::end(values))																\
-				m_Values[index] Op *it++;															\
+				m_Values[iThis] Op values[iOther];													\
 		});																							\
 																									\
 		return *this;																				\
 	}																								\
 																									\
-	template<class T, size_t Size>																	\
-	inline AssignableThis operator Op (const Epic::Vector<T, Size>& vec) noexcept					\
+	template<class T>																				\
+	inline AssignableThis operator Op (const Epic::Vector<T, sizeof...(Indices)>& vec) noexcept		\
 	{																								\
 		Epic::TMP::ForEach2<																		\
 			Epic::TMP::Sequence<size_t, Indices...>,												\
-			Epic::TMP::MakeSequence<size_t, Size>>													\
+			Epic::TMP::MakeSequence<size_t, sizeof...(Indices)>>									\
 		::Apply([&](size_t iThis, size_t iOther) { m_Values[iThis] Op vec[iOther]; });				\
 																									\
 		return *this;																				\
@@ -138,7 +144,7 @@ public:
 	#define CREATE_ARITHMETIC_OPERATOR(Op) 	\
 																								\
 	template<class U>																			\
-	inline auto operator Op (std::initializer_list<U> values) const noexcept					\
+	inline auto operator Op (const U(&values)[sizeof...(Indices)]) const noexcept				\
 	{																							\
 		auto result = ToVector();																\
 		result Op= values;																		\

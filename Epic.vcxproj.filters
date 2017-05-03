@@ -47,15 +47,6 @@
     <Filter Include="Core">
       <UniqueIdentifier>{075780f6-326f-4137-87a9-cebb0338c151}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Core\detail">
-      <UniqueIdentifier>{594e0832-119f-4fb7-8062-90b668a77d4b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Core\GLFW">
-      <UniqueIdentifier>{6802ce12-02ac-49b4-9b20-4aebfd5d00b0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Core\GLFW\detail">
-      <UniqueIdentifier>{5cb140c9-0388-4eaa-9cf3-7c82e351fafb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Core\Input">
       <UniqueIdentifier>{74e5eb65-f3d4-4d6d-b514-8d682e032de3}</UniqueIdentifier>
     </Filter>
@@ -64,6 +55,36 @@
     </Filter>
     <Filter Include="Core\Input\Devices">
       <UniqueIdentifier>{cc4b907e-0e09-43e0-9a4b-f12831fd16ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Window/Context">
+      <UniqueIdentifier>{6802ce12-02ac-49b4-9b20-4aebfd5d00b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Window/Context\detail">
+      <UniqueIdentifier>{5cb140c9-0388-4eaa-9cf3-7c82e351fafb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Audio">
+      <UniqueIdentifier>{6b141cf3-4b7b-456a-83a9-e53b46a17433}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Audio\detail">
+      <UniqueIdentifier>{4e3156a0-2663-46cc-833d-ee12c37030e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Entity">
+      <UniqueIdentifier>{1ebb5ec9-2484-4fa4-b936-7632f3c45a1e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Entity\detail">
+      <UniqueIdentifier>{cd97c1d4-6fdf-4844-af20-d1cc70b3cc08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\State">
+      <UniqueIdentifier>{9befd8a9-c4e2-40ca-87aa-eb9331d4ffdf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\State\detail">
+      <UniqueIdentifier>{81083b56-58d2-47ec-af73-3dfa8d7dc5f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Graphics">
+      <UniqueIdentifier>{ea462775-933c-42e8-9ca2-ae8b6fd3559c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Graphics\detail">
+      <UniqueIdentifier>{594e0832-119f-4fb7-8062-90b668a77d4b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -332,41 +353,26 @@
     <ClInclude Include="src\Timer.hpp">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="src\Vertex.hpp">
-      <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="src\VertexComponent.hpp">
-      <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Window.hpp">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="src\GLFWContextTypes.hpp">
-      <Filter>Core\GLFW</Filter>
+      <Filter>Core\Window/Context</Filter>
     </ClInclude>
     <ClInclude Include="src\GLFWWindow.hpp">
-      <Filter>Core\GLFW</Filter>
+      <Filter>Core\Window/Context</Filter>
     </ClInclude>
     <ClInclude Include="src\detail\VertexColor.hpp">
-      <Filter>Core\detail</Filter>
+      <Filter>Core\Graphics\detail</Filter>
     </ClInclude>
     <ClInclude Include="src\detail\VertexNormal.hpp">
-      <Filter>Core\detail</Filter>
+      <Filter>Core\Graphics\detail</Filter>
     </ClInclude>
     <ClInclude Include="src\detail\VertexPosition.hpp">
-      <Filter>Core\detail</Filter>
+      <Filter>Core\Graphics\detail</Filter>
     </ClInclude>
     <ClInclude Include="src\detail\VertexTexture.hpp">
-      <Filter>Core\detail</Filter>
-    </ClInclude>
-    <ClInclude Include="src\detail\WindowTypes.hpp">
-      <Filter>Core\detail</Filter>
-    </ClInclude>
-    <ClInclude Include="src\detail\GLFWInclude.h">
-      <Filter>Core\GLFW\detail</Filter>
+      <Filter>Core\Graphics\detail</Filter>
     </ClInclude>
     <ClInclude Include="src\detail\GLFW.hpp">
-      <Filter>Core\GLFW\detail</Filter>
+      <Filter>Core\Window/Context\detail</Filter>
     </ClInclude>
     <ClInclude Include="src\InputData.hpp">
       <Filter>Core\Input</Filter>
@@ -428,6 +434,93 @@
     <ClInclude Include="src\Axis3DResolver.hpp">
       <Filter>Core\Input\Resolvers</Filter>
     </ClInclude>
+    <ClInclude Include="src\Window.hpp">
+      <Filter>Core\Window/Context</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AudioSystem.hpp">
+      <Filter>Core\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AudioTypes.hpp">
+      <Filter>Core\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Sound.hpp">
+      <Filter>Core\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AudioParameter.hpp">
+      <Filter>Core\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\FMODInclude.hpp">
+      <Filter>Core\Audio\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\AudioAllocator.hpp">
+      <Filter>Core\Audio\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\AudioParameterList.hpp">
+      <Filter>Core\Audio\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VolumeControl.hpp">
+      <Filter>Core\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AudioBus.hpp">
+      <Filter>Core\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\WindowTypes.hpp">
+      <Filter>Core\Window/Context\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Entity.hpp">
+      <Filter>Core\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\EntityComponentContainer.hpp">
+      <Filter>Core\Entity\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\EntityComponentView.hpp">
+      <Filter>Core\Entity\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\EntityComponentIterator.hpp">
+      <Filter>Core\Entity\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EntityManager.hpp">
+      <Filter>Core\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\EntityManagerFwd.hpp">
+      <Filter>Core\Entity\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\EntityHelpers.hpp">
+      <Filter>Core\Entity\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StateSystem.hpp">
+      <Filter>Core\State</Filter>
+    </ClInclude>
+    <ClInclude Include="src\State.hpp">
+      <Filter>Core\State</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\StateSystemFwd.hpp">
+      <Filter>Core\State\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StateTypes.hpp">
+      <Filter>Core\State</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Vertex.hpp">
+      <Filter>Core\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\GLFWInclude.hpp">
+      <Filter>Core\Window/Context\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VertexAttribute.hpp">
+      <Filter>Core\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EntityComponent.hpp">
+      <Filter>Core\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\VertexSkin.hpp">
+      <Filter>Core\Graphics\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EntitySystem.hpp">
+      <Filter>Core\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EntityController.hpp">
+      <Filter>Core\Entity</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Memory\NullAllocator.cpp">
@@ -444,6 +537,9 @@
     </ClCompile>
     <ClCompile Include="src\InputSystem.cpp">
       <Filter>Core\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="src\detail\AudioParameterList.cpp">
+      <Filter>Core\Audio\detail</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

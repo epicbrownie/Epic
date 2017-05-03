@@ -14,7 +14,7 @@
 #pragma once
 
 #include <Epic/Memory/Default.hpp>
-#include <Epic/STL/ForwardList.hpp>
+#include <Epic/STL/List.hpp>
 #include <Epic/STL/Vector.hpp>
 #include <Epic/NullMutex.hpp>
 #include <algorithm>
@@ -33,7 +33,7 @@ namespace Epic
 	template<class CRTP, bool Sync = false, template<class> class Store = AutoListDefaultStore>
 	class AutoList;
 
-	struct AutoListIgnoreT { };
+	enum AutoListIgnoreT { AutoListIgnore };
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -143,10 +143,10 @@ public:
 
 	using Value = T;
 	using AllocatedType = T;
-	using Allocator = Epic::DefaultAllocatorFor<AllocatedType, Epic::eAllocatorFor::ForwardList>;
+	using Allocator = Epic::DefaultAllocatorFor<AllocatedType, Epic::eAllocatorFor::List>;
 
 private:
-	using ListType = Epic::STLForwardList<T, Allocator>;
+	using ListType = Epic::STLList<T, Allocator>;
 	
 private:
 	static ListType s_Data;
@@ -175,17 +175,9 @@ public:
 
 	static void Erase(const Value& value) noexcept
 	{
-		auto it = Begin();
-		auto itPrev = s_Data.cbefore_begin();
-
-		for (; it != End(); itPrev = it++)
-		{
-			if (*it == value)
-			{
-				s_Data.erase_after(itPrev);
-				return;
-			}
-		}
+		auto it = std::find(std::begin(s_Data), std::end(s_Data), value);
+		if (it != std::end(s_Data))
+			s_Data.erase(it);
 	}
 };
 
@@ -248,12 +240,3 @@ public:
 // AutoListVectorStore Static Initializers
 template<class T>
 decltype(Epic::AutoListVectorStore<T>::s_Data) Epic::AutoListVectorStore<T>::s_Data;
-
-//////////////////////////////////////////////////////////////////////////////
-
-namespace Epic
-{
-	// Pass this to the constructor of AutoList to instruct it to NOT add the 
-	// current instance to the AutoList
-	AutoListIgnoreT AutoListIgnore;
-}

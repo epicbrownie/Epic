@@ -15,6 +15,7 @@
 
 #include <Epic/EON/Types.hpp>
 #include <Epic/StringHash.hpp>
+#include <cstdint>
 #include <codecvt>
 #include <locale>
 #include <string>
@@ -83,23 +84,22 @@ struct Epic::EON::Convert<Epic::EON::String, std::basic_string<Char, std::char_t
 };
 
 // ConvertAssign<std::basic_string, Epic::BasicStringHash> - Convert from std::basic_string to Epic::BasicStringHash
-template<class Char, class Alloc, Epic::StringHashAlgorithms Algorithm>
-struct Epic::EON::Convert<std::basic_string<Char, std::char_traits<Char>, Alloc>, Epic::BasicStringHash<Char, Algorithm>>
+template<class CharS, class CharH, class Alloc, Epic::StringHashAlgorithms Algorithm>
+struct Epic::EON::Convert<std::basic_string<CharS, std::char_traits<CharS>, Alloc>, Epic::BasicStringHash<CharH, Algorithm>>
 {
-	static inline bool Apply(const std::basic_string<Char, std::char_traits<Char>, Alloc>& src,
-							 Epic::BasicStringHash<Char, Algorithm>& dest)
+	static inline bool Apply(const std::basic_string<CharS, std::char_traits<CharS>, Alloc>& src,
+							 Epic::BasicStringHash<CharH, Algorithm>& dest)
 	{
-		dest = src;
+		dest = Epic::Hash(src);
 		return true;
 	}
 };
 
 // ConvertAssign<Epic::EON::String, Epic::BasicStringHash> - Convert from EON::String to Epic::BasicStringHash
-template<Epic::StringHashAlgorithms Algorithm>
-struct Epic::EON::Convert<Epic::EON::String, Epic::BasicStringHash<Epic::EON::String::ValueType::value_type, Algorithm>>
+template<class CharH, Epic::StringHashAlgorithms Algorithm>
+struct Epic::EON::Convert<Epic::EON::String, Epic::BasicStringHash<CharH, Algorithm>>
 {
-	static inline bool Apply(const Epic::EON::String& src,
-							 Epic::BasicStringHash<Epic::EON::String::ValueType::value_type, Algorithm>& dest)
+	static inline bool Apply(const Epic::EON::String& src, Epic::BasicStringHash<CharH, Algorithm>& dest)
 	{
 		return Epic::EON::Convert<std::decay_t<decltype(src.Value)>, std::decay_t<decltype(dest)>>::Apply(src.Value, dest);
 	}

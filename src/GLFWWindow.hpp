@@ -20,6 +20,7 @@
 #include <Epic/Singleton.hpp>
 #include <cassert>
 #include <cstdint>
+#include <iostream>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -63,22 +64,12 @@ private:
 		pWindow->Close();
 	}
 
-	static void _SizeCallback(GLFWwindow* pGLFWWnd, int width, int height)
+	static void _FramebufferSizeCallback(GLFWwindow* pGLFWWnd, int width, int height)
 	{
 		auto pWindow = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(pGLFWWnd));
 		pWindow->m_Settings.ClientSize.Width = static_cast<WindowSize::ValueType>(width);
 		pWindow->m_Settings.ClientSize.Height = static_cast<WindowSize::ValueType>(height);
 		pWindow->OnWindowSizeChanged();
-	}
-
-	static void _FramebufferSizeCallback(GLFWwindow* pGLFWWnd, int width, int height)
-	{
-		auto pWindow = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(pGLFWWnd));
-		pWindow->OnFramebufferSizeChanged(
-		{ 
-			static_cast<GLFWFramebufferSize::ValueType>(width),
-			static_cast<GLFWFramebufferSize::ValueType>(height)
-		});
 	}
 
 	static void _PositionCallback(GLFWwindow* pGLFWWnd, int x, int y)
@@ -204,23 +195,28 @@ private:
 		// Ensure glew is initialized
 		glewExperimental = GL_TRUE;
 
-		GLenum err = glewInit();
-		if (GLEW_OK != err)
-		{
-			// TODO: Log the error (glewGetErrorString(err)
+		if (!GLEWCHECK(glewInit()))
 			return false;
-		}
 
 		// Apply post-creation context settings
-		// TODO: Log this info
-		const GLubyte* renderer = glGetString(GL_RENDERER);
-		const GLubyte* version = glGetString(GL_VERSION);
-		printf("Renderer: %s\n", renderer);
-		printf("OpenGL version supported %s\n", version);
+		std::clog << "Renderer " << glGetString(GL_RENDERER) << std::endl;
+		std::clog << "OpenGL version supported " << glGetString(GL_VERSION) << std::endl;
+		std::clog << std::endl;
+
+		int fbw, fbh;
+		glfwGetFramebufferSize(m_pWindow, &fbw, &fbh);
+		glViewport(0, 0, fbw, fbh);
 
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		
+		glClearColor
+		(
+			m_Settings.BackgroundColor.x,
+			m_Settings.BackgroundColor.y,
+			m_Settings.BackgroundColor.z,
+			1.0f
+		);
 
 		glfwSwapInterval(m_ContextSettings.WaitForRefresh ? 1 : 0);
 
@@ -263,7 +259,6 @@ private:
 
 		// Set window event callbacks
 		glfwSetWindowCloseCallback(m_pWindow, &GLFWWindow::_CloseCallback);
-		glfwSetWindowSizeCallback(m_pWindow, &GLFWWindow::_SizeCallback);
 		glfwSetFramebufferSizeCallback(m_pWindow, &GLFWWindow::_FramebufferSizeCallback);
 		glfwSetWindowPosCallback(m_pWindow, &GLFWWindow::_PositionCallback);
 		glfwSetKeyCallback(m_pWindow, &GLFWWindow::_KeyCallback);
@@ -282,13 +277,34 @@ private:
 		m_Settings.WindowPosition.X = static_cast<WindowPosition::ValueType>(x);
 		m_Settings.WindowPosition.Y = static_cast<WindowPosition::ValueType>(y);
 
-		glfwGetWindowSize(m_pWindow, &x, &y);
+		glfwGetFramebufferSize(m_pWindow, &x, &y);
 		m_Settings.ClientSize.Width = static_cast<WindowSize::ValueType>(x);
 		m_Settings.ClientSize.Height = static_cast<WindowSize::ValueType>(y);
 	}
 
 	#pragma endregion
 
+	#pragma region Monitor Selection
+
+	GLFWmonitor* GetWindowMonitor() noexcept
+	{
+		if (m_Settings.PreferredMonitor == Epic::WindowSettings::PrimaryMonitor)
+			return glfwGetPrimaryMonitor();
+
+		int count;
+		GLFWmonitor** monitors = glfwGetMonitors(&count);
+
+		if (m_Settings.PreferredMonitor < 0 || m_Settings.PreferredMonitor >= count)
+		{
+			m_Settings.PreferredMonitor = Epic::WindowSettings::PrimaryMonitor;
+			return glfwGetPrimaryMonitor();
+		}
+
+		return monitors[m_Settings.PreferredMonitor];
+	}
+
+	#pragma endregion
+	
 public:
 	bool IsClosed() const override
 	{
@@ -304,19 +320,13 @@ public:
 	{
 		// Ensure the GLFW system is initialized
 		if (!Singleton<detail::GLFW>::Instance().Initialize())
-		{
-			// TODO: Log the failure
 			return false;
-		}
-
+		
 		// Destroy the window if it already exists
 		Destroy();
 
-		// TODO: Allow monitor selection (for fullscreen)
-		// Should probably be enumerable via the facade
-
 		// Apply pre-creation settings
-		GLFWmonitor* pMonitor = glfwGetPrimaryMonitor();
+		GLFWmonitor* pMonitor = GetWindowMonitor();
 		const GLFWvidmode* pVidMode = glfwGetVideoMode(pMonitor);
 		
 		ApplyPreCreationWindowSettings(pVidMode);
@@ -351,10 +361,7 @@ public:
 		}
 
 		if (!m_pWindow)
-		{
-			// TODO: Log the failure
 			return false;
-		}
 
 		glfwSetWindowUserPointer(m_pWindow, this);
 
@@ -455,13 +462,10 @@ public:
 
 	void SetFullscreenState(Epic::eFullscreenState state) override 
 	{
-		// TODO: Allow monitor selection (for fullscreen)
-		// Should probably be enumerable via the facade
-
 		assert(m_pWindow);
 
 		GLFWmonitor* pMonitor = glfwGetWindowMonitor(m_pWindow);
-		if (!pMonitor) pMonitor = glfwGetPrimaryMonitor();
+		if (!pMonitor) pMonitor = GetWindowMonitor();
 		const GLFWvidmode* pVidMode = glfwGetVideoMode(pMonitor);
 
 		switch (state)
@@ -544,19 +548,32 @@ public:
 		}
 	}
 
+	void SetBackgroundColor(const float& r, const float& g, const float& b) override
+	{
+		assert(m_pWindow);
+		glClearColor(r, g, b, 1.0f);
+		OnBackgroundColorChanged();
+	}
+
 public:
-	const GLFWFramebufferSize GetFramebufferSize() const noexcept
+	const WindowSize GetFramebufferSize() const noexcept
 	{
 		assert(m_pWindow);
 
 		int width, height;
 		glfwGetFramebufferSize(m_pWindow, &width, &height);
 
-		return{ static_cast<GLFWFramebufferSize::ValueType>(width), 
-				static_cast<GLFWFramebufferSize::ValueType>(height) };
+		return{ static_cast<WindowSize::ValueType>(width), 
+				static_cast<WindowSize::ValueType>(height) };
 	}
 
 public:
+	inline void Clear() noexcept
+	{
+		assert(m_pWindow);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
+
 	inline void Display() noexcept
 	{
 		assert(m_pWindow);
@@ -576,23 +593,15 @@ public:
 			glfwSetWindowShouldClose(m_pWindow, GLFW_FALSE);
 	}
 
-protected:
-	inline void OnFramebufferSizeChanged(const GLFWFramebufferSize& sz)
-	{
-		this->FramebufferSizeChanged(*this, sz);
-	}
-
 	inline void OnCursorEntered(bool entered)
 	{
 		this->CursorEntered(*this, entered);
 	}
 
 public:
-	typedef Epic::Event<void(GLFWWindow &, const GLFWFramebufferSize&)> FramebufferSizeChangedDelegate;
-	typedef Epic::Event<void(GLFWWindow &, bool)>						CursorEnteredDelegate;
+	typedef Epic::Event<void(GLFWWindow &, bool)> CursorEnteredDelegate;
 
 public:
-	FramebufferSizeChangedDelegate	FramebufferSizeChanged;
-	CursorEnteredDelegate			CursorEntered;
+	CursorEnteredDelegate CursorEntered;
 };
 

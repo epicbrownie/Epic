@@ -13,29 +13,29 @@
 
 #pragma once
 
-#include <Epic/VertexComponent.hpp>
+#include <Epic/VertexAttribute.hpp>
 #include <Epic/Math/Vector.hpp>
 
 //////////////////////////////////////////////////////////////////////////////
 
-namespace Epic::Component
+namespace Epic::Attribute
 {
-	struct CmpPos;
-	struct CmpPos2;
-	struct CmpPos3;
-	struct CmpPos4;
+	struct AttrPos1;
+	struct AttrPos2;
+	struct AttrPos3;
+	struct AttrPos4;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-MAKE_VERTEX_COMPONENT(Epic::Component::CmpPos, Epic::Point4f, Pos, 4);
-MAKE_VERTEX_COMPONENT(Epic::Component::CmpPos2, Epic::Point4f, Pos2, 4);
-MAKE_VERTEX_COMPONENT(Epic::Component::CmpPos3, Epic::Point4f, Pos3, 4);
-MAKE_VERTEX_COMPONENT(Epic::Component::CmpPos4, Epic::Point4f, Pos4, 4);
+MAKE_VERTEX_ATTRIBUTE(Epic::Attribute::AttrPos1, Epic::Point3f, Position,  3, Epic::eComponentType::Float, false);
+MAKE_VERTEX_ATTRIBUTE(Epic::Attribute::AttrPos2, Epic::Point3f, Position2, 3, Epic::eComponentType::Float, false);
+MAKE_VERTEX_ATTRIBUTE(Epic::Attribute::AttrPos3, Epic::Point3f, Position3, 3, Epic::eComponentType::Float, false);
+MAKE_VERTEX_ATTRIBUTE(Epic::Attribute::AttrPos4, Epic::Point3f, Position4, 3, Epic::eComponentType::Float, false);
 
 //////////////////////////////////////////////////////////////////////////////
 
-namespace Epic::Component
+namespace Epic::Attribute
 {
-	using CmpPos1 = CmpPos;
+	using AttrPos = AttrPos1;
 }

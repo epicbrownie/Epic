@@ -22,6 +22,9 @@
     <ClInclude Include="src\AlphaNumResolver.hpp" />
     <ClInclude Include="src\AlphaResolver.hpp" />
     <ClInclude Include="src\AppGuard.hpp" />
+    <ClInclude Include="src\AudioBus.hpp" />
+    <ClInclude Include="src\AudioParameter.hpp" />
+    <ClInclude Include="src\AudioTypes.hpp" />
     <ClInclude Include="src\AutoList.hpp" />
     <ClInclude Include="src\AutoMap.hpp" />
     <ClInclude Include="src\Axis1DResolver.hpp" />
@@ -31,15 +34,30 @@
     <ClInclude Include="src\Clock.hpp" />
     <ClInclude Include="src\Config.hpp" />
     <ClInclude Include="src\CPUInfo.h" />
+    <ClInclude Include="src\detail\AudioAllocator.hpp" />
+    <ClInclude Include="src\detail\AudioParameterList.hpp" />
+    <ClInclude Include="src\detail\EntityComponentContainer.hpp" />
+    <ClInclude Include="src\detail\EntityComponentIterator.hpp" />
+    <ClInclude Include="src\detail\EntityComponentView.hpp" />
+    <ClInclude Include="src\detail\EntityHelpers.hpp" />
+    <ClInclude Include="src\detail\EntityManagerFwd.hpp" />
+    <ClInclude Include="src\detail\FMODInclude.hpp" />
     <ClInclude Include="src\detail\GLFW.hpp" />
-    <ClInclude Include="src\detail\GLFWInclude.h" />
+    <ClInclude Include="src\detail\GLFWInclude.hpp" />
     <ClInclude Include="src\detail\ReadConfig.hpp" />
+    <ClInclude Include="src\detail\StateSystemFwd.hpp" />
     <ClInclude Include="src\detail\VertexColor.hpp" />
     <ClInclude Include="src\detail\VertexNormal.hpp" />
     <ClInclude Include="src\detail\VertexPosition.hpp" />
+    <ClInclude Include="src\detail\VertexSkin.hpp" />
     <ClInclude Include="src\detail\VertexTexture.hpp" />
     <ClInclude Include="src\detail\WindowTypes.hpp" />
     <ClInclude Include="src\DeviceResolver.hpp" />
+    <ClInclude Include="src\Entity.hpp" />
+    <ClInclude Include="src\EntityComponent.hpp" />
+    <ClInclude Include="src\EntityController.hpp" />
+    <ClInclude Include="src\EntitySystem.hpp" />
+    <ClInclude Include="src\EntityManager.hpp" />
     <ClInclude Include="src\EON\Bin.hpp" />
     <ClInclude Include="src\EON\Bind.hpp" />
     <ClInclude Include="src\EON\Convert.hpp" />
@@ -51,6 +69,7 @@
     <ClInclude Include="src\EON\Types.hpp" />
     <ClInclude Include="src\Event.hpp" />
     <ClInclude Include="src\Ext\Erase.hpp" />
+    <ClInclude Include="src\AudioSystem.hpp" />
     <ClInclude Include="src\GLFWContextTypes.hpp" />
     <ClInclude Include="src\GLFWJoystickInputDevice.hpp" />
     <ClInclude Include="src\GLFWKeyboardInputDevice.hpp" />
@@ -113,7 +132,11 @@
     <ClInclude Include="src\NumericalResolver.hpp" />
     <ClInclude Include="src\OS.h" />
     <ClInclude Include="src\Singleton.hpp" />
+    <ClInclude Include="src\Sound.hpp" />
     <ClInclude Include="src\Specs.hpp" />
+    <ClInclude Include="src\State.hpp" />
+    <ClInclude Include="src\StateSystem.hpp" />
+    <ClInclude Include="src\StateTypes.hpp" />
     <ClInclude Include="src\STL\Deque.hpp" />
     <ClInclude Include="src\STL\Allocator.hpp" />
     <ClInclude Include="src\STL\ForwardList.hpp" />
@@ -138,11 +161,13 @@
     <ClInclude Include="src\TMP\Utility.hpp" />
     <ClInclude Include="src\TMP\VariadicContains.hpp" />
     <ClInclude Include="src\Vertex.hpp" />
-    <ClInclude Include="src\VertexComponent.hpp" />
+    <ClInclude Include="src\VertexAttribute.hpp" />
+    <ClInclude Include="src\VolumeControl.hpp" />
     <ClInclude Include="src\Window.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Clock.cpp" />
+    <ClCompile Include="src\detail\AudioParameterList.cpp" />
     <ClCompile Include="src\InputSystem.cpp" />
     <ClCompile Include="src\Memory\AlignedMallocator.cpp" />
     <ClCompile Include="src\Memory\Mallocator.cpp" />

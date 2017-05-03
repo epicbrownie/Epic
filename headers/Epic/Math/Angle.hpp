@@ -124,6 +124,12 @@ public:
 		return *this;													\
 	}																	\
 																		\
+	inline Type& operator Op (const Type& value) noexcept				\
+	{																	\
+		m_Value Op value.Value();										\
+		return *this;													\
+	}																	\
+																		\
 	template<typename U>												\
 	inline Type& operator Op (const Radian<U>& value) noexcept			\
 	{																	\
@@ -160,6 +166,13 @@ public:
 	#define CREATE_ARITHMETIC_OPERATOR(Op) 	\
 																						\
 	inline Type operator Op (const ValueType& value) const noexcept						\
+	{																					\
+		Type result{ *this };															\
+		result Op= value;																\
+		return result;																	\
+	}																					\
+																						\
+	inline Type operator Op (const Type& value) const noexcept							\
 	{																					\
 		Type result{ *this };															\
 		result Op= value;																\
@@ -212,6 +225,11 @@ public:
 	constexpr bool operator Op (const ValueType& value) const noexcept	\
 	{																	\
 		return m_Value Op value;										\
+	}																	\
+																		\
+	constexpr bool operator Op (const Type& value) const noexcept		\
+	{																	\
+		return m_Value Op value.Value();								\
 	}																	\
 																		\
 	template<typename U>												\
@@ -326,6 +344,12 @@ public:
 		return *this;													\
 	}																	\
 																		\
+	Type& operator Op (const Type& value) noexcept						\
+	{																	\
+		m_Value Op T(value.Value());									\
+		return *this;													\
+	}																	\
+																		\
 	template<typename U>												\
 	Type& operator Op (const Degree<U>& value) noexcept					\
 	{																	\
@@ -362,6 +386,13 @@ public:
 	#define CREATE_ARITHMETIC_OPERATOR(Op) 	\
 																						\
 	inline Type operator Op (const ValueType& value) const noexcept						\
+	{																					\
+		Type result{ *this };															\
+		result Op= value;																\
+		return result;																	\
+	}																					\
+																						\
+	inline Type operator Op (const Type& value) const noexcept							\
 	{																					\
 		Type result{ *this };															\
 		result Op= value;																\
@@ -414,6 +445,11 @@ public:
 	constexpr bool operator Op (const ValueType& value) const noexcept			\
 	{																			\
 		return m_Value Op value;												\
+	}																			\
+																				\
+	constexpr bool operator Op (const Type& value) const noexcept				\
+	{																			\
+		return m_Value Op value.Value();										\
 	}																			\
 																				\
 	template<typename U>														\
@@ -502,11 +538,19 @@ namespace Epic
 {
 	using RadianF = Radian<float>;
 	using RadianD = Radian<double>;
+	
+	using Radianf = RadianF;
+	using Radiand = RadianD;
 
 	using DegreeF = Degree<float>;
 	using DegreeD = Degree<double>;
 	using DegreeI = Degree<int>;
 	using DegreeL = Degree<long>;
+
+	using Degreef = DegreeF;
+	using Degreed = DegreeD;
+	using Degreei = DegreeI;
+	using Degreel = DegreeL;
 }
 
 //////////////////////////////////////////////////////////////////////////////

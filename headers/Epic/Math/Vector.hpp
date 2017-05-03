@@ -14,7 +14,6 @@
 #pragma once
 
 #include <Epic/Math/detail/VectorFwd.hpp>
-#include <Epic/Math/detail/MatrixFwd.hpp>
 #include <Epic/Math/detail/QuaternionFwd.hpp>
 #include <Epic/Math/detail/VectorHelpers.hpp>
 #include <Epic/Math/detail/MathHelpers.hpp>
@@ -35,6 +34,10 @@ class Epic::Vector : public Epic::detail::VectorHelper<T, S>::BaseType
 public:
 	using Base = typename Epic::detail::VectorHelper<T, S>::BaseType;
 	using Type = Epic::Vector<T, S>;
+
+public:
+	template<class, size_t>
+	friend class Epic::Vector;
 
 public:
 	using ValueType = T;
@@ -63,15 +66,10 @@ public:
 	}
 
 	// Constructs a vector from a list of values.
-	// Unspecified values are left default initialized.
-	inline Vector(std::initializer_list<T> values) noexcept
+	template<class U>
+	inline Vector(const U(&values)[Size]) noexcept
 	{
-		std::copy
-		(
-			std::begin(values),
-			std::next(std::begin(values), std::min(values.size(), Size)),
-			std::begin(Values)
-		);
+		ForEach<Size>([&](size_t n) { Values[n] = values[n]; });
 	}
 
 	// Constructs a vector whose values are all set to a value
@@ -83,9 +81,9 @@ public:
 	// Constructs a vector from a span of values
 	template<class Arg, class... Args,
 			 typename = std::enable_if_t<(detail::Span<Arg, Args...>::Value == Size)>>
-	inline Vector(Arg&& arg, Args&&... args) noexcept
+	inline Vector(const Arg& arg, const Args&... args) noexcept
 	{
-		Construct(std::forward<Arg>(arg), std::forward<Args>(args)...);
+		Construct(arg, args...);
 	}
 
 	// Constructs a vector whose values are all set to 0
@@ -145,27 +143,21 @@ public:
 	}
 
 	// Retrieves an iterator to the first element
-	inline decltype(std::begin(Values)) begin() noexcept
+	inline auto begin() noexcept -> decltype(Values.begin())
 	{
-		return std::begin(Values);
+		return Values.begin();
 	}
 
 	// Retrieves an iterator to the first element
-	constexpr decltype(std::begin(Values)) begin() const noexcept
+	inline auto begin() const noexcept -> decltype(Values.begin())
 	{
-		return std::begin(Values);
+		return Values.begin();
 	}
 
 	// Retrieves an iterator to one past the last element
-	inline decltype(std::end(Values)) end() noexcept
+	inline auto end() const noexcept -> decltype(Values.end())
 	{
-		return std::end(Values);
-	}
-
-	// Retrieves an iterator to one past the last element
-	constexpr decltype(std::end(Values)) end() const noexcept
-	{
-		return std::end(Values);
+		return Values.end();
 	}
 
 	// Retrieves the number of elements
@@ -175,15 +167,15 @@ public:
 	}
 	
 	// Retrieves a pointer to the underlying element data
-	inline decltype(std::data(Values)) data() noexcept
+	inline T* data() noexcept
 	{
-		return std::data(Values);
+		return Values.data();
 	}
 
 	// Retrieves a pointer to the underlying element data
-	constexpr decltype(std::data(Values)) data() const noexcept
+	constexpr const T* data() const noexcept
 	{
-		return std::data(Values);
+		return Values.data();
 	}
 
 	#pragma endregion
@@ -191,9 +183,9 @@ public:
 public:
 	// Sets a span of values explicitly
 	template<class Arg, class... Args, typename = std::enable_if_t<(detail::Span<Arg, Args...>::Value == Size)>>
-	inline Type& Reset(Arg&& arg, Args&&... args) noexcept
+	inline Type& Reset(const Arg& arg, const Args&... args) noexcept
 	{
-		Construct(std::forward<Arg>(arg), std::forward<Args>(args)...);
+		Construct(arg, args...);
 
 		return *this;
 	}
@@ -346,6 +338,12 @@ public:
 	}
 
 public:
+	// Calculates the orthonormalized vector of 'vecA' and 'vecB'
+	static inline Type OrthoNormalOf(const Type& vecA, const Type& vecB) noexcept
+	{
+		return NormalOf(vecA - vecB * vecB.Dot(vecA));
+	}
+
 	// Calculates the normalized vector of 'vec'
 	static inline Type NormalOf(const Type& vec) noexcept
 	{
@@ -367,18 +365,10 @@ public:
 	template<typename EnabledForFloatTypes = std::enable_if_t<std::is_floating_point<T>::value>>
 	static inline Type MixOf(const Type& vecA, const Type& vecB, const T w = T(0.5)) noexcept
 	{
-		Vector<T, Size> result = A * (T(1) - w);
-		result += B * w;
-		return result;
+		return vecA + ((vecB - vecA) * w);
 	}
 
 public:
-	// Transforms this vector by the Matrix 'mat'
-	inline Type& operator *= (const Matrix<T, S>& mat) noexcept;
-
-	// Transforms this vector by the Matrix 'mat' (auto-homogenized)
-	inline Type& operator *= (const Matrix<T, S + 1>& mat) noexcept;
-
 	// Transforms this vector by the Quaternion 'quat'
 	inline Type& operator *= (const Quaternion<T>& quat) noexcept;
 
@@ -409,16 +399,10 @@ public:
 
 	#define CREATE_ASSIGNMENT_OPERATOR(Op)	\
 																							\
-	inline Type& operator Op (std::initializer_list<T> values) noexcept						\
+	template<class U>																		\
+	inline Type& operator Op (const U(&values)[Size]) noexcept								\
 	{																						\
-		auto it = std::begin(values);														\
-																							\
-		ForEach<Size>([&](size_t index)														\
-		{																					\
-			if (it != std::end(values))														\
-				Values[index] Op *it++;														\
-		});																					\
-																							\
+		ForEach<Size>([&](size_t index) { Values[index] Op values[index]; });				\
 		return *this;																		\
 	}																						\
 																							\
@@ -450,7 +434,7 @@ public:
 			Epic::TMP::Sequence<size_t, Is...>>												\
 		::Apply([&](size_t iThis, size_t iOther)											\
 		{																					\
-			Values[iThis] Op vec.Values[iOther];											\
+			Values[iThis] Op vec.m_Values[iOther];											\
 		});																					\
 																							\
 		return *this;																		\
@@ -477,6 +461,7 @@ public:
 	CREATE_ASSIGNMENT_OPERATOR(>>= );
 
 	#undef CREATE_ASSIGNMENT_OPERATOR
+
 	#pragma endregion
 
 public:
@@ -484,7 +469,8 @@ public:
 
 	#define CREATE_ARITHMETIC_OPERATOR(Op) 	\
 																									\
-	inline Type operator Op (std::initializer_list<T> values) const	noexcept						\
+	template<class U>																				\
+	inline Type operator Op (const U(&values)[Size]) const	noexcept								\
 	{																								\
 		Type result{ *this };																		\
 		result Op= values;																			\
@@ -542,6 +528,7 @@ public:
 	CREATE_ARITHMETIC_OPERATOR(>>);
 
 	#undef CREATE_ARITHMETIC_OPERATOR
+
 	#pragma endregion
 
 private:
@@ -564,9 +551,9 @@ private:
 	#pragma region Construction Helpers
 
 	template<class... Vals>
-	inline void Construct(Vals&&... vals) noexcept
+	inline void Construct(const Vals&... vals) noexcept
 	{
-		ConstructAt(0, std::forward<Vals>(vals)...);
+		ConstructAt(0, vals...);
 	}
 
 	inline void ConstructAt(size_t) noexcept
@@ -575,38 +562,20 @@ private:
 	}
 
 	template<class Val, class... Vals>
-	inline void ConstructAt(size_t offset, Val&& value, Vals&&... values) noexcept
+	inline void ConstructAt(size_t offset, const Val& value, const Vals&... values) noexcept
 	{
-		PlaceAt(offset, std::forward<Val>(value));
-		ConstructAt(offset + Epic::detail::Span<Val>::Value, std::forward<Vals>(values)...);
-	}
-
-	template<class Val>
-	inline void PlaceAt(size_t offset, Val&& value) noexcept
-	{
-		Values[offset] = value;
+		PlaceAt(offset, value);
+		ConstructAt(offset + Epic::detail::Span<Val>::Value, values...);
 	}
 
 	template<class U, size_t Sz>
-	inline void PlaceAt(size_t offset, Vector<U, Sz>& value) noexcept
-	{
-		ForEach<Sz>([&](size_t n) { Values[offset++] = value[n]; });
-	}
-
-	template<class U, size_t Sz>
-	inline void PlaceAt(size_t offset, Vector<U, Sz>&& value) noexcept
+	inline void PlaceAt(size_t offset, const Vector<U, Sz>& value) noexcept
 	{
 		ForEach<Sz>([&](size_t n) { Values[offset++] = value[n]; });
 	}
 
 	template<class VectorT, class TArray, size_t... Is>
-	inline void PlaceAt(size_t offset, VectorSwizzler<VectorT, TArray, Is...>& value) noexcept
-	{
-		PlaceAt(offset, value.ToVector());
-	}
-
-	template<class VectorT, class TArray, size_t... Is>
-	inline void PlaceAt(size_t offset, VectorSwizzler<VectorT, TArray, Is...>&& value) noexcept
+	inline void PlaceAt(size_t offset, const VectorSwizzler<VectorT, TArray, Is...>& value) noexcept
 	{
 		PlaceAt(offset, value.ToVector());
 	}
@@ -618,9 +587,15 @@ private:
 	}
 
 	template<class U, size_t Sz>
-	void inline PlaceAt(size_t offset, std::array<U, Sz>& value) noexcept
+	void inline PlaceAt(size_t offset, const std::array<U, Sz>& value) noexcept
 	{
 		ForEach<Sz>([&](size_t n) { Values[offset++] = value[n]; });
+	}
+
+	template<class Val>
+	inline void PlaceAt(size_t offset, const Val& value) noexcept
+	{
+		Values[offset] = value;
 	}
 
 	#pragma endregion
