@@ -143,7 +143,14 @@ public:
 		ForEach<ColumnCount>([&](size_t n) { Values[ColumnType::Size * n + n] = T(1); });
 	}
 
-	// Constructs a TRS matrix
+	// Constructs a 2D TRS matrix
+	template<typename = std::enable_if_t<(S == 3)>>
+	inline Matrix(const Vector2<T>& vT, const Radian<T>& psi, const Vector2<T>& vS) noexcept
+	{
+		MakeTRS(vT, psi, vS);
+	}
+
+	// Constructs a 3D TRS matrix
 	template<typename = std::enable_if_t<(S == 4)>>
 	inline Matrix(const Vector3<T>& vT, const Quaternion<T>& qR, const Vector3<T>& vS) noexcept
 	{
@@ -497,6 +504,20 @@ public:
 	{
 		ForEach<Size>([&](size_t n) { Values[n] = T(0); });
 		ForEach<ColumnCount>([&](size_t n) { Values[ColumnCount * n + n] = T(1); });
+
+		return *this;
+	}
+
+	// Sets this matrix to a matrix capable of placing things at position vT, oriented in rotation psi, and scaled by vS
+	template<typename EnabledFor3x3 = std::enable_if_t<(S == 3)>>
+	Type& MakeTRS(const Vector2<T>& vT, const Radian<T>& psi, const Vector2<T>& vS) noexcept
+	{
+		MakeRotation(psi);
+
+		cx *= vS.x;
+		cy *= vS.y;
+		
+		cz = vT;
 
 		return *this;
 	}
