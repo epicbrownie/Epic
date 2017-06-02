@@ -73,7 +73,7 @@ public:
 	}
 
 	// Constructs a vector whose values are all set to a value
-	inline explicit Vector(const T& value) noexcept
+	inline Vector(const T& value) noexcept
 	{
 		ForEach<Size>([&](size_t n) { Values[n] = value; });
 	}
