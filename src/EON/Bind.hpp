@@ -17,8 +17,7 @@
 #include <Epic/EON/detail/Utility.hpp>
 #include <Epic/EON/Types.hpp>
 #include <Epic/EON/Selector.hpp>
-#include <boost/variant/get.hpp>
-#include <boost/variant/apply_visitor.hpp>
+#include <variant>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -75,7 +74,7 @@ struct Epic::EON::detail::MemBnd
 			{
 				// An object binding was supplied.
 				// Member object binding requires EON::Object types.
-				auto pObject = boost::get<Epic::EON::Object>(&var->Value.Data);
+				auto pObject = std::get_if<Epic::EON::Object>(&var->Value.Data);
 				if (!pObject)
 					return false;
 
@@ -92,7 +91,7 @@ struct Epic::EON::detail::MemBnd
 			{
 				// Assign as a normal member variable via AssignVisitor
 				auto vsAssign = AssignVisitor<MType, AssignFn>{ instance.*_pMember, _AssignFn };
-				result = boost::apply_visitor(vsAssign, var->Value.Data);
+				result = std::visit(vsAssign, var->Value.Data);
 			}
 		}
 		else
@@ -105,7 +104,7 @@ struct Epic::EON::detail::MemBnd
 				{
 					// An object binding was supplied.
 					// Member object binding requires EON::Object types.
-					auto pObject = boost::get<Epic::EON::Object>(&var.Value.Data);
+					auto pObject = std::get_if<Epic::EON::Object>(&var.Value.Data);
 					if (!pObject)
 						continue;
 
@@ -127,7 +126,7 @@ struct Epic::EON::detail::MemBnd
 				{
 					// Assign as a normal member variable via ObjectAssignVisitor
 					auto vsAssign = ObjectAssignVisitor<MType, AssignFn>{ instance.*_pMember, _AssignFn, var.Name };
-					result |= boost::apply_visitor(vsAssign, var.Value.Data);
+					result |= std::visit(vsAssign, var.Value.Data);
 				}
 			}
 		}

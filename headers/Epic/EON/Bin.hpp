@@ -17,10 +17,11 @@
 #include <Epic/EON/Extractor.hpp>
 #include <Epic/EON/detail/Utility.hpp>
 #include <algorithm>
-#include <boost/variant.hpp>
 #include <cassert>
+#include <iterator>
 #include <stdexcept>
 #include <string>
+#include <variant>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -61,7 +62,7 @@ struct Epic::EON::InvalidValueException : public std::runtime_error
 //////////////////////////////////////////////////////////////////////////////
 
 // VariableInheritVisitor
-class Epic::EON::detail::VariableInheritVisitor : public boost::static_visitor<>
+class Epic::EON::detail::VariableInheritVisitor
 {
 public:
 	VariableInheritVisitor() = default;
@@ -128,7 +129,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 
 // VariableMergeVisitor
-class Epic::EON::detail::VariableMergeVisitor : public boost::static_visitor<>
+class Epic::EON::detail::VariableMergeVisitor
 {
 private:
 	const EON::Variant& _From;
@@ -165,7 +166,7 @@ private:
 						isDuplicate = true;
 
 						VariableMergeVisitor vsMerger(vfrom.Value, vto.Value);
-						boost::apply_visitor(vsMerger, vfrom.Value.Data, vto.Value.Data);
+						std::visit(vsMerger, vfrom.Value.Data, vto.Value.Data);
 
 						break;
 					}
@@ -264,7 +265,7 @@ namespace Epic::EON::detail
 			assert(pScope);
 
 			// If the variable is an object, resolve the inheritance of its native members
-			EON::Object* pObject = boost::get<Object>(&variable.Value.Data);
+			EON::Object* pObject = std::get_if<EON::Object>(&variable.Value.Data);
 			if (pObject)
 			{
 				for (auto& member : pObject->Members)
@@ -302,7 +303,7 @@ namespace Epic::EON::detail
 			if (itDup != std::end(pScope->Members) && &(*itDup) != &variable)
 			{
 				VariableMergeVisitor vsMerge(variable.Value, (*itDup).Value);
-				boost::apply_visitor(vsMerge, variable.Value.Data, (*itDup).Value.Data);
+				std::visit(vsMerge, variable.Value.Data, (*itDup).Value.Data);
 
 				return false;
 			}
@@ -330,7 +331,7 @@ namespace Epic::EON::detail
 				// Now inherit into variable from pParent
 				try
 				{
-					boost::apply_visitor(detail::VariableInheritVisitor(), pParent->Value.Data, variable.Value.Data);
+					std::visit(detail::VariableInheritVisitor(), pParent->Value.Data, variable.Value.Data);
 				}
 				catch (InvalidValueException&)
 				{

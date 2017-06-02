@@ -143,7 +143,7 @@ private:
 		auto var = selectorFn(m_GlobalScope);
 		if (!var) return 0;
 
-		return boost::apply_visitor(Epic::EON::detail::ExtentVisitor<void>(), var->Value.Data);
+		return std::visit(Epic::EON::detail::ExtentVisitor<void>(), var->Value.Data);
 	}
 
 	template<class SelectorFn, class FilterFn>
@@ -153,7 +153,7 @@ private:
 		if (!var) return 0;
 
 		auto vsExtent = Epic::EON::detail::ExtentVisitor<FilterFn>{ filterFn };
-		return boost::apply_visitor(vsExtent, var->Value.Data);
+		return std::visit(vsExtent, var->Value.Data);
 	}
 
 	template<class ResultType, class SelectorFn, class DefaultFn, class AssignFn>
@@ -166,7 +166,7 @@ private:
 		bool assigned = false;
 
 		auto vsAssign = Epic::EON::detail::AssignVisitor<ResultType, AssignFn>{ result, assignFn };
-		if (boost::apply_visitor(vsAssign, var->Value.Data))
+		if (std::visit(vsAssign, var->Value.Data))
 			assigned = true;
 		
 		return assigned;
@@ -185,7 +185,7 @@ private:
 		bool assigned = false;
 
 		// Extract var as ObjectType
-		const EON::Object* pAsObject = boost::get<EON::Object>(&var->Value.Data);
+		const EON::Object* pAsObject = std::get_if<EON::Object>(&var->Value.Data);
 
 		if (pAsObject)
 		{
@@ -196,13 +196,13 @@ private:
 		}
 		
 		// Extract variable as array of ObjectType
-		const EON::Array* pAsArray = boost::get<EON::Array>(&var->Value.Data);
+		const EON::Array* pAsArray = std::get_if<EON::Array>(&var->Value.Data);
 
 		if (pAsArray)
 		{
 			for (auto& member : pAsArray->Members)
 			{
-				const EON::Object* pMemberAsObj = boost::get<EON::Object>(&member.Data);
+				const EON::Object* pMemberAsObj = std::get_if<EON::Object>(&member.Data);
 
 				if (pMemberAsObj)
 				{
@@ -235,7 +235,7 @@ private:
 			ResultType thisResult;
 
 			auto vsAssign = detail::AssignVisitor<ResultType, AssignFn>{ thisResult, assignFn };
-			if (boost::apply_visitor(vsAssign, pVariable->Value.Data))
+			if (std::visit(vsAssign, pVariable->Value.Data))
 			{
 				assigned = true;
 				Inserter::Add(results, std::move(thisResult));
@@ -262,7 +262,7 @@ private:
 
 		for (auto pVariable : vars)
 		{
-			const EON::Object* pAsObject = boost::get<EON::Object>(&pVariable->Value.Data);
+			const EON::Object* pAsObject = std::get_if<EON::Object>(&pVariable->Value.Data);
 
 			if (pAsObject)
 			{
@@ -282,7 +282,7 @@ private:
 				continue;
 			}
 			
-			const EON::Array* pAsArray = boost::get<EON::Array>(&pVariable->Value.Data);
+			const EON::Array* pAsArray = std::get_if<EON::Array>(&pVariable->Value.Data);
 			
 			if (pAsArray)
 			{
@@ -291,7 +291,7 @@ private:
 
 				for (auto& member : pAsArray->Members)
 				{
-					const EON::Object* pMemberAsObj = boost::get<EON::Object>(&member.Data);
+					const EON::Object* pMemberAsObj = std::get_if<EON::Object>(&member.Data);
 					
 					if (pMemberAsObj)
 					{

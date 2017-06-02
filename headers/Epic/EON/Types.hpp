@@ -16,7 +16,7 @@
 #include <Epic/STL/Vector.hpp>
 #include <Epic/STL/String.hpp>
 #include <Epic/StringHash.hpp>
-#include <boost/variant.hpp>
+#include <variant>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -117,9 +117,7 @@ struct Epic::EON::Boolean
 // Variant
 struct Epic::EON::Variant
 {
-	using VariantType = boost::variant<EON::Object, EON::Array, EON::String, EON::Float, EON::Integer, EON::Boolean>;
-	using Types = typename VariantType::types;
-
+	using VariantType = std::variant<EON::Object, EON::Array, EON::String, EON::Float, EON::Integer, EON::Boolean>;
 	VariantType Data;
 };
 
