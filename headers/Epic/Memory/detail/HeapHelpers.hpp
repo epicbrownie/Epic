@@ -163,7 +163,6 @@ struct Epic::detail::HeapBitmap
 	}
 
 	// Find the first bit where 'length' bits are contiguously free.
-	// The search will begin at the 'start' bit.
 	size_t FindAvailable(const size_t length) const noexcept
 	{
 		size_t LBlock = 0;
