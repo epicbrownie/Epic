@@ -70,6 +70,7 @@
     <ClInclude Include="src\Event.hpp" />
     <ClInclude Include="src\Ext\Erase.hpp" />
     <ClInclude Include="src\AudioSystem.hpp" />
+    <ClInclude Include="src\Ext\Sort.hpp" />
     <ClInclude Include="src\GLFWContextTypes.hpp" />
     <ClInclude Include="src\GLFWJoystickInputDevice.hpp" />
     <ClInclude Include="src\GLFWKeyboardInputDevice.hpp" />

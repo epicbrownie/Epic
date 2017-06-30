@@ -14,7 +14,7 @@
 #pragma once
 
 #include <Epic/Config.hpp>
-#include <type_traits>
+#include <Epic/TMP/TypeTraits.hpp>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -25,87 +25,49 @@ namespace Epic::detail
 		DefaultAllocator,
 		AudioAllocator
 	};
+
+	template<eConfigProperty P, class D, class C>
+	struct ConfigProperty;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
 namespace Epic::detail
 {
-	template<typename T, typename = void>
-	struct CheckDefaultAllocator;
+	template<class T>
+	using HasDefaultAllocator = typename T::DefaultAllocator;
 
-	template<typename T, typename = void>
-	struct CheckAudioAllocator;
-
-	template<typename T>
-	struct ConfigProperties;
-
-	template<Epic::detail::eConfigProperty Property, class Config = Epic::Config<true>>
-	struct GetConfigProperty;
+	template<class T>
+	using HasAudioAllocator = typename T::AudioAllocator;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// CheckDefaultAllocator
-template<typename T, typename>
-struct Epic::detail::CheckDefaultAllocator
+template<Epic::detail::eConfigProperty P, class D, class C>
+struct Epic::detail::ConfigProperty
 {
-	/* DefaultAllocator not found in Epic::Config<true> */
-	using DefaultAllocator = void;
+	using Type = D;
 };
 
-template<typename T>
-struct Epic::detail::CheckDefaultAllocator<T, std::void_t<typename T::DefaultAllocator>> 
+template<class D, class C>
+struct Epic::detail::ConfigProperty<Epic::detail::eConfigProperty::DefaultAllocator, D, C>
 {
-	/* Import DefaultAllocator from Epic::Config<true> */
-	using DefaultAllocator = typename T::DefaultAllocator;
+	using Type = Epic::TMP::DetectedOrT<D, Epic::detail::HasDefaultAllocator, C>;
+};
+
+template<class D, class C>
+struct Epic::detail::ConfigProperty<Epic::detail::eConfigProperty::AudioAllocator, D, C>
+{
+	using Type = Epic::TMP::DetectedOrT<D, Epic::detail::HasAudioAllocator, C>;
 };
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// CheckAudioAllocator
-template<typename T, typename>
-struct Epic::detail::CheckAudioAllocator
+namespace Epic::detail
 {
-	/* AudioAllocator not found in Epic::Config<true> */
-	using AudioAllocator = void;
-};
+	template<eConfigProperty Prop, class C = Epic::Config<true>>
+	using GetConfigProperty = ConfigProperty<Prop, Epic::TMP::detail::InvalidType, C>;
 
-template<typename T>
-struct Epic::detail::CheckAudioAllocator<T, std::void_t<typename T::AudioAllocator>>
-{
-	/* Import AudioAllocator from Epic::Config<true> */
-	using AudioAllocator = typename T::AudioAllocator;
-};
-
-//////////////////////////////////////////////////////////////////////////////
-
-/// ConfigProperties
-template<typename T>
-struct Epic::detail::ConfigProperties :
-	CheckDefaultAllocator<T>,
-	CheckAudioAllocator<T>
-{ 
-	/* Properties imported through inheritance */
-};
-
-//////////////////////////////////////////////////////////////////////////////
-
-/// GetConfigProperty<DefaultAllocator>
-template<class ConfigType>
-struct Epic::detail::GetConfigProperty<Epic::detail::eConfigProperty::DefaultAllocator, ConfigType>
-{
-	using Type = typename Epic::detail::ConfigProperties<ConfigType>::DefaultAllocator;
-};
-
-/// GetConfigProperty<AudioAllocator>
-template<class ConfigType>
-struct Epic::detail::GetConfigProperty<Epic::detail::eConfigProperty::AudioAllocator, ConfigType>
-{
-	//static_assert(std::is_same<ConfigType, Epic::Config<true>>::value &&
-	//			  !std::is_same<void, typename Epic::detail::ConfigProperties<ConfigType>::DefaultAllocator>::value,
-	//	"You must specialize structure Epic::Config and add a DefaultAllocator member. "
-	//	"See (https://github.com/epicbrownie/Epic/wiki) for details.");
-
-	using Type = typename Epic::detail::ConfigProperties<ConfigType>::AudioAllocator;
-};
+	template<eConfigProperty Prop, class Default, class C = Epic::Config<true>>
+	using GetConfigPropertyOr = ConfigProperty<Prop, Default, C>;
+}

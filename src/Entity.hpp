@@ -221,12 +221,38 @@ public:
 		return pContainer->Component;
 	}
 
+	// Get a component that has been attached to this Entity.
+	// Will fail an assertion if this Entity does not have the component.
+	// Use Has<Component>() if unsure.
+	template<class Component>
+	const Component& Get() const noexcept
+	{
+		auto it = m_Components.find(Epic::EntityComponentTraits<Component>::ID);
+		assert(it != std::end(m_Components));
+
+		auto pContainer = static_cast<detail::EntityComponentContainer<Component>*>((*it).second.get());
+		return pContainer->Component;
+	}
+
 public:
 	// Calls 'fn', passing references to component data, if this Entity
 	// has ALL Components.
 	// Returns whether or not the function was called.
 	template<class... Components>
 	bool With(std::function<void(Components&...)> fn) noexcept
+	{
+		if (!Has<Components...>())
+			return false;
+
+		fn(Get<Components>()...);
+		return true;
+	}
+
+	// Calls 'fn', passing references to component data, if this Entity
+	// has ALL Components.
+	// Returns whether or not the function was called.
+	template<class... Components>
+	bool With(std::function<void(const Components&...)> fn) const noexcept
 	{
 		if (!Has<Components...>())
 			return false;

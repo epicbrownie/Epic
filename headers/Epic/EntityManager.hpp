@@ -158,6 +158,13 @@ public:
 		return (it != std::end(m_IDEntityMap)) ? it->second : nullptr;
 	}
 
+	inline const EntityPtr::pointer GetEntity(const EntityID id) const noexcept
+	{
+		auto it = m_IDEntityMap.find(id);
+
+		return (it != std::end(m_IDEntityMap)) ? it->second : nullptr;
+	}
+
 	inline EntityPtr::pointer GetEntity(const Epic::StringHash& name) noexcept
 	{
 		auto it = m_NameEntityMap.find(name);
@@ -165,7 +172,22 @@ public:
 		return (it != std::end(m_NameEntityMap)) ? it->second : nullptr;
 	}
 
+	inline const EntityPtr::pointer GetEntity(const Epic::StringHash& name) const noexcept
+	{
+		auto it = m_NameEntityMap.find(name);
+
+		return (it != std::end(m_NameEntityMap)) ? it->second : nullptr;
+	}
+
 	inline EntityPtr::pointer GetEntityByIndex(const size_t index) noexcept
+	{
+		if (index >= 0 && index < m_Entities.size())
+			return m_Entities[index].get();
+
+		return nullptr;
+	}
+
+	inline const EntityPtr::pointer GetEntityByIndex(const size_t index) const noexcept
 	{
 		if (index >= 0 && index < m_Entities.size())
 			return m_Entities[index].get();
@@ -328,48 +350,109 @@ public:
 	}
 
 	template<class... Components>
-	void Each(std::function<void(EntityPtr::pointer, Components&...)> fn, bool includeDestroyed = false)
+	Epic::detail::ConstEntityComponentView<Components...> Each(bool includeDestroyed = false) const noexcept
 	{
-		if (includeDestroyed)
-		{
-			for (auto& pEntity : m_Entities)
-			{
-				if (pEntity->Has<Components...>())
-					fn(pEntity.get(), pEntity->Get<Components>()...);
-			}
-		}
-		else
-		{
-			for (auto& pEntity : m_Entities)
-			{
-				if (pEntity->Has<Components...>() && !pEntity->IsDestroyPending())
-					fn(pEntity.get(), pEntity->Get<Components>()...);
-			}
-		}
-	}
-
-	Epic::detail::EntityComponentView<void> All(bool includeDestroyed = false) noexcept
-	{
-		return Epic::detail::EntityComponentView<void>
+		return Epic::detail::ConstEntityComponentView<Components...>
 		{
 			{ this, 0, includeDestroyed },
 			{ this, GetEntityCount(), includeDestroyed }
 		};
 	}
 
-	void All(std::function<void(EntityPtr::pointer)> fn, bool includeDestroyed = false)
+	template<class... Components>
+	void Each(std::function<void(Entity&, Components&...)> fn, bool includeDestroyed = false)
 	{
 		if (includeDestroyed)
 		{
 			for (auto& pEntity : m_Entities)
-				fn(pEntity.get());
+			{
+				auto& entity = *pEntity;
+				if (entity.Has<Components...>())
+					fn(entity, entity.Get<Components>()...);
+			}
+		}
+		else
+		{
+			for (auto& pEntity : m_Entities)
+			{
+				auto& entity = *pEntity;
+				if (entity.Has<Components...>() && !entity.IsDestroyPending())
+					fn(entity, entity.Get<Components>()...);
+			}
+		}
+	}
+
+	template<class... Components>
+	void Each(std::function<void(const Entity&, const Components&...)> fn, bool includeDestroyed = false) const
+	{
+		if (includeDestroyed)
+		{
+			for (auto& pEntity : m_Entities)
+			{
+				auto& entity = *pEntity;
+				if (entity.Has<Components...>())
+					fn(entity, entity.Get<Components>()...);
+			}
+		}
+		else
+		{
+			for (auto& pEntity : m_Entities)
+			{
+				auto& entity = *pEntity;
+				if (entity.Has<Components...>() && !entity.IsDestroyPending())
+					fn(entity, entity.Get<Components>()...);
+			}
+		}
+	}
+
+	Epic::detail::EntityComponentView<> All(bool includeDestroyed = false) noexcept
+	{
+		return Epic::detail::EntityComponentView<>
+		{
+			{ this, 0, includeDestroyed },
+			{ this, GetEntityCount(), includeDestroyed }
+		};
+	}
+
+	Epic::detail::ConstEntityComponentView<> All(bool includeDestroyed = false) const noexcept
+	{
+		return Epic::detail::ConstEntityComponentView<>
+		{
+			{ this, 0, includeDestroyed },
+			{ this, GetEntityCount(), includeDestroyed }
+		};
+	}
+
+	void All(std::function<void(Entity&)> fn, bool includeDestroyed = false)
+	{
+		if (includeDestroyed)
+		{
+			for (auto& pEntity : m_Entities)
+				fn(*pEntity);
 		}
 		else
 		{
 			for (auto& pEntity : m_Entities)
 			{
 				if (!pEntity->IsDestroyPending())
-					fn(pEntity.get());
+					fn(*pEntity);
+			}
+		}
+	}
+
+	void All(std::function<void(const Entity&)> fn, bool includeDestroyed = false) const
+	{
+		if (includeDestroyed)
+		{
+			for (auto& pEntity : m_Entities)
+				fn(*pEntity);
+		}
+		else
+		{
+			for (auto& pEntity : m_Entities)
+			{
+				if (!pEntity->IsDestroyPending())
+					fn(*pEntity);
 			}
 		}
 	}

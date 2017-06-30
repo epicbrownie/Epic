@@ -25,49 +25,46 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-namespace Epic
+namespace Epic::Ext
 {
-	namespace Ext
+	/// Generically remove element x from container c
+	template <typename Container, typename X>
+	void erase(Container& c, const X& x);
+
+	/// Generically remove all elements in container c which satisfy predicate p
+	template <typename Container, typename Predicate>
+	void erase_if(Container& c, Predicate p);
+
+	/// Implementation
+	namespace detail
 	{
-		/// Generically remove element x from container c
+		// Dispatch tags
+		struct vectorlike_tag { };		// Method #1 - Erase using erase-remove idiom
+		struct listlike_tag { };		// Method #2 - Erase using remove()
+		struct associative_tag { };		// Method #3 - Erase using erase()
+
+		// Container dispatch tagging
+		template<typename C>
+		struct container_traits;
+
+		// erase/erase_if implementations
 		template <typename Container, typename X>
-		void erase(Container& c, const X& x);
+		void erase_helper(Container& c, const X& x, vectorlike_tag);
 
-		/// Generically remove all elements in container c which satisfy predicate p
+		template <typename Container, typename X>
+		void erase_helper(Container& c, const X& x, listlike_tag);
+
+		template <typename Container, typename X>
+		void erase_helper(Container& c, const X& x, associative_tag);
+
 		template <typename Container, typename Predicate>
-		void erase_if(Container& c, Predicate p);
+		void erase_if_helper(Container& c, Predicate p, vectorlike_tag);
 
-		/// Implementation
-		namespace detail
-		{
-			// Dispatch tags
-			struct vectorlike_tag { };		// Method #1 - Erase using erase-remove idiom
-			struct listlike_tag { };		// Method #2 - Erase using remove()
-			struct associative_tag { };		// Method #3 - Erase using erase()
+		template <typename Container, typename Predicate>
+		void erase_if_helper(Container& c, Predicate p, listlike_tag);
 
-			// Container dispatch tagging
-			template<typename C>
-			struct container_traits;
-
-			// erase/erase_if implementations
-			template <typename Container, typename X>
-			void erase_helper(Container& c, const X& x, vectorlike_tag);
-
-			template <typename Container, typename X>
-			void erase_helper(Container& c, const X& x, listlike_tag);
-
-			template <typename Container, typename X>
-			void erase_helper(Container& c, const X& x, associative_tag);
-
-			template <typename Container, typename Predicate>
-			void erase_if_helper(Container& c, Predicate p, vectorlike_tag);
-
-			template <typename Container, typename Predicate>
-			void erase_if_helper(Container& c, Predicate p, listlike_tag);
-
-			template <typename Container, typename Predicate>
-			void erase_if_helper(Container& c, Predicate p, associative_tag);
-		}
+		template <typename Container, typename Predicate>
+		void erase_if_helper(Container& c, Predicate p, associative_tag);
 	}
 }
 

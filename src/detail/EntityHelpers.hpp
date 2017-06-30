@@ -32,16 +32,16 @@ namespace Epic::detail
 template<class... Components>
 struct Epic::detail::EntityHasComponents
 {
-	inline static bool Apply(Epic::Entity* pEntity) noexcept
+	inline static bool Apply(const Epic::Entity* pEntity) noexcept
 	{
 		return pEntity->Has<Components...>();
 	}
 };
 
 template<>
-struct Epic::detail::EntityHasComponents<void>
+struct Epic::detail::EntityHasComponents<>
 {
-	inline static bool Apply(Epic::Entity*) noexcept
+	inline static bool Apply(const Epic::Entity*) noexcept
 	{
 		return true;
 	}

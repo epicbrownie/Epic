@@ -521,6 +521,9 @@
     <ClInclude Include="src\EntityController.hpp">
       <Filter>Core\Entity</Filter>
     </ClInclude>
+    <ClInclude Include="src\Ext\Sort.hpp">
+      <Filter>Utility\Ext</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Memory\NullAllocator.cpp">

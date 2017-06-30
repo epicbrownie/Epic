@@ -17,10 +17,9 @@
 #include <Epic/EON/Types.hpp>
 #include <Epic/STL/Vector.hpp>
 #include <Epic/TMP/TypeTraits.hpp>
-#include <boost/variant/apply_visitor.hpp>
-#include <boost/variant/static_visitor.hpp>
 #include <type_traits>
 #include <utility>
+#include <variant>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -510,7 +509,7 @@ struct Epic::EON::detail::DefaultIf<Function, DestType, true>
 //////////////////////////////////////////////////////////////////////////////
 
 template<class DestType, class Function>
-struct Epic::EON::detail::ObjectAssignVisitor : public boost::static_visitor<bool>
+struct Epic::EON::detail::ObjectAssignVisitor
 {
 	// NOTE: These parameters are stored internally rather than by passing via
 	//		 std::bind to help prevent warning C4503
@@ -530,7 +529,7 @@ struct Epic::EON::detail::ObjectAssignVisitor : public boost::static_visitor<boo
 };
 
 template<class DestType, class Function>
-struct Epic::EON::detail::ArrayAssignVisitor : public boost::static_visitor<bool>
+struct Epic::EON::detail::ArrayAssignVisitor
 {
 	// NOTE: These parameters are stored internally rather than by passing via
 	//		 std::bind to help prevent warning C4503
@@ -549,7 +548,7 @@ struct Epic::EON::detail::ArrayAssignVisitor : public boost::static_visitor<bool
 };
 
 template<class DestType, class Function>
-struct Epic::EON::detail::AssignVisitor : public boost::static_visitor<bool>
+struct Epic::EON::detail::AssignVisitor
 {
 	// NOTE: These parameters are stored internally rather than by passing via
 	//		 std::bind to help prevent warning C4503
@@ -573,7 +572,7 @@ struct Epic::EON::detail::AssignVisitor : public boost::static_visitor<bool>
 		for (auto& var : src.Members)
 		{
 			auto vsAssign = ObjectAssignVisitor<DestType, Function>{ _Dest, _AssignFn, var.Name };
-			if (boost::apply_visitor(vsAssign, var.Value.Data))
+			if (std::visit(vsAssign, var.Value.Data))
 				assigned = true;
 		}
 
@@ -588,7 +587,7 @@ struct Epic::EON::detail::AssignVisitor : public boost::static_visitor<bool>
 		for (auto& var : src.Members)
 		{
 			auto vsAssign = ArrayAssignVisitor<DestType, Function>{ _Dest, _AssignFn };
-			if (boost::apply_visitor(vsAssign, var.Data))
+			if (std::visit(vsAssign, var.Data))
 				assigned = true;
 		}
 

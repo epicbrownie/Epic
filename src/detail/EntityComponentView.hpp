@@ -25,26 +25,32 @@
 
 namespace Epic::detail
 {
+	template<class Iterator, class... Components>
+	class EntityComponentViewImpl;
+
 	template<class... Components>
-	class EntityComponentView;
+	using EntityComponentView = EntityComponentViewImpl<Epic::detail::EntityComponentIterator<Components...>, Components...>;
+
+	template<class... Components>
+	using ConstEntityComponentView = EntityComponentViewImpl<Epic::detail::ConstEntityComponentIterator<Components...>, Components...>;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-// EntityComponentView<Components>
-template<class... Components>
-class Epic::detail::EntityComponentView
+// EntityComponentViewImpl<Iterator, Components>
+template<class I, class... Components>
+class Epic::detail::EntityComponentViewImpl
 {
 public:
-	using Type = Epic::detail::EntityComponentView<Components...>;
-	using Iterator = Epic::detail::EntityComponentIterator<Components...>;
+	using Type = Epic::detail::EntityComponentViewImpl<I, Components...>;
+	using Iterator = I;
 
 private:
 	Iterator m_IterBegin;
 	const Iterator m_IterEnd;
 
 public:
-	EntityComponentView(const Iterator& itBegin, const Iterator& itEnd) noexcept
+	EntityComponentViewImpl(const Iterator& itBegin, const Iterator& itEnd) noexcept
 		: m_IterBegin{ itBegin }, m_IterEnd{ itEnd }
 	{
 		if (*m_IterBegin == nullptr ||

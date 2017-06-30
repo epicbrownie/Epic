@@ -15,8 +15,8 @@
 
 #include <Epic/EON/Types.hpp>
 #include <Epic/TMP/TypeTraits.hpp>
-#include <boost/variant/get.hpp>
 #include <algorithm>
+#include <variant>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -85,7 +85,7 @@ namespace Epic::EON::detail
 					pVariable = (it == std::end(pScope->Members)) ? nullptr : &(*it);
 					if (!pVariable) break;
 
-					pScope = boost::get<Epic::EON::Object>(&pVariable->Value.Data);
+					pScope = std::get_if<Epic::EON::Object>(&pVariable->Value.Data);
 				}
 
 				// Reset for next path entry
@@ -141,7 +141,7 @@ struct Epic::EON::detail::ExtentFilterIf<Function, T, true>
 
 // ExtentVisitor<FilterFn>
 template<class FilterFn>
-struct Epic::EON::detail::ExtentVisitor : public boost::static_visitor<size_t>
+struct Epic::EON::detail::ExtentVisitor
 {
 	const FilterFn _FilterFn;
 
@@ -175,7 +175,7 @@ struct Epic::EON::detail::ExtentVisitor : public boost::static_visitor<size_t>
 
 // ExtentVisitor<void>
 template<>
-struct Epic::EON::detail::ExtentVisitor<void> : public boost::static_visitor<size_t>
+struct Epic::EON::detail::ExtentVisitor<void>
 {
 	template<class SrcType>
 	constexpr size_t operator() (const SrcType& src) const
