@@ -666,7 +666,7 @@ public:
 		return true;
 	}
 
-	void UnloadAudioLibrary(const Epic::StringHash& libraryID) noexcept
+	void UnloadAudioLibrary(const Epic::StringHash libraryID) noexcept
 	{
 		auto it = m_Libraries.find(libraryID);
 		if (it != std::end(m_Libraries))
@@ -683,7 +683,7 @@ public:
 		}
 	}
 
-	void CacheLibrary(const Epic::StringHash& libraryID) noexcept
+	void CacheLibrary(const Epic::StringHash libraryID) noexcept
 	{
 		auto it = m_Libraries.find(libraryID);
 		if (it != std::end(m_Libraries))
@@ -693,7 +693,7 @@ public:
 		}
 	}
 
-	void UncacheLibrary(const Epic::StringHash& libraryID) noexcept
+	void UncacheLibrary(const Epic::StringHash libraryID) noexcept
 	{
 		auto it = m_Libraries.find(libraryID);
 		if (it != std::end(m_Libraries))
@@ -708,7 +708,7 @@ public:
 public:
 	#pragma region Sounds
 		
-	SoundPtr CreateInstance(const Epic::StringHash& id) noexcept
+	SoundPtr CreateInstance(const Epic::StringHash id) noexcept
 	{
 		auto it = m_Sounds.find(id);
 		if (it != std::end(m_Sounds))
@@ -717,7 +717,7 @@ public:
 		return nullptr;
 	}
 
-	void CacheSound(const Epic::StringHash& soundID) noexcept
+	void CacheSound(const Epic::StringHash soundID) noexcept
 	{
 		auto it = m_Sounds.find(soundID);
 		if (it != std::end(m_Sounds))
@@ -727,7 +727,7 @@ public:
 		}
 	}
 
-	void UncacheSound(const Epic::StringHash& soundID) noexcept
+	void UncacheSound(const Epic::StringHash soundID) noexcept
 	{
 		auto it = m_Sounds.find(soundID);
 		if (it != std::end(m_Sounds))
@@ -742,7 +742,7 @@ public:
 public:
 	#pragma region Buses
 
-	BusPtr GetBus(const Epic::StringHash& id) noexcept
+	BusPtr GetBus(const Epic::StringHash id) noexcept
 	{
 		auto it = m_Buses.find(id);
 		if (it != std::end(m_Buses))
@@ -756,7 +756,7 @@ public:
 public:
 	#pragma region Volume Controls
 
-	VolumeControlPtr GetVolumeControl(const Epic::StringHash& id) noexcept
+	VolumeControlPtr GetVolumeControl(const Epic::StringHash id) noexcept
 	{
 		auto it = m_VolumeControls.find(id);
 		if (it != std::end(m_VolumeControls))
@@ -815,7 +815,7 @@ public:
 	}
 
 private:
-	using AvailableDelegate = Epic::Event<void(const char*, const Epic::StringHash&)>;
+	using AvailableDelegate = Epic::Event<void(const char*, const Epic::StringHash)>;
 
 public:
 	AvailableDelegate LibraryAdded;

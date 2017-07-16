@@ -40,7 +40,7 @@ private:
 public:
 	ButtonResolver() noexcept = delete;
 
-	ButtonResolver(InputDataID dataID, eInputButtonState resolveOn, const Epic::StringHash& device)
+	ButtonResolver(InputDataID dataID, eInputButtonState resolveOn, const Epic::StringHash device)
 		: m_DataID{ dataID }, m_State{ resolveOn }, m_DeviceName{ device }
 	{ }
 
@@ -57,7 +57,7 @@ public:
 		return m_State;
 	}
 
-	inline const Epic::StringHash& GetDeviceName() const noexcept
+	inline const Epic::StringHash GetDeviceName() const noexcept
 	{
 		return m_DeviceName;
 	}

@@ -41,7 +41,7 @@ private:
 public:
 	AlphaResolver() noexcept = delete;
 
-	AlphaResolver(eInputButtonState resolveOn, const Epic::StringHash& device)
+	AlphaResolver(eInputButtonState resolveOn, const Epic::StringHash device)
 		: m_State{ resolveOn }, m_DeviceName{ device }
 	{ }
 
@@ -53,7 +53,7 @@ public:
 		return m_State;
 	}
 
-	inline const Epic::StringHash& GetDeviceName() const noexcept
+	inline const Epic::StringHash GetDeviceName() const noexcept
 	{
 		return m_DeviceName;
 	}

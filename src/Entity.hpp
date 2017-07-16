@@ -67,7 +67,7 @@ public:
 	ComponentAttachmentDelegate ComponentDetached;
 
 public:
-	inline Entity(Epic::EntityManager* pSystem, const Epic::StringHash& name, const EntityID id) noexcept
+	inline Entity(Epic::EntityManager* pSystem, const Epic::StringHash name, const EntityID id) noexcept
 		: m_pEntityManager{ pSystem }, m_Name{ name }, m_ID{ id }, m_DestroyPending { false }
 	{ }
 
@@ -82,7 +82,7 @@ public:
 		return m_pEntityManager;
 	}
 
-	constexpr const Epic::StringHash& GetName() const
+	constexpr const Epic::StringHash GetName() const
 	{
 		return m_Name;
 	}

@@ -59,7 +59,7 @@ public:
 	InputAction(const Type&) = delete;
 	Type& operator = (const Type&) = delete;
 	
-	inline explicit InputAction(const Epic::StringHash& actionName) noexcept
+	inline explicit InputAction(const Epic::StringHash actionName) noexcept
 		: m_ActionName{ actionName }
 	{ }
 
@@ -70,7 +70,7 @@ public:
 	{ }
 	
 public:
-	inline const Epic::StringHash& GetActionName() const noexcept
+	inline const Epic::StringHash GetActionName() const noexcept
 	{
 		return m_ActionName;
 	}

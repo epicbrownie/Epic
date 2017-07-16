@@ -57,7 +57,7 @@ private:
 	std::array<float, MaxAxes> m_AxisData;
 
 public:
-	GLFWJoystickInputDevice(const Epic::StringHash& deviceName, int joystickID) noexcept
+	GLFWJoystickInputDevice(const Epic::StringHash deviceName, int joystickID) noexcept
 		: Base{ deviceName }
 	{
 		m_JoystickID = (joystickID <= MaxJoystickID) ? joystickID : -1;
@@ -79,7 +79,7 @@ public:
 	~GLFWJoystickInputDevice() noexcept { }
 
 public:
-	const uint64_t GetDeviceAttribute(const Epic::StringHash& attrib) const noexcept override
+	const uint64_t GetDeviceAttribute(const Epic::StringHash attrib) const noexcept override
 	{
 		switch (attrib)
 		{
