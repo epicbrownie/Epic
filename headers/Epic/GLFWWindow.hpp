@@ -199,8 +199,8 @@ private:
 			return false;
 
 		// Apply post-creation context settings
-		std::clog << "Renderer " << glGetString(GL_RENDERER) << std::endl;
-		std::clog << "OpenGL version supported " << glGetString(GL_VERSION) << std::endl;
+		std::clog << "Renderer " << glGetString(GL_RENDERER);
+		std::clog << "\nOpenGL version supported " << glGetString(GL_VERSION) << '\n';
 		std::clog << std::endl;
 
 		int fbw, fbh;
@@ -548,7 +548,7 @@ public:
 		}
 	}
 
-	void SetBackgroundColor(const float& r, const float& g, const float& b) override
+	void SetBackgroundColor(float r, float g, float b) override
 	{
 		assert(m_pWindow);
 		glClearColor(r, g, b, 1.0f);

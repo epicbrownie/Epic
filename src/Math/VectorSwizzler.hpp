@@ -65,8 +65,8 @@ public:
 	}
 
 public:
-#pragma region Assignment Operators
-#define CREATE_ASSIGNMENT_OPERATOR(Op)	\
+	#pragma region Assignment Operators
+	#define CREATE_ASSIGNMENT_OPERATOR(Op)	\
 																									\
 	template<class T>																				\
 	inline AssignableThis operator Op (const T(&values)[sizeof...(Indices)]) noexcept				\

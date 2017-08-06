@@ -1513,7 +1513,7 @@ namespace Epic
 	template<class U, size_t Sz>
 	inline std::ostream& operator << (std::ostream& stream, const Matrix<U, Sz>& mat)
 	{
-		stream << '[' << std::endl;
+		stream << "[\n";
 		if (Sz > 0)
 		{
 			stream << std::fixed;
@@ -1521,7 +1521,7 @@ namespace Epic
 			{
 				stream << ' ' << mat[n];
 				if (n < Sz - 1) stream << ',';
-				stream << std::endl;
+				stream << '\n';
 			});
 			stream << std::defaultfloat;
 		}
@@ -1533,7 +1533,7 @@ namespace Epic
 	template<class U, size_t Sz>
 	inline std::wostream& operator << (std::wostream& stream, const Matrix<U, Sz>& mat)
 	{
-		stream << L'[' << std::endl;
+		stream << L"[\n";
 		if (Sz > 0)
 		{
 			stream << std::fixed;
@@ -1541,7 +1541,7 @@ namespace Epic
 			{
 				stream << L' ' << mat[n];
 				if (n < Sz - 1) stream << L',';
-				stream << std::endl;
+				stream << L'\n';
 			});
 			stream << std::defaultfloat;
 		}
