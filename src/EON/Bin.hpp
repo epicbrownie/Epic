@@ -17,10 +17,11 @@
 #include <Epic/EON/Extractor.hpp>
 #include <Epic/EON/detail/Utility.hpp>
 #include <algorithm>
-#include <variant>
 #include <cassert>
+#include <iterator>
 #include <stdexcept>
 #include <string>
+#include <variant>
 
 //////////////////////////////////////////////////////////////////////////////
 
