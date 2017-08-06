@@ -39,7 +39,7 @@ namespace Epic::detail
 		template<size_t N>
 		constexpr EntityComponentID MakeEntityComponentID(const char(&cstr)[N])
 		{
-			return Epic::Hash(cstr).Value();
+			return EntityComponentID(Epic::Hash(cstr).Value());
 		}
 	}
 }

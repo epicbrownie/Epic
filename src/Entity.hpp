@@ -77,22 +77,27 @@ public:
 	}
 
 public:
-	constexpr Epic::EntityManager* GetEntityManager() const noexcept
+	Epic::EntityManager* GetEntityManager() noexcept
 	{
 		return m_pEntityManager;
 	}
 
-	constexpr const Epic::StringHash GetName() const
+	const Epic::EntityManager* GetEntityManager() const noexcept
+	{
+		return m_pEntityManager;
+	}
+
+	const Epic::StringHash GetName() const
 	{
 		return m_Name;
 	}
 
-	constexpr const EntityID GetID() const noexcept
+	const EntityID GetID() const noexcept
 	{
 		return m_ID;
 	}
 
-	constexpr bool IsDestroyPending() const
+	bool IsDestroyPending() const
 	{
 		return m_DestroyPending;
 	}

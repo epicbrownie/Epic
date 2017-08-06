@@ -52,7 +52,12 @@ public:
 	virtual ~EntitySystem() { }
 
 public:
-	constexpr Epic::EntityManager* GetEntityManager() const noexcept
+	Epic::EntityManager* GetEntityManager() noexcept
+	{
+		return m_pEntityManager;
+	}
+
+	const Epic::EntityManager* GetEntityManager() const noexcept
 	{
 		return m_pEntityManager;
 	}

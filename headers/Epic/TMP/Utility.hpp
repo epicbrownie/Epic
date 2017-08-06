@@ -88,6 +88,7 @@ namespace Epic::TMP
 	template<size_t V1, size_t... Vs>
 	struct StaticMax<V1, Vs...>
 	{
-		static constexpr size_t value = (V1 > StaticMax<Vs...>::value) ? V1 : StaticMax<Vs...>::value;
+		static constexpr size_t next = StaticMax<Vs...>::value;
+		static constexpr size_t value = (V1 > next) ? V1 : next;
 	};
 }
