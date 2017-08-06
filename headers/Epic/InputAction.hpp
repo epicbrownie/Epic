@@ -119,7 +119,7 @@ public:
 
 public:
 	// Rebind 'slot' to 'pResolver'
-	inline bool Bind(Slot slot, InputResolverPtr pResolver) noexcept
+	inline bool Bind(Slot slot, InputResolverPtr&& pResolver) noexcept
 	{
 		assert(slot < Slots);	
 		m_Resolvers[slot] = std::move(pResolver);
@@ -127,7 +127,7 @@ public:
 	}
 
 	// Bind the first available slot to 'pResolver'
-	bool Bind(FirstAvailableSlotTag, InputResolverPtr pResolver) noexcept
+	bool Bind(FirstAvailableSlotTag, InputResolverPtr&& pResolver) noexcept
 	{
 		for (Slot s = 0; s < Slots; ++s)
 		{

@@ -211,7 +211,7 @@ public:
 	// If 'clearFirst' is true, all other bindings for this Action will be cleared first.
 	// The binding will occur in the first available slot.
 	// Returns whether or not the Bind was successful.
-	bool Bind(const Epic::StringHash actionName, const Epic::StringHash contextName, InputResolverPtr pResolver, bool clearFirst = false) noexcept
+	bool Bind(const Epic::StringHash actionName, const Epic::StringHash contextName, InputResolverPtr&& pResolver, bool clearFirst = false) noexcept
 	{
 		// Create the binding
 		auto pAction = GetAction(actionName);
@@ -236,7 +236,7 @@ public:
 	// Create a binding between an Action and a resolver for a context.
 	// If 'clearFirst' is true, all other bindings for this Action will be cleared first.
 	// Returns whether or not the Bind was successful.
-	bool Bind(const Epic::StringHash actionName, const Epic::StringHash contextName, InputAction::Slot slot, InputResolverPtr pResolver, bool clearFirst = false) noexcept
+	bool Bind(const Epic::StringHash actionName, const Epic::StringHash contextName, InputAction::Slot slot, InputResolverPtr&& pResolver, bool clearFirst = false) noexcept
 	{
 		// Create the binding
 		auto pAction = GetAction(actionName);
@@ -261,7 +261,7 @@ public:
 	// Create a binding between an Action and a resolver for the global Context.
 	// If 'clearFirst' is true, all other bindings for this Action will be cleared first.
 	// Returns whether or not the Bind was successful.
-	inline bool Bind(const Epic::StringHash actionName, InputAction::Slot slot, InputResolverPtr pResolver, bool clearFirst = false) noexcept
+	inline bool Bind(const Epic::StringHash actionName, InputAction::Slot slot, InputResolverPtr&& pResolver, bool clearFirst = false) noexcept
 	{
 		return Bind(actionName, GlobalContext, slot, std::move(pResolver), clearFirst);
 	}
@@ -270,7 +270,7 @@ public:
 	// If 'clearFirst' is true, all other bindings for this Action will be cleared first.
 	// The binding will occur in the first available slot.
 	// Returns whether or not the Bind was successful.
-	inline bool Bind(const Epic::StringHash actionName, InputResolverPtr pResolver, bool clearFirst = false) noexcept
+	inline bool Bind(const Epic::StringHash actionName, InputResolverPtr&& pResolver, bool clearFirst = false) noexcept
 	{
 		return Bind(actionName, GlobalContext, std::move(pResolver), clearFirst);
 	}
