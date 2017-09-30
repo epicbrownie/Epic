@@ -3,8 +3,8 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <IncludePath>$(HeadersDir);C:\C++ Libraries\boost_1_61_0;C:\C++ Libraries\glfw-3.2.1.bin.WIN32\include;C:\C++ Libraries\glew-2.0.0-win32\glew-2.0.0\include;C:\C++ Libraries\FMOD\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\C++ Libraries\boost_1_61_0\lib32-msvc-14.0;C:\C++ Libraries\glfw-3.2.1.bin.WIN32\lib-vc2015;C:\C++ Libraries\glew-2.0.0-win32\glew-2.0.0\lib\Release\Win32;C:\C++ Libraries\FMOD\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(HeadersDir);C:\Libraries\C++ Libraries\boost_1_61_0;C:\Libraries\C++ Libraries\glfw-3.2.1.bin.WIN32\include;C:\Libraries\C++ Libraries\glew-2.0.0-win32\glew-2.0.0\include;C:\Libraries\C++ Libraries\FMOD\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Libraries\C++ Libraries\boost_1_61_0\lib32-msvc-14.0;C:\Libraries\C++ Libraries\glfw-3.2.1.bin.WIN32\lib-vc2015;C:\Libraries\C++ Libraries\glew-2.0.0-win32\glew-2.0.0\lib\Release\Win32;C:\Libraries\C++ Libraries\FMOD\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <Link>
