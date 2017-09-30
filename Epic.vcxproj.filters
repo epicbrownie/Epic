@@ -290,12 +290,6 @@
     <ClInclude Include="src\Math\Vector.hpp">
       <Filter>Math</Filter>
     </ClInclude>
-    <ClInclude Include="src\Math\VectorSwizzler.hpp">
-      <Filter>Math</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Math\detail\VectorSwizzlerFwd.hpp">
-      <Filter>Math\detail</Filter>
-    </ClInclude>
     <ClInclude Include="src\Math\detail\VectorHelpers.hpp">
       <Filter>Math\detail</Filter>
     </ClInclude>
@@ -523,6 +517,15 @@
     </ClInclude>
     <ClInclude Include="src\Ext\Sort.hpp">
       <Filter>Utility\Ext</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\detail\SwizzlerFwd.hpp">
+      <Filter>Math\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\Swizzler.hpp">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\SVector.hpp">
+      <Filter>Math</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -17,14 +17,17 @@
 
 namespace Epic::detail
 {
-	template<size_t Size, template<size_t...> class SwizzlerGenerator, class TArray>
+	template<std::size_t Size, template<std::size_t...> class SwizzlerGenerator, class TArray>
 	class VectorBase;
+
+	template<std::size_t Size, template<std::size_t...> class SwizzlerGenerator, class TArray>
+	class SVectorBase;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
 // VectorBase
-template<size_t Size, template<size_t...> class SwizzlerGenerator, class TArray>
+template<std::size_t Size, template<std::size_t...> class SwizzlerGenerator, class TArray>
 class Epic::detail::VectorBase
 {
 public:
@@ -33,7 +36,7 @@ public:
 };
 
 // VectorBase<1>
-template<template<size_t...> class SwizzlerGenerator, class TArray>
+template<template<std::size_t...> class SwizzlerGenerator, class TArray>
 class Epic::detail::VectorBase<1, SwizzlerGenerator, TArray>
 {
 public:
@@ -60,8 +63,184 @@ public:
 };
 
 // VectorBase<2>
-template<template<size_t...> class SwizzlerGenerator, class TArray>
+template<template<std::size_t...> class SwizzlerGenerator, class TArray>
 class Epic::detail::VectorBase<2, SwizzlerGenerator, TArray>
+{
+public:
+	union
+	{
+		// Value Array
+		TArray Values;
+
+		// 1-Component Swizzlers
+		struct
+		{
+			typename SwizzlerGenerator<0>::Type x;
+			typename SwizzlerGenerator<1>::Type y;
+		};
+
+		// 2-Component Swizzlers
+		typename SwizzlerGenerator<0, 0>::Type xx;
+		typename SwizzlerGenerator<1, 1>::Type yy;
+		typename SwizzlerGenerator<0, 1>::Type xy;
+		typename SwizzlerGenerator<1, 0>::Type yx;
+
+		// 3-Component Swizzlers
+		typename SwizzlerGenerator<0, 0, 0>::Type xxx;
+		typename SwizzlerGenerator<1, 1, 1>::Type yyy;
+
+		// 4-Component Swizzlers
+		typename SwizzlerGenerator<0, 0, 0, 0>::Type xxxx;
+		typename SwizzlerGenerator<1, 1, 1, 1>::Type yyyy;
+		typename SwizzlerGenerator<0, 1, 0, 1>::Type xyxy;
+		typename SwizzlerGenerator<1, 0, 1, 0>::Type yxyx;
+	};
+};
+
+// VectorBase<3>
+template<template<std::size_t...> class SwizzlerGenerator, class TArray>
+class Epic::detail::VectorBase<3, SwizzlerGenerator, TArray>
+{
+public:
+	union
+	{
+		// Value Array
+		TArray Values;
+
+		// 1-Component Swizzlers
+		struct
+		{
+			typename SwizzlerGenerator<0>::Type x;
+			typename SwizzlerGenerator<1>::Type y;
+			typename SwizzlerGenerator<2>::Type z;
+		};
+
+		// 2-Component Swizzlers
+		typename SwizzlerGenerator<0, 0>::Type xx;
+		typename SwizzlerGenerator<1, 1>::Type yy;
+		typename SwizzlerGenerator<2, 2>::Type zz;
+		typename SwizzlerGenerator<0, 1>::Type xy;
+		typename SwizzlerGenerator<1, 0>::Type yx;
+
+		// 3-Component Swizzlers
+		typename SwizzlerGenerator<0, 0, 0>::Type xxx;
+		typename SwizzlerGenerator<1, 1, 1>::Type yyy;
+		typename SwizzlerGenerator<2, 2, 2>::Type zzz;
+		typename SwizzlerGenerator<0, 1, 2>::Type xyz;
+		typename SwizzlerGenerator<0, 2, 1>::Type xzy;
+		typename SwizzlerGenerator<1, 0, 2>::Type yxz;
+		typename SwizzlerGenerator<1, 2, 0>::Type yzx;
+		typename SwizzlerGenerator<2, 0, 1>::Type zxy;
+		typename SwizzlerGenerator<2, 1, 0>::Type zyx;
+
+		// 4-Component Swizzlers
+		typename SwizzlerGenerator<0, 0, 0, 0>::Type xxxx;
+		typename SwizzlerGenerator<0, 0, 0, 0>::Type yyyy;
+		typename SwizzlerGenerator<0, 0, 0, 0>::Type zzzz;
+	};
+};
+
+// VectorBase<4>
+template<template<std::size_t...> class SwizzlerGenerator, class TArray>
+class Epic::detail::VectorBase<4, SwizzlerGenerator, TArray>
+{
+public:
+	union
+	{
+		// Value Array
+		TArray Values;
+
+		// 1-Component Swizzlers
+		struct
+		{
+			typename SwizzlerGenerator<0>::Type x;
+			typename SwizzlerGenerator<1>::Type y;
+			typename SwizzlerGenerator<2>::Type z;
+			typename SwizzlerGenerator<3>::Type w;
+		};
+
+		// 2-Component Swizzlers
+		typename SwizzlerGenerator<0, 0>::Type xx;
+		typename SwizzlerGenerator<1, 1>::Type yy;
+		typename SwizzlerGenerator<2, 2>::Type zz;
+		typename SwizzlerGenerator<3, 3>::Type ww;
+		typename SwizzlerGenerator<0, 1>::Type xy;
+		typename SwizzlerGenerator<1, 0>::Type yx;
+
+		// 3-Component Swizzlers
+		typename SwizzlerGenerator<0, 0, 0>::Type xxx;
+		typename SwizzlerGenerator<1, 1, 1>::Type yyy;
+		typename SwizzlerGenerator<2, 2, 2>::Type zzz;
+		typename SwizzlerGenerator<3, 3, 3>::Type www;
+		typename SwizzlerGenerator<0, 1, 2>::Type xyz;
+		typename SwizzlerGenerator<0, 2, 1>::Type xzy;
+		typename SwizzlerGenerator<1, 0, 2>::Type yxz;
+		typename SwizzlerGenerator<1, 2, 0>::Type yzx;
+		typename SwizzlerGenerator<2, 0, 1>::Type zxy;
+		typename SwizzlerGenerator<2, 1, 0>::Type zyx;
+
+
+		// 4-Component Swizzlers
+		typename SwizzlerGenerator<0, 0, 0, 0>::Type xxxx;
+		typename SwizzlerGenerator<1, 1, 1, 1>::Type yyyy;
+		typename SwizzlerGenerator<2, 2, 2, 2>::Type zzzz;
+		typename SwizzlerGenerator<3, 3, 3, 3>::Type wwww;
+		typename SwizzlerGenerator<0, 1, 2, 3>::Type xyzw;
+		typename SwizzlerGenerator<0, 2, 1, 3>::Type xzyw;
+		typename SwizzlerGenerator<1, 0, 2, 3>::Type yxzw;
+		typename SwizzlerGenerator<1, 2, 0, 3>::Type yzxw;
+		typename SwizzlerGenerator<2, 0, 1, 3>::Type zxyw;
+		typename SwizzlerGenerator<2, 1, 0, 3>::Type zyxw;
+		typename SwizzlerGenerator<3, 0, 1, 2>::Type wxyz;
+		typename SwizzlerGenerator<3, 0, 2, 1>::Type wxzy;
+		typename SwizzlerGenerator<3, 1, 0, 2>::Type wyxz;
+		typename SwizzlerGenerator<3, 1, 2, 0>::Type wyzx;
+		typename SwizzlerGenerator<3, 2, 0, 1>::Type wzxy;
+		typename SwizzlerGenerator<3, 2, 1, 0>::Type wzyx;
+	};
+};
+
+//////////////////////////////////////////////////////////////////////////////
+
+// SVectorBase
+template<std::size_t Size, template<std::size_t...> class SwizzlerGenerator, class TArray>
+class Epic::detail::SVectorBase
+{
+public:
+	// Value Array
+	TArray Values;
+};
+
+// SVectorBase<1>
+template<template<std::size_t...> class SwizzlerGenerator, class TArray>
+class Epic::detail::SVectorBase<1, SwizzlerGenerator, TArray>
+{
+public:
+	union
+	{
+		// Value Array
+		TArray Values;
+
+		// 1-Component Swizzlers
+		struct
+		{
+			typename SwizzlerGenerator<0>::Type x;
+		};
+
+		// 2-Component Swizzlers
+		typename SwizzlerGenerator<0, 0>::Type xx;
+
+		// 3-Component Swizzlers
+		typename SwizzlerGenerator<0, 0, 0>::Type xxx;
+
+		// 4-Component Swizzlers
+		typename SwizzlerGenerator<0, 0, 0, 0>::Type xxxx;
+	};
+};
+
+// SVectorBase<2>
+template<template<std::size_t...> class SwizzlerGenerator, class TArray>
+class Epic::detail::SVectorBase<2, SwizzlerGenerator, TArray>
 {
 public:
 	union
@@ -112,9 +291,9 @@ public:
 	};
 };
 
-// VectorBase<3>
-template<template<size_t...> class SwizzlerGenerator, class TArray>
-class Epic::detail::VectorBase<3, SwizzlerGenerator, TArray>
+// SVectorBase<3>
+template<template<std::size_t...> class SwizzlerGenerator, class TArray>
+class Epic::detail::SVectorBase<3, SwizzlerGenerator, TArray>
 {
 public:
 	union
@@ -255,9 +434,9 @@ public:
 	};
 };
 
-// VectorBase<4>
-template<template<size_t...> class SwizzlerGenerator, class TArray>
-class Epic::detail::VectorBase<4, SwizzlerGenerator, TArray>
+// SVectorBase<4>
+template<template<std::size_t...> class SwizzlerGenerator, class TArray>
+class Epic::detail::SVectorBase<4, SwizzlerGenerator, TArray>
 {
 public:
 	union

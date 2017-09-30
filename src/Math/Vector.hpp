@@ -17,10 +17,11 @@
 #include <Epic/Math/detail/QuaternionFwd.hpp>
 #include <Epic/Math/detail/VectorHelpers.hpp>
 #include <Epic/Math/detail/MathHelpers.hpp>
-#include <Epic/Math/VectorSwizzler.hpp>
+#include <Epic/Math/Swizzler.hpp>
 #include <Epic/TMP/Sequence.hpp>
 #include <algorithm>
 #include <cassert>
+#include <cstdint>
 #include <cmath>
 #include <iostream>
 #include <type_traits>
@@ -28,7 +29,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 // Vector
-template<class T, size_t S>
+template<class T, std::size_t S>
 class Epic::Vector : public Epic::detail::VectorHelper<T, S>::BaseType
 {
 public:
@@ -36,12 +37,12 @@ public:
 	using Type = Epic::Vector<T, S>;
 
 public:
-	template<class, size_t>
+	template<class, std::size_t>
 	friend class Epic::Vector;
 
 public:
 	using ValueType = T;
-	constexpr static size_t Size = S;
+	constexpr static std::size_t Size = S;
 
 private:
 	using Base::Values;
@@ -60,48 +61,48 @@ public:
 
 	// Copy-converts a vector
 	template<class U>
-	inline Vector(const Vector<U, Size>& vec) noexcept
+	Vector(const Vector<U, Size>& vec) noexcept
 	{
-		ForEach<Size>([&](size_t n) { Values[n] = static_cast<T>(vec[n]); });
+		ForEach([&](std::size_t n) { Values[n] = static_cast<T>(vec[n]); });
 	}
 
 	// Constructs a vector from a list of values.
 	template<class U>
-	inline Vector(const U(&values)[Size]) noexcept
+	Vector(const U(&values)[Size]) noexcept
 	{
-		ForEach<Size>([&](size_t n) { Values[n] = values[n]; });
+		ForEach([&](std::size_t n) { Values[n] = values[n]; });
 	}
 
 	// Constructs a vector whose values are all set to a value
-	inline Vector(const T& value) noexcept
+	Vector(const T& value) noexcept
 	{
-		ForEach<Size>([&](size_t n) { Values[n] = value; });
+		ForEach([&](std::size_t n) { Values[n] = value; });
 	}
 
 	// Constructs a vector from a span of values
 	template<class Arg, class... Args,
 			 typename = std::enable_if_t<(detail::Span<Arg, Args...>::Value == Size)>>
-	inline Vector(const Arg& arg, const Args&... args) noexcept
+	Vector(const Arg& arg, const Args&... args) noexcept
 	{
 		Construct(arg, args...);
 	}
 
 	// Constructs a vector whose values are all set to 0
-	inline Vector(const ZeroesTag&) noexcept
+	Vector(const ZeroesTag&) noexcept
 		: Vector(T(0))
 	{ }
 
 	// Constructs a vector whose values are all set to 1
-	inline Vector(const OnesTag&) noexcept
+	Vector(const OnesTag&) noexcept
 		: Vector(T(1))
 	{ }
 
 	// Constructs an origin vector whose last element is 1
-	inline Vector(const IdentityTag&) noexcept
+	Vector(const IdentityTag&) noexcept
 	{
 		const auto z = T(0);
 
-		ForEach<Size - 1>([&](size_t n) { Values[n] = z; });
+		ForEachN<Size - 1>([&](std::size_t n) { Values[n] = z; });
 		Values[Size - 1] = T(1);
 	}
 
@@ -111,63 +112,59 @@ public:
 	#pragma region Range Accessors
 
 	// Accesses the element at 'index'
-	inline T& at(const size_t index) noexcept
+	T& at(std::size_t index) noexcept
 	{
 		assert(index >= 0 && index < Size);
-
 		return Values[index];
 	}
 
 	// Accesses the element at 'index'
-	inline const T& at(const size_t index) const noexcept
+	const T& at(std::size_t index) const noexcept
 	{
 		assert(index >= 0 && index < Size);
-
 		return Values[index];
 	}
 
 	// Accesses the element at 'index'
-	inline T& operator[] (const size_t index) noexcept
+	T& operator[] (std::size_t index) noexcept
 	{
 		assert(index >= 0 && index < Size);
-
 		return Values[index];
 	}
 
 	// Accesses the element at 'index'
-	inline const T& operator[] (const size_t index) const noexcept
+	const T& operator[] (std::size_t index) const noexcept
 	{
 		assert(index >= 0 && index < Size);
-
 		return Values[index];
 	}
 
 	// Retrieves an iterator to the first element
-	inline auto begin() noexcept -> decltype(Values.begin())
+	auto begin() noexcept -> decltype(Values.begin())
 	{
 		return Values.begin();
 	}
 
 	// Retrieves an iterator to the first element
-	inline auto begin() const noexcept -> decltype(Values.begin())
+	auto begin() const noexcept -> decltype(Values.cbegin())
 	{
-		return Values.begin();
+		return Values.cbegin();
 	}
 
 	// Retrieves an iterator to one past the last element
-	inline auto end() const noexcept -> decltype(Values.end())
+	auto end() const noexcept -> decltype(Values.cend())
 	{
-		return Values.end();
+		return Values.cend();
 	}
 
 	// Retrieves the number of elements
-	constexpr size_t size() const noexcept
+	constexpr std::size_t size() const noexcept
 	{
 		return Size;
 	}
 	
 	// Retrieves a pointer to the underlying element data
-	inline T* data() noexcept
+	T* data() noexcept
 	{
 		return Values.data();
 	}
@@ -183,87 +180,35 @@ public:
 public:
 	// Sets a span of values explicitly
 	template<class Arg, class... Args, typename = std::enable_if_t<(detail::Span<Arg, Args...>::Value == Size)>>
-	inline Type& Reset(const Arg& arg, const Args&... args) noexcept
+	Type& Reset(const Arg& arg, const Args&... args) noexcept
 	{
 		Construct(arg, args...);
-
 		return *this;
 	}
 
 	// Fills this vector with 'value'
-	inline Type& Fill(const T& value) noexcept
+	constexpr Type& Fill(const T& value) noexcept
 	{
-		ForEach<Size>([&](size_t n) { Values[n] = value; });
-
+		ForEach([&](std::size_t n) { Values[n] = value; });
 		return *this;
 	}
 
 	// Sets this vector to an origin vector whose last element is 1
-	inline Type& Origin() noexcept
+	constexpr Type& Origin() noexcept
 	{
 		const auto z = T(0);
 
-		ForEach<Size - 1>([&](size_t n) { Values[n] = z; });
+		ForEachN<Size - 1>([&](std::size_t n) { Values[n] = z; });
 		Values[Size - 1] = T(1);
 
 		return *this;
 	}
 
-public:
-	// Calculates the dot product of this vector and 'vec'
-	template<class U>
-	inline T Dot(const Vector<U, Size>& vec) const noexcept
-	{
-		T result = T(0);
-		ForEach<Size>([&](size_t n) { result += Values[n] * vec[n]; });
-		return result;
-	}
-
-	// Calculates the squared length of this vector
-	inline T MagnitudeSq() const noexcept
-	{
-		return this->Dot(*this);
-	}
-
-	// Calculates the length of this vector
-	inline T Magnitude() const noexcept
-	{
-		return { std::sqrt(MagnitudeSq()) };
-	}
-
-	// Converts this vector to a unit vector
-	inline Type& Normalize() noexcept
-	{
-		return *this /= Magnitude();
-	}
-
-	// Converts this vector to a unit vector 
-	// Returns unmodified vector if magnitude is 0.
-	inline Type& NormalizeSafe() noexcept
-	{
-		const auto m = Magnitude();
-		return (m == T(0)) ? (*this) : (*this /= m);
-	}
-
 	// Forces all values to the range [minValue, maxValue]
-	inline Type& Clamp(const T& minValue, const T& maxValue) noexcept
+	constexpr Type& Clamp(const T& minValue, const T& maxValue) noexcept
 	{
-		ForEach<Size>([&](size_t n) { Values[n] = std::min(std::max(minValue, Values[n]), maxValue); });
+		ForEach([&](std::size_t n) { Values[n] = std::min(std::max(minValue, Values[n]), maxValue); });
 		return *this;
-	}
-
-	// Raises all values to the power 'pow'
-	inline Type& Power(const T& pow) noexcept
-	{
-		ForEach<Size>([&](size_t n) { Values[n] = std::pow(Values[n], pow); });
-		return *this;
-	}
-
-	// Calculates the projection length of this vector onto unit vector 'axis'
-	template<typename U>
-	inline T ProjectionMagnitude(const Vector<U, Size>& axis) const noexcept
-	{
-		return { this->Dot(axis) / axis.MagnitudeSq() };
 	}
 
 	// Calculates the 2d cross product of this vector and 'vec' (The z-component of the cross product of the vectors)
@@ -285,30 +230,82 @@ public:
 		};
 	}
 
-	// Calculates the projection of this vector onto unit vector 'axis'
-	template<typename U>
-	inline Type Project(const Vector<U, Size>& axis) const noexcept
+	// Calculates the dot product of this vector and 'vec'
+	template<class U>
+	constexpr T Dot(const Vector<U, Size>& vec) const noexcept
 	{
-		Vector<T, Size> result(axis);
-		result *= this->ProjectionMagnitude(axis);
+		T result = T(0);
+		ForEach([&](std::size_t n) { result += Values[n] * vec[n]; });
+		return result;
+	}
+
+	// Calculates the squared length of this vector
+	constexpr T MagnitudeSq() const noexcept
+	{
+		return Dot(*this);
+	}
+
+	// Calculates the projection length of this vector onto unit vector 'axis'
+	constexpr T ProjectionMagnitude(const Type& axis) const noexcept
+	{
+		return { Dot(axis) / axis.MagnitudeSq() };
+	}
+
+	// Calculates the length of this vector
+	T Magnitude() const noexcept
+	{
+		return { static_cast<T>(std::sqrt(MagnitudeSq())) };
+	}
+
+	// Converts this vector to a unit vector
+	Type& Normalize() noexcept
+	{
+		return *this /= Magnitude();
+	}
+
+	// Converts this vector to a unit vector 
+	// Returns unmodified vector if magnitude is 0.
+	Type& NormalizeSafe() noexcept
+	{
+		const auto m = Magnitude();
+		return (m == T(0)) ? (*this) : (*this /= m);
+	}
+
+	// Raises all values to the power 'pow'
+	Type& Power(const T& exp) noexcept
+	{
+		ForEach([&](std::size_t n) { Values[n] = static_cast<T>(std::pow(Values[n], exp)); });
+		return *this;
+	}
+
+	// Raises all values to the power 'pow'
+	Type& Power(const Type& exp) noexcept
+	{
+		ForEach([&] (std::size_t n) { Values[n] = static_cast<T>(std::pow(Values[n], exp[n])); });
+		return *this;
+	}
+
+	// Calculates the projection of this vector onto unit vector 'axis'
+	Type Project(const Type& axis) const noexcept
+	{
+		Type result = axis;
+		result *= ProjectionMagnitude(axis);
 		return result;
 	}
 
 	// Calculates the projection of this vector onto non-unit vector 'axis'
-	template<typename U>
-	inline Type ProjectN(const Vector<U, Size>& axis) const noexcept
+	Type ProjectN(const Type& axis) const noexcept
 	{
-		Vector<U, Size> result = Vector<U, Size>::NormalOf(axis);
+		auto result = Type::NormalOf(axis);
 		result *= this->Dot(result);
 		return result;
 	}
 
 	// Calculates the reflection of this vector off of the plane that is partially defined by unit vector 'normal'
-	template<typename U>
-	inline Type Reflect(const Vector<U, Size>& normal) const noexcept
+	Type Reflect(const Type& normal) const noexcept
 	{
-		Type n(normal);
-		Type result(*this);
+		Type n = normal;
+		Type result = *this;
 
 		n *= T(2) * result.Dot(n);
 		result -= n;
@@ -318,10 +315,9 @@ public:
 
 	// Calculates the refracted vector of this vector off of the plane that is partially defined by unit vector 'normal'
 	// 'eta' is the ratio of the refraction indexes
-	template<typename U, typename EnabledForFloatTypes = std::enable_if_t<std::is_floating_point<T>::value>>
-	inline Type Refract(const Vector<U, Size>& normal, const T eta) const noexcept
+	Type Refract(const Type& normal, const T eta) const noexcept
 	{
-		Type I = Vector::NormalOf(*this);
+		Type I = Type::NormalOf(*this);
 		Type N = normal;
 
 		const T NdotI = N.Dot(I);
@@ -338,50 +334,45 @@ public:
 	}
 
 public:
-	// Calculates the orthonormalized vector of 'vecA' and 'vecB'
-	static inline Type OrthoNormalOf(const Type& vecA, const Type& vecB) noexcept
-	{
-		return NormalOf(vecA - vecB * vecB.Dot(vecA));
-	}
-
-	// Calculates the normalized vector of 'vec'
-	static inline Type NormalOf(const Type& vec) noexcept
-	{
-		Type result(vec);
-		result.Normalize();
-
-		return result;
-	}
-
-	// Calculates the normalized vector of 'vec'
-	// Returns a copy of 'vec' if magnitude is 0
-	static inline Type SafeNormalOf(const Type& vec) noexcept
-	{
-		Type result(vec);
-		return result.NormalizeSafe();
-	}
-
 	// Calculates the linear interpolation of vectors 'vecA' and 'vecB' 
-	template<typename EnabledForFloatTypes = std::enable_if_t<std::is_floating_point<T>::value>>
-	static inline Type MixOf(const Type& vecA, const Type& vecB, const T w = T(0.5)) noexcept
+	static Type MixOf(const Type& vecA, const Type& vecB, const T w = T(0.5)) noexcept
 	{
 		return vecA + ((vecB - vecA) * w);
 	}
 
+	// Calculates the normalized vector of 'vec'
+	static Type NormalOf(const Type& vec) noexcept
+	{
+		return Type(vec).Normalize();
+	}
+
+	// Calculates the normalized vector of 'vec'
+	// Returns a copy of 'vec' if magnitude is 0
+	static Type SafeNormalOf(const Type& vec) noexcept
+	{
+		return Type(vec).NormalizeSafe();
+	}
+
+	// Calculates the orthonormalized vector of 'vecA' and 'vecB'
+	static Type OrthoNormalOf(const Type& vecA, const Type& vecB) noexcept
+	{
+		return NormalOf(vecA - vecB * vecB.Dot(vecA));
+	}
+
 public:
 	// Transforms this vector by the Quaternion 'quat'
-	inline Type& operator *= (const Quaternion<T>& quat) noexcept;
+	Type& operator *= (const Quaternion<T>& quat) noexcept;
 
 	// Copies this vector with negated values
-	inline Type operator - () const noexcept
+	Type operator - () const noexcept
 	{
 		Type result;
-		ForEach<Size>([&](size_t n) { result[n] = -Values[n]; });
+		ForEach([&](std::size_t n) { result[n] = -Values[n]; });
 		return result;
 	}
 
 	// Implicitly converts to T (only available if this vector has just 1 element)
-	inline operator std::conditional_t<(Size == 1), T, struct OperationUnavailable>() const noexcept
+	operator std::conditional_t<(Size == 1), T, detail::MathOperationUnavailable>() const noexcept
 	{
 		return Values[0];
 	}
@@ -390,7 +381,7 @@ public:
 	#pragma region Assignment Operators
 
 	// Sets this vector to an origin vector whose last element is 1
-	inline Type& operator = (const IdentityTag&) noexcept
+	Type& operator = (const IdentityTag&) noexcept
 	{
 		return Origin();
 	}
@@ -400,49 +391,40 @@ public:
 	#define CREATE_ASSIGNMENT_OPERATOR(Op)	\
 																							\
 	template<class U>																		\
-	inline Type& operator Op (const U(&values)[Size]) noexcept								\
+	Type& operator Op (const U(&values)[Size]) noexcept										\
 	{																						\
-		ForEach<Size>([&](size_t index) { Values[index] Op values[index]; });				\
+		ForEach([&](std::size_t index) { Values[index] Op values[index]; });				\
 		return *this;																		\
 	}																						\
 																							\
-	inline Type& operator Op (const Type& vec) noexcept										\
+	Type& operator Op (const Type& vec) noexcept											\
 	{																						\
-		ForEach<Size>([&](size_t index) { Values[index] Op vec[index]; });					\
+		ForEach([&](std::size_t index) { Values[index] Op vec[index]; });					\
 		return *this;																		\
 	}																						\
 																							\
-	template<class U, size_t Sz>															\
-	inline Type& operator Op (const Vector<U, Sz>& vec) noexcept							\
+	template<class U>																		\
+	Type& operator Op (const Vector<U, Size>& vec) noexcept									\
+	{																						\
+		ForEach([&](std::size_t i) { Values[i] Op vec[i]; });								\
+		return *this;																		\
+	}																						\
+																							\
+	template<class U, std::size_t US, std::size_t... Is,									\
+		typename = std::enable_if_t<(sizeof...(Is) == Size)>>								\
+	Type& operator Op (const Swizzler<U, US, Is...>& vec) noexcept					\
 	{																						\
 		Epic::TMP::ForEach2<																\
-			Epic::TMP::MakeSequence<size_t, Size>,											\
-			Epic::TMP::MakeSequence<size_t, Sz>>											\
-		::Apply([&](size_t iThis, size_t iOther)											\
-		{																					\
-			Values[iThis] Op vec[iOther];													\
-		});																					\
+			Epic::TMP::MakeSequence<std::size_t, Size>,										\
+			Epic::TMP::Sequence<std::size_t, Is...>>										\
+		::Apply([&](std::size_t i, std::size_t j) { Values[i] Op vec.m_Values[j]; });		\
 																							\
 		return *this;																		\
 	}																						\
 																							\
-	template<class VectorT, class TArray, size_t... Is>										\
-	inline Type& operator Op (const VectorSwizzler<VectorT, TArray, Is...>& vec) noexcept	\
+	Type& operator Op (const T& value) noexcept												\
 	{																						\
-		Epic::TMP::ForEach2<																\
-			Epic::TMP::MakeSequence<size_t, Size>,											\
-			Epic::TMP::Sequence<size_t, Is...>>												\
-		::Apply([&](size_t iThis, size_t iOther)											\
-		{																					\
-			Values[iThis] Op vec.m_Values[iOther];											\
-		});																					\
-																							\
-		return *this;																		\
-	}																						\
-																							\
-	inline Type& operator Op (const T& value) noexcept										\
-	{																						\
-		ForEach<Size>([&](size_t index) { Values[index] Op value; });						\
+		ForEach([&](std::size_t index) { Values[index] Op value; });						\
 		return *this;																		\
 	}
 
@@ -452,62 +434,110 @@ public:
 	CREATE_ASSIGNMENT_OPERATOR(*= );
 	CREATE_ASSIGNMENT_OPERATOR(/= );
 
-	// The following assignment operators will fail for non-integral types
-	CREATE_ASSIGNMENT_OPERATOR(|= );
-	CREATE_ASSIGNMENT_OPERATOR(&= );
-	CREATE_ASSIGNMENT_OPERATOR(^= );
-	CREATE_ASSIGNMENT_OPERATOR(%= );
-	CREATE_ASSIGNMENT_OPERATOR(<<= );
-	CREATE_ASSIGNMENT_OPERATOR(>>= );
-
 	#undef CREATE_ASSIGNMENT_OPERATOR
+
+	//////
+
+	#define CREATE_LOGIC_ASSIGNMENT_OPERATOR(Op)	\
+																							\
+	template<class U,																		\
+		typename = std::enable_if_t<std::is_integral_v<T> && std::is_integral_v<U>>>		\
+	Type& operator Op (const U(&values)[Size]) noexcept										\
+	{																						\
+		ForEach([&](std::size_t index) { Values[index] Op values[index]; });				\
+		return *this;																		\
+	}																						\
+																							\
+	template<typename = std::enable_if_t<std::is_integral_v<T>>>							\
+	Type& operator Op (const Type& vec) noexcept											\
+	{																						\
+		ForEach([&](std::size_t index) { Values[index] Op vec[index]; });					\
+		return *this;																		\
+	}																						\
+																							\
+	template<class U,																		\
+		typename = std::enable_if_t<std::is_integral_v<T> && std::is_integral_v<U>>>		\
+	Type& operator Op (const Vector<U, Size>& vec) noexcept									\
+	{																						\
+		ForEach([&](std::size_t i) { Values[i] Op vec[i]; });								\
+		return *this;																		\
+	}																						\
+																							\
+	template<class U, std::size_t US, std::size_t... Is,									\
+		typename = std::enable_if_t<(sizeof...(Is) == Size) &&								\
+									std::is_integral_v<T> && std::is_integral_v<U>>>		\
+	Type& operator Op (const Swizzler<U, US, Is...>& vec) noexcept					\
+	{																						\
+		Epic::TMP::ForEach2<																\
+			Epic::TMP::MakeSequence<std::size_t, Size>,										\
+			Epic::TMP::Sequence<std::size_t, Is...>>										\
+		::Apply([&](std::size_t i, std::size_t j) { Values[i] Op vec.m_Values[j]; });		\
+																							\
+		return *this;																		\
+	}																						\
+																							\
+	template<typename = std::enable_if_t<std::is_integral<T>::value>>						\
+	Type& operator Op (const T& value) noexcept												\
+	{																						\
+		ForEach([&](std::size_t index) { Values[index] Op value; });						\
+		return *this;																		\
+	}
+
+	CREATE_LOGIC_ASSIGNMENT_OPERATOR(|= );
+	CREATE_LOGIC_ASSIGNMENT_OPERATOR(&= );
+	CREATE_LOGIC_ASSIGNMENT_OPERATOR(^= );
+	CREATE_LOGIC_ASSIGNMENT_OPERATOR(%= );
+	CREATE_LOGIC_ASSIGNMENT_OPERATOR(<<= );
+	CREATE_LOGIC_ASSIGNMENT_OPERATOR(>>= );
+
+	#undef CREATE_LOGIC_ASSIGNMENT_OPERATOR
 
 	#pragma endregion
 
-public:
 	#pragma region Arithmetic Operators
 
 	#define CREATE_ARITHMETIC_OPERATOR(Op) 	\
 																									\
 	template<class U>																				\
-	inline Type operator Op (const U(&values)[Size]) const	noexcept								\
+	Type operator Op (const U(&values)[Size]) const	noexcept										\
 	{																								\
 		Type result{ *this };																		\
 		result Op= values;																			\
 		return result;																				\
 	}																								\
 																									\
-	inline Type operator Op (const Type& vec) const noexcept										\
+	Type operator Op (const Type& vec) const noexcept												\
 	{																								\
 		Type result{ *this };																		\
 		result Op= vec;																				\
 		return result;																				\
 	}																								\
 																									\
-	template<class U, size_t Sz>																	\
-	inline Type operator Op (const Vector<U, Sz>& vec) const noexcept								\
+	template<class U>																				\
+	Type operator Op (const Vector<U, Size>& vec) const noexcept									\
 	{																								\
 		Type result{ *this };																		\
 		result Op= vec;																				\
 		return result;																				\
 	}																								\
 																									\
-	template<class VectorT, class TArray, size_t... Is>												\
-	inline Type operator Op (const VectorSwizzler<VectorT, TArray, Is...>& vec) const noexcept		\
+	template<class U, std::size_t US, std::size_t... Is,											\
+		typename = std::enable_if_t<(sizeof...(Is) == Size)>>										\
+	Type operator Op (const Swizzler<U, US, Is...>& vec) const noexcept						\
 	{																								\
 		Type result{ *this };																		\
 		result Op= vec;																				\
 		return result;																				\
 	}																								\
 																									\
-	inline Type operator Op (const T& value) const noexcept											\
+	Type operator Op (const T& value) const noexcept												\
 	{																								\
 		Type result{ *this };																		\
 		result Op= value;																			\
 		return result;																				\
 	}																								\
 																									\
-	friend inline Type operator Op (const T& value, const Type& vec) noexcept						\
+	friend Type operator Op (const T& value, const Type& vec) noexcept								\
 	{																								\
 		Type result{ value };																		\
 		result Op= vec;																				\
@@ -517,15 +547,15 @@ public:
 	CREATE_ARITHMETIC_OPERATOR(+);
 	CREATE_ARITHMETIC_OPERATOR(-);
 	CREATE_ARITHMETIC_OPERATOR(*);
-	CREATE_ARITHMETIC_OPERATOR(/);
+	CREATE_ARITHMETIC_OPERATOR(/ );
 
 	// The following arithmetic operators are only defined for integral types
-	CREATE_ARITHMETIC_OPERATOR(|);
+	CREATE_ARITHMETIC_OPERATOR(| );
 	CREATE_ARITHMETIC_OPERATOR(&);
 	CREATE_ARITHMETIC_OPERATOR(^);
 	CREATE_ARITHMETIC_OPERATOR(%);
-	CREATE_ARITHMETIC_OPERATOR(<<);
-	CREATE_ARITHMETIC_OPERATOR(>>);
+	CREATE_ARITHMETIC_OPERATOR(<< );
+	CREATE_ARITHMETIC_OPERATOR(>> );
 
 	#undef CREATE_ARITHMETIC_OPERATOR
 
@@ -533,17 +563,29 @@ public:
 
 private:
 	#pragma region Iteration Helpers
-
-	template<size_t N, class Function>
-	inline void ForEach(Function fn) noexcept
+	
+	template<class Function>
+	void ForEach(Function fn) noexcept
 	{
-		Epic::TMP::ForEach<Epic::TMP::MakeSequence<size_t, N>>::Apply(fn);
+		Epic::TMP::ForEach<Epic::TMP::MakeSequence<std::size_t, Size>>::Apply(fn);
 	}
 
-	template<size_t N, class Function>
-	inline void ForEach(Function fn) const noexcept
+	template<class Function>
+	void ForEach(Function fn) const noexcept
 	{
-		Epic::TMP::ForEach<Epic::TMP::MakeSequence<size_t, N>>::Apply(fn);
+		Epic::TMP::ForEach<Epic::TMP::MakeSequence<std::size_t, Size>>::Apply(fn);
+	}
+
+	template<std::size_t N, class Function>
+	void ForEachN(Function fn) noexcept
+	{
+		Epic::TMP::ForEach<Epic::TMP::MakeSequence<std::size_t, N>>::Apply(fn);
+	}
+
+	template<std::size_t N, class Function>
+	void ForEachN(Function fn) const noexcept
+	{
+		Epic::TMP::ForEach<Epic::TMP::MakeSequence<std::size_t, N>>::Apply(fn);
 	}
 
 	#pragma endregion
@@ -551,49 +593,49 @@ private:
 	#pragma region Construction Helpers
 
 	template<class... Vals>
-	inline void Construct(const Vals&... vals) noexcept
+	void Construct(const Vals&... vals) noexcept
 	{
 		ConstructAt(0, vals...);
 	}
 
-	inline void ConstructAt(size_t) noexcept
+	void ConstructAt(std::size_t) noexcept
 	{ 
 		/* Do Nothing */
 	}
 
 	template<class Val, class... Vals>
-	inline void ConstructAt(size_t offset, const Val& value, const Vals&... values) noexcept
+	void ConstructAt(std::size_t offset, const Val& value, const Vals&... values) noexcept
 	{
 		PlaceAt(offset, value);
 		ConstructAt(offset + Epic::detail::Span<Val>::Value, values...);
 	}
 
-	template<class U, size_t Sz>
-	inline void PlaceAt(size_t offset, const Vector<U, Sz>& value) noexcept
+	template<class U, std::size_t Sz>
+	void PlaceAt(std::size_t offset, const Vector<U, Sz>& value) noexcept
 	{
-		ForEach<Sz>([&](size_t n) { Values[offset++] = value[n]; });
+		ForEachN<Sz>([&](std::size_t n) { Values[offset++] = value[n]; });
 	}
 
-	template<class VectorT, class TArray, size_t... Is>
-	inline void PlaceAt(size_t offset, const VectorSwizzler<VectorT, TArray, Is...>& value) noexcept
+	template<class U, std::size_t US, std::size_t... Is>
+	void PlaceAt(std::size_t offset, const Swizzler<U, US, Is...>& value) noexcept
 	{
 		PlaceAt(offset, value.ToVector());
 	}
 
-	template<class U, size_t N>
-	inline void PlaceAt(size_t offset, const U(&value)[N]) noexcept
+	template<class U, std::size_t N>
+	void PlaceAt(std::size_t offset, const U(&value)[N]) noexcept
 	{
-		ForEach<N>([&](size_t n) { Values[offset++] = value[n]; });
+		ForEachN<N>([&](std::size_t n) { Values[offset++] = value[n]; });
 	}
 
-	template<class U, size_t Sz>
-	void inline PlaceAt(size_t offset, const std::array<U, Sz>& value) noexcept
+	template<class U, std::size_t Sz>
+	void PlaceAt(std::size_t offset, const std::array<U, Sz>& value) noexcept
 	{
-		ForEach<Sz>([&](size_t n) { Values[offset++] = value[n]; });
+		ForEachN<Sz>([&](std::size_t n) { Values[offset++] = value[n]; });
 	}
 
 	template<class Val>
-	inline void PlaceAt(size_t offset, const Val& value) noexcept
+	void PlaceAt(std::size_t offset, const Val& value) noexcept
 	{
 		Values[offset] = value;
 	}
@@ -601,22 +643,22 @@ private:
 	#pragma endregion
 
 public:
-	template<class U, size_t Sz>
+	template<class U, std::size_t Sz>
 	friend bool operator == (const Vector<U, Sz>& vecA, const Vector<U, Sz>& vecB) noexcept;
 
-	template<class U, size_t Sz>
+	template<class U, std::size_t Sz>
 	friend bool operator != (const Vector<U, Sz>& vecA, const Vector<U, Sz>& vecB) noexcept;
 
-	template<class U, size_t Sz>
+	template<class U, std::size_t Sz>
 	friend std::ostream& operator << (std::ostream& stream, const Vector<U, Sz>& vec);
 
-	template<class U, size_t Sz>
+	template<class U, std::size_t Sz>
 	friend std::wostream& operator << (std::wostream& stream, const Vector<U, Sz>& vec);
 
-	template<class U, size_t Sz>
+	template<class U, std::size_t Sz>
 	friend std::istream& operator >> (std::istream& stream, Vector<U, Sz>& vec);
 
-	template<class U, size_t Sz>
+	template<class U, std::size_t Sz>
 	friend std::wistream& operator >> (std::wistream& stream, Vector<U, Sz>& vec);
 };
 
@@ -625,33 +667,33 @@ public:
 // Friend Operators
 namespace Epic
 {
-	template<class U, size_t Sz>
-	inline bool operator == (const Vector<U, Sz>& vecA, const Vector<U, Sz>& vecB) noexcept
+	template<class U, std::size_t Sz>
+	bool operator == (const Vector<U, Sz>& vecA, const Vector<U, Sz>& vecB) noexcept
 	{
 		bool result = true;
 
-		for (size_t i = 0; i < Sz; ++i)
+		for (std::size_t i = 0; i < Sz; ++i)
 			result &= (vecA[i] == vecB[i]);
 
 		return result;
 	}
 
-	template<class U, size_t Sz>
-	inline bool operator != (const Vector<U, Sz>& vecA, const Vector<U, Sz>& vecB) noexcept
+	template<class U, std::size_t Sz>
+	bool operator != (const Vector<U, Sz>& vecA, const Vector<U, Sz>& vecB) noexcept
 	{
 		bool result = true;
 
-		for (size_t i = 0; i < Sz; ++i)
+		for (std::size_t i = 0; i < Sz; ++i)
 			result &= (vecA[i] != vecB[i]);
 
 		return result;
 	}
 
-	template<class U, size_t Sz>
-	inline std::ostream& operator << (std::ostream& stream, const Vector<U, Sz>& vec)
+	template<class U, std::size_t Sz>
+	std::ostream& operator << (std::ostream& stream, const Vector<U, Sz>& vec)
 	{
 		stream << '[';
-		vec.ForEach<Sz>([&](size_t n) 
+		vec.ForEach([&](std::size_t n) 
 		{ 
 			if (n > 0) 
 				stream << ", "; 
@@ -662,11 +704,11 @@ namespace Epic
 		return stream;
 	}
 
-	template<class U, size_t Sz>
-	inline std::wostream& operator << (std::wostream& stream, const Vector<U, Sz>& vec)
+	template<class U, std::size_t Sz>
+	std::wostream& operator << (std::wostream& stream, const Vector<U, Sz>& vec)
 	{
 		stream << L'[';
-		vec.ForEach<Sz>([&](size_t n) 
+		vec.ForEach([&](std::size_t n) 
 		{ 
 			if (n > 0)
 				stream << L", ";
@@ -677,13 +719,13 @@ namespace Epic
 		return stream;
 	}
 
-	template<class U, size_t Sz>
-	inline std::istream& operator >> (std::istream& stream, Vector<U, Sz>& vec)
+	template<class U, std::size_t Sz>
+	std::istream& operator >> (std::istream& stream, Vector<U, Sz>& vec)
 	{
 		if (stream.peek() == '[')
 			stream.ignore(1);
 
-		vec.ForEach<Sz>([&](size_t n) 
+		vec.ForEach([&](std::size_t n) 
 		{ 
 			if (n > 0 && stream.peek() == ',')
 				stream.ignore(1);
@@ -696,13 +738,13 @@ namespace Epic
 		return stream;
 	}
 
-	template<class U, size_t Sz>
-	inline std::wistream& operator >> (std::wistream& stream, Vector<U, Sz>& vec)
+	template<class U, std::size_t Sz>
+	std::wistream& operator >> (std::wistream& stream, Vector<U, Sz>& vec)
 	{
 		if (stream.peek() == L'[')
 			stream.ignore(1);
 
-		vec.ForEach<Sz>([&](size_t n) 
+		vec.ForEach([&](std::size_t n) 
 		{ 
 			if (n > 0 && stream.peek() == L',')
 				stream.ignore(1);

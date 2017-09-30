@@ -25,7 +25,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 // Matrix
-template<class T, size_t S>
+template<class T, std::size_t S>
 class Epic::Matrix : public Epic::detail::MatrixBase<T, S>
 {
 public:
@@ -33,15 +33,15 @@ public:
 	using Type = Epic::Matrix<T, S>;
 
 public:
-	template<class, size_t>
+	template<class, std::size_t>
 	friend class Epic::Matrix;
 
 public:
 	using ValueType = typename Base::ValueType;
-	constexpr static size_t Size = Base::Size;
+	constexpr static std::size_t Size = Base::Size;
 
 	using ColumnType = typename Base::ColumnType;
-	constexpr static size_t ColumnCount = Base::ColumnCount;
+	constexpr static std::size_t ColumnCount = Base::ColumnCount;
 
 private:
 	using Base::Columns;
@@ -60,7 +60,7 @@ public:
 	Matrix(Type&&) noexcept = default;
 
 	// Copy-converts a matrix
-	template<class U, size_t Sz>
+	template<class U, std::size_t Sz>
 	inline Matrix(const Matrix<U, Sz>& mat) noexcept
 	{
 		// These branches should be optimized away (TODO: constexpr if when available)
@@ -69,46 +69,46 @@ public:
 			// 'mat' is smaller than this matrix
 			MakeIdentity();
 
-			ForEach<Sz>([&](size_t c)
+			ForEach<Sz>([&](std::size_t c)
 			{
-				for (size_t r = 0; r < Sz; ++r)
+				for (std::size_t r = 0; r < Sz; ++r)
 					Values[(c * ColumnType::Size) + r] = T(mat.Values[(c * Matrix<U, Sz>::ColumnType::Size) + r]);
 			});
 		}
 		else if (Sz > ColumnCount)
 		{
 			// 'mat' is larger than this matrix
-			ForEach<ColumnCount>([&](size_t c) 
+			ForEach<ColumnCount>([&](std::size_t c) 
 			{
-				for (size_t r = 0; r < ColumnType::Size; ++r)
+				for (std::size_t r = 0; r < ColumnType::Size; ++r)
 					Values[(c * ColumnType::Size) + r] = T(mat.Values[(c * Matrix<U, Sz>::ColumnType::Size) + r]);
 			});
 		}
 		else
 		{
 			// 'mat' is the same size as this matrix
-			ForEach<Size>([&](size_t n) { Values[n] = T(mat[n]); });
+			ForEach<Size>([&](std::size_t n) { Values[n] = T(mat[n]); });
 		}
 	}
 
 	// Constructs a matrix from a list of columns.
 	inline Matrix(const ColumnType(&columns)[Size]) noexcept
 	{
-		ForEach<ColumnCount>([&](size_t n) { Columns[n] = columns[n]; });
+		ForEach<ColumnCount>([&](std::size_t n) { Columns[n] = columns[n]; });
 	}
 
 	// Constructs a matrix from a list of values.
 	// Unspecified values are left default initialized.
-	template<class U, size_t Sz>
+	template<class U, std::size_t Sz>
 	inline Matrix(const U(&values)[Sz]) noexcept
 	{
-		ForEach<Sz>([&](size_t n) { Values[n] = values[n]; });
+		ForEach<Sz>([&](std::size_t n) { Values[n] = values[n]; });
 	}
 
 	// Constructs a matrix whose values are all set to a value
 	inline explicit Matrix(const T value) noexcept
 	{
-		ForEach<Size>([&](size_t n) { Values[n] = value; });
+		ForEach<Size>([&](std::size_t n) { Values[n] = value; });
 	}
 
 	// Constructs a rotation matrix from a quaternion
@@ -140,7 +140,7 @@ public:
 	inline Matrix(const IdentityTag&) noexcept
 		: Matrix(T(0))
 	{
-		ForEach<ColumnCount>([&](size_t n) { Values[ColumnType::Size * n + n] = T(1); });
+		ForEach<ColumnCount>([&](std::size_t n) { Values[ColumnType::Size * n + n] = T(1); });
 	}
 
 	// Constructs a 2D TRS matrix
@@ -230,7 +230,7 @@ public:
 
 	// Constructs a shear matrix from a shear amount and the target column/row coordinates
 	template<typename EnabledFor2x2OrGreater = std::enable_if_t<(S >= 2)>>
-	inline Matrix(const ShearTag&, const T shear, const size_t column, const size_t row) noexcept
+	inline Matrix(const ShearTag&, const T shear, const std::size_t column, const std::size_t row) noexcept
 		: Matrix(Epic::Identity)
 	{
 		assert(column >= 0 && column < ColumnCount);
@@ -345,7 +345,7 @@ public:
 	#pragma region Range Accessors
 
 	// Accesses the column at 'index'
-	inline ColumnType& at(const size_t index) noexcept
+	inline ColumnType& at(const std::size_t index) noexcept
 	{
 		assert(index >= 0 && index < ColumnCount);
 
@@ -353,7 +353,7 @@ public:
 	}
 
 	// Accesses the column at 'index'
-	inline const ColumnType& at(const size_t index) const noexcept
+	inline const ColumnType& at(const std::size_t index) const noexcept
 	{
 		assert(index >= 0 && index < ColumnCount);
 
@@ -361,7 +361,7 @@ public:
 	}
 
 	// Accesses the column at 'index'
-	inline ColumnType& operator[] (const size_t index) noexcept
+	inline ColumnType& operator[] (const std::size_t index) noexcept
 	{
 		assert(index >= 0 && index < ColumnCount);
 
@@ -369,7 +369,7 @@ public:
 	}
 
 	// Accesses the column at 'index'
-	inline const ColumnType& operator[] (const size_t index) const noexcept
+	inline const ColumnType& operator[] (const std::size_t index) const noexcept
 	{
 		assert(index >= 0 && index < ColumnCount);
 
@@ -395,7 +395,7 @@ public:
 	}
 
 	// Retrieves the number of columns
-	constexpr size_t size() const noexcept
+	constexpr std::size_t size() const noexcept
 	{
 		return ColumnCount;
 	}
@@ -421,11 +421,11 @@ public:
 		const auto src = vec;
 
 		// NOTE: The optimizer should unroll most or all of this
-		ForEach<ColumnCount>([&](const size_t i)
+		ForEach<ColumnCount>([&](const std::size_t i)
 		{
 			vec[i] = src[0] * Values[i];
 
-			for (size_t j = 1; j < ColumnCount; ++j)
+			for (std::size_t j = 1; j < ColumnCount; ++j)
 				vec[i] += src[j] * Values[(ColumnType::Size * j) + i];
 		});
 	}
@@ -437,11 +437,11 @@ public:
 		const auto src = vec;
 
 		// NOTE: The optimizer should unroll most or all of this
-		ForEach<ColumnCount - 1>([&](const size_t i)
+		ForEach<ColumnCount - 1>([&](const std::size_t i)
 		{
 			vec[i] = src[0] * Values[i];
 
-			for (size_t j = 1; j < (ColumnCount - 1); ++j)
+			for (std::size_t j = 1; j < (ColumnCount - 1); ++j)
 				vec[i] += src[j] * Values[(ColumnType::Size * j) + i];
 
 			vec[i] += Values[(ColumnType::Size * (ColumnCount - 1)) + i];
@@ -454,11 +454,11 @@ public:
 		const auto src = vec;
 
 		// NOTE: The optimizer should unroll most or all of this
-		ForEach<ColumnType::Size>([&](const size_t i)
+		ForEach<ColumnType::Size>([&](const std::size_t i)
 		{
 			vec[i] = src[0] * Values[ColumnCount * i];
 
-			for (size_t j = 1; j < ColumnType::Size; ++j)
+			for (std::size_t j = 1; j < ColumnType::Size; ++j)
 				vec[i] += src[j] * Values[(ColumnCount * i) + j];
 		});
 	}
@@ -470,11 +470,11 @@ public:
 		const auto src = vec;
 
 		// NOTE: The optimizer should unroll most or all of this
-		ForEach<ColumnType::Size>([&](const size_t i)
+		ForEach<ColumnType::Size>([&](const std::size_t i)
 		{
 			vec[i] = src[0] * Values[ColumnCount * i];
 
-			for (size_t j = 1; j < (ColumnType::Size - 1); ++j)
+			for (std::size_t j = 1; j < (ColumnType::Size - 1); ++j)
 				vec[i] += src[j] * Values[(ColumnCount * i) + j];
 
 			vec[i] += Values[(ColumnCount * i) + ColumnType::Size - 1];
@@ -494,7 +494,7 @@ public:
 	// Fills this matrix with 'value'
 	inline Type& Fill(const T& value) noexcept
 	{
-		ForEach<Size>([&](size_t n) { Values[n] = value; });
+		ForEach<Size>([&](std::size_t n) { Values[n] = value; });
 
 		return *this;
 	}
@@ -502,8 +502,8 @@ public:
 	// Sets this matrix to the identity matrix
 	inline Type& MakeIdentity() noexcept
 	{
-		ForEach<Size>([&](size_t n) { Values[n] = T(0); });
-		ForEach<ColumnCount>([&](size_t n) { Values[ColumnCount * n + n] = T(1); });
+		ForEach<Size>([&](std::size_t n) { Values[n] = T(0); });
+		ForEach<ColumnCount>([&](std::size_t n) { Values[ColumnCount * n + n] = T(1); });
 
 		return *this;
 	}
@@ -517,7 +517,7 @@ public:
 		cx *= vS.x;
 		cy *= vS.y;
 		
-		cz = vT;
+		cz.xy = vT;
 
 		return *this;
 	}
@@ -532,7 +532,7 @@ public:
 		cy *= vS.y;
 		cz *= vS.z;
 
-		cw = vT;
+		cw.xyz = vT;
 
 		return *this;
 	}
@@ -542,13 +542,13 @@ public:
 		typename = std::enable_if_t<(detail::Span<Arg, Args...>::Value <= ColumnType::Size)>>
 	inline Type& MakeTranslation(const Arg& arg, const Args&... args) noexcept
 	{
-		static constexpr size_t SpanV = detail::Span<Arg, Args...>::Value;
-		static constexpr size_t DestN = Size - ColumnType::Size;
+		static constexpr std::size_t SpanV = detail::Span<Arg, Args...>::Value;
+		static constexpr std::size_t DestN = Size - ColumnType::Size;
 
 		MakeIdentity();
 
 		Vector<T, SpanV> values{ arg, args... };
-		ForEach<SpanV>([&](size_t i) { Values[DestN + i] = values[i]; });
+		ForEach<SpanV>([&](std::size_t i) { Values[DestN + i] = values[i]; });
 
 		return *this;
 	}
@@ -558,12 +558,12 @@ public:
 		typename = std::enable_if_t<(detail::Span<Arg, Args...>::Value <= ColumnType::Size)>>
 	inline Type& MakeScale(const Arg& arg, const Args&... args) noexcept
 	{
-		static constexpr size_t SpanV = detail::Span<Arg, Args...>::Value;
+		static constexpr std::size_t SpanV = detail::Span<Arg, Args...>::Value;
 
 		MakeIdentity();
 
 		Vector<T, SpanV> values{ arg, args... };
-		ForEach<SpanV>([&](size_t i) { Values[ColumnCount * i + i] = values[i]; });
+		ForEach<SpanV>([&](std::size_t i) { Values[ColumnCount * i + i] = values[i]; });
 
 		return *this;
 	}
@@ -788,7 +788,7 @@ public:
 	{
 		T result = T(0);
 
-		ForEach<ColumnCount>([&](size_t i) 
+		ForEach<ColumnCount>([&](std::size_t i) 
 		{
 			result += Values[(i * ColumnType::Size) + i];
 		});
@@ -807,9 +807,9 @@ public:
 	{
 		Type result = Epic::Zero;
 
-		ForEach<ColumnCount>([&](size_t i)
+		ForEach<ColumnCount>([&](std::size_t i)
 		{
-			for (size_t j = 0; j < ColumnType::Size; ++j)
+			for (std::size_t j = 0; j < ColumnType::Size; ++j)
 				result[i] += Columns[j] * mat.Columns[i][j];
 		});
 
@@ -819,9 +819,9 @@ public:
 	// Rearranges this matrix so that its columns become its rows
 	Type& Transpose() noexcept
 	{
-		ForEach<ColumnCount>([&](size_t i) 
+		ForEach<ColumnCount>([&](std::size_t i) 
 		{
-			for (size_t j = i + 1; j < ColumnCount; ++j)
+			for (std::size_t j = i + 1; j < ColumnCount; ++j)
 				std::swap
 				(
 					Values[(i * ColumnType::Size) + j], 
@@ -883,13 +883,13 @@ public:
 			Type lower = Epic::Identity;
 			Type& upper = *this;
 
-			ForEach<ColumnCount>([&](size_t i) 
+			ForEach<ColumnCount>([&](std::size_t i) 
 			{
 				// Partial pivoting (Column Switching ERO)
 				T v = std::abs(upper.Values[(i * ColumnType::Size) + i]);
-				size_t column = i;
+				std::size_t column = i;
 
-				for (size_t j = i + 1; j < ColumnCount; ++j)
+				for (std::size_t j = i + 1; j < ColumnCount; ++j)
 				{
 					const T iv = std::abs(upper.Values[(j * ColumnType::Size) + i]);
 					if (iv > v)
@@ -916,7 +916,7 @@ public:
 				upper[i] *= tc;
 
 				// Zero the column i at column > i (Column addition ERO)
-				for (size_t j = i + 1; j < ColumnCount; ++j)
+				for (std::size_t j = i + 1; j < ColumnCount; ++j)
 				{
 					const T t = upper.Values[(j * ColumnType::Size) + i];
 					upper[j] -= upper[i] * t;
@@ -926,11 +926,11 @@ public:
 				}
 			});
 
-			for (size_t i = ColumnCount - 1; i > 0; --i)
+			for (std::size_t i = ColumnCount - 1; i > 0; --i)
 			{
 				for (long long j = i - 1; j >= 0; --j)
 				{
-					size_t js = static_cast<size_t>(j);
+					std::size_t js = static_cast<std::size_t>(j);
 
 					const T t = upper.Values[(js * ColumnType::Size) + i];
 					lower[js] -= lower[i] * t;
@@ -947,7 +947,7 @@ public:
 	// Inverts this matrix under the assumption that it describes a rigid-body transformation; then transposes it.
 	inline Type& TransposeInvertRigid() noexcept
 	{
-		ForEach<ColumnCount - 1>([&](size_t i)
+		ForEach<ColumnCount - 1>([&](std::size_t i)
 		{
 			Columns[i][ColumnType::Size - 1] = -Columns[i].Dot(Columns[ColumnCount - 1]);
 		});
@@ -968,17 +968,17 @@ public:
 	}
 
 	// Constructs a matrix from the square region between [I, I + N]
-	template<size_t I = 0, size_t N = ColumnCount,
+	template<std::size_t I = 0, std::size_t N = ColumnCount,
 		typename InvalidSlice = std::enable_if_t<((I + N) <= ColumnCount)>>
 	Matrix<T, N> Slice() const noexcept
 	{
 		Matrix<T, N> result;
-		size_t src = (ColumnCount * I) + I;
-		size_t dest = 0;
+		std::size_t src = (ColumnCount * I) + I;
+		std::size_t dest = 0;
 
-		ForEach<N>([&](size_t)
+		ForEach<N>([&](std::size_t)
 		{
-			for (size_t j = 0; j < N; ++j)
+			for (std::size_t j = 0; j < N; ++j)
 				result.Values[dest++] = Values[src++];
 
 			src += ColumnCount - N;
@@ -989,7 +989,7 @@ public:
 
 	// Constructs a matrix from this matrix, less 'Amount' rows and columns
 	// NOTE: Equivalent to Slice<0, S - Amount>()
-	template<size_t Amount = 1, typename ResultSizeMustBeGreaterThan0 = std::enable_if_t<(ColumnCount > Amount)>>
+	template<std::size_t Amount = 1, typename ResultSizeMustBeGreaterThan0 = std::enable_if_t<(ColumnCount > Amount)>>
 	auto Contract() const noexcept
 	{
 		return Slice<0, ColumnCount - Amount>();
@@ -997,7 +997,7 @@ public:
 
 	// Constructs a matrix from this matrix with 'Amount' additional rows and columns.
 	// Added rows/columns are filled with values from the identity matrix.
-	template<size_t Amount = 1>
+	template<std::size_t Amount = 1>
 	inline auto Expand() const noexcept
 	{
 		return Expand<Amount>(Epic::Identity);
@@ -1005,20 +1005,20 @@ public:
 
 	// Constructs a matrix from this matrix with 'Amount' additional rows and columns.
 	// Added rows/columns are filled with values from the zeroes matrix.
-	template<size_t Amount = 1>
+	template<std::size_t Amount = 1>
 	auto Expand(const ZeroesTag&) const noexcept
 	{
-		constexpr static size_t Expanded = ColumnCount + Amount;
+		constexpr static std::size_t Expanded = ColumnCount + Amount;
 
 		Matrix<T, Expanded> result(*this);
 
-		ForEach<ColumnCount>([&](size_t c)
+		ForEach<ColumnCount>([&](std::size_t c)
 		{
-			for (size_t r = ColumnType::Size; r < Expanded; ++r)
+			for (std::size_t r = ColumnType::Size; r < Expanded; ++r)
 				result.Values[(c * Expanded) + r] = T(0);
 		});
 		
-		ForEach<Expanded * Amount>([&](size_t r)
+		ForEach<Expanded * Amount>([&](std::size_t r)
 		{
 			result.Values[(Expanded * ColumnCount) + r] = T(0);
 		});
@@ -1028,20 +1028,20 @@ public:
 
 	// Constructs a matrix from this matrix with 'Amount' additional rows and columns.
 	// Added rows/columns are filled with values from the ones matrix.
-	template<size_t Amount = 1>
+	template<std::size_t Amount = 1>
 	auto Expand(const OnesTag&) const noexcept
 	{
-		constexpr static size_t Expanded = ColumnCount + Amount;
+		constexpr static std::size_t Expanded = ColumnCount + Amount;
 
 		Matrix<T, Expanded> result(*this);
 
-		ForEach<ColumnCount>([&](size_t c)
+		ForEach<ColumnCount>([&](std::size_t c)
 		{
-			for (size_t r = ColumnType::Size; r < Expanded; ++r)
+			for (std::size_t r = ColumnType::Size; r < Expanded; ++r)
 				result.Values[(c * Expanded) + r] = T(1);
 		});
 
-		ForEach<Expanded * Amount>([&](size_t r)
+		ForEach<Expanded * Amount>([&](std::size_t r)
 		{
 			result.Values[(Expanded * ColumnCount) + r] = T(1);
 		});
@@ -1051,22 +1051,22 @@ public:
 
 	// Constructs a matrix from this matrix with 'Amount' additional rows and columns.
 	// Added rows/columns are filled with values from the identity matrix.
-	template<size_t Amount = 1>
+	template<std::size_t Amount = 1>
 	auto Expand(const IdentityTag&) const noexcept
 	{
-		constexpr static size_t Expanded = ColumnCount + Amount;
+		constexpr static std::size_t Expanded = ColumnCount + Amount;
 
 		Matrix<T, Expanded> result(*this);
 
-		ForEach<ColumnCount>([&](size_t c)
+		ForEach<ColumnCount>([&](std::size_t c)
 		{
-			for (size_t r = ColumnType::Size; r < Expanded; ++r)
+			for (std::size_t r = ColumnType::Size; r < Expanded; ++r)
 				result.Values[(c * Expanded) + r] = T(0);
 		});
 
-		for (size_t c = ColumnCount; c < Expanded; ++c)
+		for (std::size_t c = ColumnCount; c < Expanded; ++c)
 		{
-			ForEach<Expanded>([&](size_t r)
+			ForEach<Expanded>([&](std::size_t r)
 			{
 				result.Values[(Expanded * c) + r] = (c == r) ? T(1) : T(0);
 			});
@@ -1123,7 +1123,7 @@ public:
 	inline Type operator - () const noexcept
 	{
 		Type result;
-		ForEach<Size>([&](size_t n) { result[n] = -Values[n]; });
+		ForEach<Size>([&](std::size_t n) { result[n] = -Values[n]; });
 		return result;
 	}
 
@@ -1172,14 +1172,14 @@ public:
 																							\
 	inline Type& operator Op (const T value) noexcept										\
 	{																						\
-		ForEach<Size>([&](size_t index) { Values[index] Op value; });						\
+		ForEach<Size>([&](std::size_t index) { Values[index] Op value; });						\
 		return *this;																		\
 	}																						\
 																							\
 	template<class U>																		\
 	inline Type& operator Op (const U(&values)[Size]) noexcept								\
 	{																						\
-		ForEach<Size>([&](size_t index)	{ Values[index] Op values[index]; });				\
+		ForEach<Size>([&](std::size_t index)	{ Values[index] Op values[index]; });				\
 		return *this;																		\
 	}
 
@@ -1205,14 +1205,14 @@ public:
 																							\
 	inline Type& operator Op (const Type& mat) noexcept										\
 	{																						\
-		ForEach<Size>([&](size_t index) { Values[index] Op mat.Values[index]; });			\
+		ForEach<Size>([&](std::size_t index) { Values[index] Op mat.Values[index]; });			\
 		return *this;																		\
 	}																						\
 																							\
 	template<class U>																		\
 	inline Type& operator Op (const Matrix<U, S>& mat) noexcept								\
 	{																						\
-		ForEach<Size>([&](size_t index) { Values[index] Op T(mat.Values[index]); });		\
+		ForEach<Size>([&](std::size_t index) { Values[index] Op T(mat.Values[index]); });		\
 		return *this;																		\
 	}
 
@@ -1319,16 +1319,16 @@ public:
 private:
 	#pragma region Iteration Helpers
 
-	template<size_t N, class Function, class... Args>
+	template<std::size_t N, class Function, class... Args>
 	inline void ForEach(Function fn, Args&&... args) noexcept
 	{
-		Epic::TMP::ForEach<Epic::TMP::MakeSequence<size_t, N>>::Apply(fn, std::forward<Args>(args)...);
+		Epic::TMP::ForEach<Epic::TMP::MakeSequence<std::size_t, N>>::Apply(fn, std::forward<Args>(args)...);
 	}
 
-	template<size_t N, class Function, class... Args>
+	template<std::size_t N, class Function, class... Args>
 	inline void ForEach(Function fn, Args&&... args) const noexcept
 	{
-		Epic::TMP::ForEach<Epic::TMP::MakeSequence<size_t, N>>::Apply(fn, std::forward<Args>(args)...);
+		Epic::TMP::ForEach<Epic::TMP::MakeSequence<std::size_t, N>>::Apply(fn, std::forward<Args>(args)...);
 	}
 
 	#pragma endregion
@@ -1341,44 +1341,44 @@ private:
 		ConstructAt(0, vals...);
 	}
 
-	inline void ConstructAt(size_t) noexcept
+	inline void ConstructAt(std::size_t) noexcept
 	{
 		/* Do Nothing */
 	}
 
 	template<class Val, class... Vals>
-	inline void ConstructAt(size_t offset, const Val& value, const Vals&... values) noexcept
+	inline void ConstructAt(std::size_t offset, const Val& value, const Vals&... values) noexcept
 	{
 		PlaceAt(offset, value);
 		ConstructAt(offset + Epic::detail::Span<Val>::Value, values...);
 	}
 
-	template<class U, size_t Sz>
-	inline void PlaceAt(size_t offset, const Vector<U, Sz>& value) noexcept
+	template<class U, std::size_t Sz>
+	inline void PlaceAt(std::size_t offset, const Vector<U, Sz>& value) noexcept
 	{
-		ForEach<Sz>([&](size_t n) { Values[offset++] = value[n]; });
+		ForEach<Sz>([&](std::size_t n) { Values[offset++] = value[n]; });
 	}
 
-	template<class VectorT, class TArray, size_t... Is>
-	inline void PlaceAt(size_t offset, const VectorSwizzler<VectorT, TArray, Is...>& value) noexcept
+	template<class U, std::size_t VS, std::size_t... Is>
+	inline void PlaceAt(std::size_t offset, const Swizzler<U, VS, Is...>& value) noexcept
 	{
 		PlaceAt(offset, value.ToVector());
 	}
 
-	template<class U, size_t N>
-	inline void PlaceAt(size_t offset, const U(&value)[N]) noexcept
+	template<class U, std::size_t N>
+	inline void PlaceAt(std::size_t offset, const U(&value)[N]) noexcept
 	{
-		ForEach<N>([&](size_t n) { Values[offset++] = value[n]; });
+		ForEach<N>([&](std::size_t n) { Values[offset++] = value[n]; });
 	}
 
-	template<class U, size_t Sz>
-	void inline PlaceAt(size_t offset, const std::array<U, Sz>& value) noexcept
+	template<class U, std::size_t Sz>
+	void inline PlaceAt(std::size_t offset, const std::array<U, Sz>& value) noexcept
 	{
-		ForEach<Sz>([&](size_t n) { Values[offset++] = value[n]; });
+		ForEach<Sz>([&](std::size_t n) { Values[offset++] = value[n]; });
 	}
 
 	template<class Val>
-	inline void PlaceAt(size_t offset, const Val& value) noexcept
+	inline void PlaceAt(std::size_t offset, const Val& value) noexcept
 	{
 		Values[offset] = value;
 	}
@@ -1387,14 +1387,14 @@ private:
 
 	#pragma region Determinant Helpers
 
-	template<size_t n>
+	template<std::size_t n>
 	inline T DeterminantHelper() const noexcept
 	{
 		// Get the 1st column of the matrix of minors
 		Vector<T, ColumnType::Size> minors = MinorsHelper();
 
 		// Transform it into a cofactor vector
-		for (size_t i = 1; i < ColumnType::Size; i += 2)
+		for (std::size_t i = 1; i < ColumnType::Size; i += 2)
 			minors[i] = -minors[i];
 
 		// Calculate the determinant
@@ -1440,14 +1440,14 @@ private:
 		Vector<T, ColumnType::Size> minors;
 		Matrix<T, ColumnType::Size - 1> minor;
 
-		ForEach<ColumnCount>([&](size_t c) 
+		ForEach<ColumnCount>([&](std::size_t c) 
 		{
 			// Construct the minor of [0, c]
-			size_t d = 0;
+			std::size_t d = 0;
 
-			for (size_t i = 1; i < ColumnCount; ++i)
+			for (std::size_t i = 1; i < ColumnCount; ++i)
 			{
-				for (size_t r = 0; r < ColumnCount; ++r)
+				for (std::size_t r = 0; r < ColumnCount; ++r)
 				{
 					if (r != c)
 						minor.Values[d++] = Values[(i * ColumnType::Size) + r];
@@ -1464,22 +1464,22 @@ private:
 	#pragma endregion
 
 public:
-	template<class U, size_t Sz>
+	template<class U, std::size_t Sz>
 	friend inline bool operator == (const Matrix<U, Sz>& matA, const Matrix<U, Sz>& matB) noexcept;
 
-	template<class U, size_t Sz>
+	template<class U, std::size_t Sz>
 	friend inline bool operator != (const Matrix<U, Sz>& matA, const Matrix<U, Sz>& matB) noexcept;
 
-	template<class U, size_t Sz>
+	template<class U, std::size_t Sz>
 	friend inline std::ostream& operator << (std::ostream& stream, const Matrix<U, Sz>& mat);
 
-	template<class U, size_t Sz>
+	template<class U, std::size_t Sz>
 	friend inline std::wostream& operator << (std::wostream& stream, const Matrix<U, Sz>& mat);
 
-	template<class U, size_t Sz>
+	template<class U, std::size_t Sz>
 	friend inline std::istream& operator >> (std::istream& stream, Matrix<U, Sz>& mat);
 
-	template<class U, size_t Sz>
+	template<class U, std::size_t Sz>
 	friend inline std::wistream& operator >> (std::wistream& stream, Matrix<U, Sz>& mat);
 };
 
@@ -1488,36 +1488,36 @@ public:
 // Friend Operators
 namespace Epic
 {
-	template<class U, size_t Sz>
+	template<class U, std::size_t Sz>
 	inline bool operator == (const Matrix<U, Sz>& matA, const Matrix<U, Sz>& matB) noexcept
 	{
 		bool result = true;
 
-		for (size_t i = 0; i < Sz; ++i)
+		for (std::size_t i = 0; i < Sz; ++i)
 			result &= (matA[i] == matB[i]);
 
 		return result;
 	}
 
-	template<class U, size_t Sz>
+	template<class U, std::size_t Sz>
 	inline bool operator != (const Matrix<U, Sz>& matA, const Matrix<U, Sz>& matB) noexcept
 	{
 		bool result = true;
 
-		for (size_t i = 0; i < Sz; ++i)
+		for (std::size_t i = 0; i < Sz; ++i)
 			result &= (matA[i] != matB[i]);
 
 		return result;
 	}
 
-	template<class U, size_t Sz>
+	template<class U, std::size_t Sz>
 	inline std::ostream& operator << (std::ostream& stream, const Matrix<U, Sz>& mat)
 	{
 		stream << "[\n";
 		if (Sz > 0)
 		{
 			stream << std::fixed;
-			mat.ForEach<Sz>([&](size_t n)
+			mat.ForEach<Sz>([&](std::size_t n)
 			{
 				stream << ' ' << mat[n];
 				if (n < Sz - 1) stream << ',';
@@ -1530,14 +1530,14 @@ namespace Epic
 		return stream;
 	}
 
-	template<class U, size_t Sz>
+	template<class U, std::size_t Sz>
 	inline std::wostream& operator << (std::wostream& stream, const Matrix<U, Sz>& mat)
 	{
 		stream << L"[\n";
 		if (Sz > 0)
 		{
 			stream << std::fixed;
-			mat.ForEach<Sz>([&](size_t n)
+			mat.ForEach<Sz>([&](std::size_t n)
 			{
 				stream << L' ' << mat[n];
 				if (n < Sz - 1) stream << L',';
@@ -1550,13 +1550,13 @@ namespace Epic
 		return stream;
 	}
 
-	template<class U, size_t Sz>
+	template<class U, std::size_t Sz>
 	inline std::istream& operator >> (std::istream& stream, Matrix<U, Sz>& mat)
 	{
 		if (stream.peek() == '[')
 			stream.ignore(1);
 
-		mat.ForEach<Sz>([&](size_t n)
+		mat.ForEach<Sz>([&](std::size_t n)
 		{
 			if (n > 0 && stream.peek() == ',')
 				stream.ignore(1);
@@ -1569,13 +1569,13 @@ namespace Epic
 		return stream;
 	}
 
-	template<class U, size_t Sz>
+	template<class U, std::size_t Sz>
 	inline std::wistream& operator >> (std::wistream& stream, Matrix<U, Sz>& mat)
 	{
 		if (stream.peek() == L'[')
 			stream.ignore(1);
 
-		mat.ForEach<Sz>([&](size_t n)
+		mat.ForEach<Sz>([&](std::size_t n)
 		{
 			if (n > 0 && stream.peek() == L',')
 				stream.ignore(1);
@@ -1594,7 +1594,7 @@ namespace Epic
 // Vector/Matrix operators
 namespace Epic
 {
-	template<class T, size_t S>
+	template<class T, std::size_t S>
 	inline auto operator * (const Matrix<T, S>& m, const Vector<T, S>& v) noexcept
 	{
 		auto result = v;
@@ -1602,7 +1602,7 @@ namespace Epic
 		return result;
 	}
 
-	template<class T, size_t S>
+	template<class T, std::size_t S>
 	inline auto operator * (const Vector<T, S>& v, const Matrix<T, S>& m) noexcept
 	{
 		auto result = v;
@@ -1610,7 +1610,7 @@ namespace Epic
 		return result;
 	}
 
-	template<class T, size_t S>
+	template<class T, std::size_t S>
 	inline auto operator * (const Matrix<T, S + 1>& m, const Vector<T, S>& v) noexcept
 	{
 		auto result = v;
@@ -1618,7 +1618,7 @@ namespace Epic
 		return result;
 	}
 
-	template<class T, size_t S>
+	template<class T, std::size_t S>
 	inline auto operator * (const Vector<T, S>& v, const Matrix<T, S + 1>& m) noexcept
 	{
 		auto result = v;
@@ -1626,7 +1626,7 @@ namespace Epic
 		return result;
 	}
 
-	template<class T, size_t S>
+	template<class T, std::size_t S>
 	inline auto operator / (const Matrix<T, S>& m, const Vector<T, S>& v) noexcept
 	{
 		auto result = v;
@@ -1634,7 +1634,7 @@ namespace Epic
 		return result;
 	}
 
-	template<class T, size_t S>
+	template<class T, std::size_t S>
 	inline auto operator / (const Vector<T, S>& v, const Matrix<T, S>& m) noexcept
 	{
 		auto result = v;
@@ -1642,7 +1642,7 @@ namespace Epic
 		return result;
 	}
 
-	template<class T, size_t S>
+	template<class T, std::size_t S>
 	inline auto operator / (const Matrix<T, S + 1>& m, const Vector<T, S>& v) noexcept
 	{
 		auto result = v;
@@ -1650,7 +1650,7 @@ namespace Epic
 		return result;
 	}
 
-	template<class T, size_t S>
+	template<class T, std::size_t S>
 	inline auto operator / (const Vector<T, S>& v, const Matrix<T, S + 1>& m) noexcept
 	{
 		auto result = v;

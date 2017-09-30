@@ -41,7 +41,7 @@ public:
 
 public:
 	using ValueType = T;
-	constexpr static size_t Size = 4;
+	constexpr static std::size_t Size = 4;
 
 private:
 	using Base::Values;
@@ -124,7 +124,7 @@ public:
 	}
 
 	// Constructs a rotation quaternion from an axis and angle
-	template<size_t S, typename EnabledForVector3OrGreater = std::enable_if_t<(S >= 3)>>
+	template<std::size_t S, typename EnabledForVector3OrGreater = std::enable_if_t<(S >= 3)>>
 	inline Quaternion(const Vector<T, S>& axis, const Radian<T>& angle) noexcept
 	{
 		MakeRotation(axis[0], axis[1], axis[2], angle);
@@ -136,7 +136,7 @@ public:
 	#pragma region Range Accessors
 
 	// Accesses the element at 'index'
-	inline T& at(const size_t index) noexcept
+	inline T& at(std::size_t index) noexcept
 	{
 		assert(index >= 0 && index < Size);
 
@@ -144,7 +144,7 @@ public:
 	}
 
 	// Accesses the element at 'index'
-	inline const T& at(const size_t index) const noexcept
+	inline const T& at(std::size_t index) const noexcept
 	{
 		assert(index >= 0 && index < Size);
 
@@ -152,7 +152,7 @@ public:
 	}
 
 	// Accesses the element at 'index'
-	inline T& operator[] (const size_t index) noexcept
+	inline T& operator[] (std::size_t index) noexcept
 	{
 		assert(index >= 0 && index < Size);
 
@@ -160,7 +160,7 @@ public:
 	}
 
 	// Accesses the element at 'index'
-	inline const T& operator[] (const size_t index) const noexcept
+	inline const T& operator[] (std::size_t index) const noexcept
 	{
 		assert(index >= 0 && index < Size);
 
@@ -174,19 +174,19 @@ public:
 	}
 
 	// Retrieves an iterator to the first element
-	constexpr decltype(Values.begin()) begin() const noexcept
+	constexpr decltype(Values.cbegin()) begin() const noexcept
 	{
-		return Values.begin();
+		return Values.cbegin();
 	}
 
 	// Retrieves an iterator to one past the last element
-	constexpr decltype(Values.end()) end() const noexcept
+	constexpr decltype(Values.cend()) end() const noexcept
 	{
-		return Values.end();
+		return Values.cend();
 	}
 
 	// Retrieves the number of elements
-	constexpr size_t size() const noexcept
+	constexpr std::size_t size() const noexcept
 	{
 		return Size;
 	}
@@ -207,7 +207,7 @@ public:
 
 public:
 	// Rotates a vector by this quaternion.
-	template<size_t S, typename EnabledForVector3Or4 = std::enable_if_t<(S == 3) || (S == 4)>>
+	template<std::size_t S, typename EnabledForVector3Or4 = std::enable_if_t<(S == 3) || (S == 4)>>
 	inline void Transform(Vector<T, S>& vec) const noexcept
 	{
 		// vec.xyz = (*this * Quaternion{vec.xyz, 0} * ConjugateOf(*this)).xyz
@@ -334,7 +334,7 @@ public:
 	}
 
 	// Sets this quaternion to a rotation quaternion using an axis and an angle
-	template<size_t S, typename EnabledForVector3OrGreater = std::enable_if_t<(S >= 3)>>
+	template<std::size_t S, typename EnabledForVector3OrGreater = std::enable_if_t<(S >= 3)>>
 	inline Type& MakeRotation(const Vector<T, S>& axis, const Radian<T>& angle) noexcept
 	{
 		return MakeRotation(axis[0], axis[1], axis[2], angle);
@@ -725,7 +725,7 @@ public:
 	template<class U>																		\
 	inline Type& operator Op (const U(&values)[Size]) noexcept								\
 	{																						\
-		for (size_t i = 0; i < Size; ++i)													\
+		for (std::size_t i = 0; i < Size; ++i)													\
 			Values[i] Op values[i];															\
 																							\
 		return *this;																		\
@@ -733,7 +733,7 @@ public:
 																							\
 	inline Type& operator Op (const Type& quat) noexcept									\
 	{																						\
-		for (size_t i = 0; i < Size; ++i)													\
+		for (std::size_t i = 0; i < Size; ++i)													\
 			Values[i] Op quat[i];															\
 																							\
 		return *this;																		\
@@ -928,14 +928,14 @@ namespace Epic
 // Vector * Quaternion operators
 namespace Epic
 {
-	template<class T, size_t S>
+	template<class T, std::size_t S>
 	inline Vector<T, S>& Epic::Vector<T, S>::operator *= (const Epic::Quaternion<T>& quat) noexcept
 	{
 		quat.Transform(*this);
 		return *this;
 	}
 
-	template<class T, size_t S>
+	template<class T, std::size_t S>
 	inline auto operator * (const Vector<T, S>& vec, const Quaternion<T>& quat) noexcept
 	{
 		auto result = vec;

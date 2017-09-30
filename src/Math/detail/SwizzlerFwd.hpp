@@ -17,6 +17,6 @@
 
 namespace Epic
 {
-	template<class VectorType, class TArray, size_t... Indices>
-	class VectorSwizzler;
+	template<class T, std::size_t VS, std::size_t... Indices>
+	class Swizzler;
 }
