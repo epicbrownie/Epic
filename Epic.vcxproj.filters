@@ -254,33 +254,6 @@
     <ClInclude Include="src\AutoList.hpp">
       <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="src\EON\Types.hpp">
-      <Filter>Utility\EON</Filter>
-    </ClInclude>
-    <ClInclude Include="src\EON\Grammar.hpp">
-      <Filter>Utility\EON</Filter>
-    </ClInclude>
-    <ClInclude Include="src\EON\Bin.hpp">
-      <Filter>Utility\EON</Filter>
-    </ClInclude>
-    <ClInclude Include="src\EON\Convert.hpp">
-      <Filter>Utility\EON</Filter>
-    </ClInclude>
-    <ClInclude Include="src\EON\Bind.hpp">
-      <Filter>Utility\EON</Filter>
-    </ClInclude>
-    <ClInclude Include="src\EON\detail\Assign.hpp">
-      <Filter>Utility\EON\detail</Filter>
-    </ClInclude>
-    <ClInclude Include="src\EON\detail\Utility.hpp">
-      <Filter>Utility\EON\detail</Filter>
-    </ClInclude>
-    <ClInclude Include="src\EON\Selector.hpp">
-      <Filter>Utility\EON</Filter>
-    </ClInclude>
-    <ClInclude Include="src\EON\Extractor.hpp">
-      <Filter>Utility\EON</Filter>
-    </ClInclude>
     <ClInclude Include="src\TMP\Sequence.hpp">
       <Filter>Utility\TMP</Filter>
     </ClInclude>
@@ -526,6 +499,54 @@
     </ClInclude>
     <ClInclude Include="src\Math\SVector.hpp">
       <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\detail\Assign.hpp">
+      <Filter>Utility\EON\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\detail\Traits.hpp">
+      <Filter>Utility\EON\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\detail\TypeConvert.hpp">
+      <Filter>Utility\EON\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\detail\Utility.hpp">
+      <Filter>Utility\EON\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\detail\Visitors.hpp">
+      <Filter>Utility\EON\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\Bin.hpp">
+      <Filter>Utility\EON</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\Convert.hpp">
+      <Filter>Utility\EON</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\Error.hpp">
+      <Filter>Utility\EON</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\Extractor.hpp">
+      <Filter>Utility\EON</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\Grammar.hpp">
+      <Filter>Utility\EON</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\Parser.hpp">
+      <Filter>Utility\EON</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\Selector.hpp">
+      <Filter>Utility\EON</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\Types.hpp">
+      <Filter>Utility\EON</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\detail\ParserFwd.hpp">
+      <Filter>Utility\EON\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\ResultPolicy.hpp">
+      <Filter>Utility\EON</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON.hpp">
+      <Filter>Utility\EON</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

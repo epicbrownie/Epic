@@ -52,17 +52,17 @@ struct Epic::StringHashAlgorithm<C, Epic::StringHashAlgorithms::PaulLarson>
 	static constexpr Epic::StringHashAlgorithms Algorithm = Epic::StringHashAlgorithms::PaulLarson;
 	static constexpr HashType DefaultSeed{ 2166136261 };
 
-	static constexpr HashType Hash(std::nullptr_t, const HashType seed = DefaultSeed) noexcept
+	static constexpr HashType Hash(const HashType seed = DefaultSeed) noexcept
 	{
 		return seed;
 	}
 
-	static constexpr HashType Hash(const CharType* __restrict str = nullptr, const HashType seed = DefaultSeed) noexcept
+	static constexpr HashType Hash(const CharType* __restrict str, const size_t length, const HashType seed = DefaultSeed) noexcept
 	{
 		HashType hash = seed;
 
-		while (*str != 0)
-			hash = hash * 101 + *str++;
+		for(size_t i = 0; i < length; ++i)
+			hash = hash * 101 + str[i];
 
 		return hash;
 	}
@@ -92,17 +92,17 @@ struct Epic::StringHashAlgorithm<C, Epic::StringHashAlgorithms::FNV1a>
 	static constexpr HashType DefaultSeed{ 2166136261 };
 	static constexpr HashType DefaultPrime{ 16777619 };
 
-	static constexpr HashType Hash(std::nullptr_t, const HashType seed = DefaultSeed, const HashType = DefaultPrime) noexcept
+	static constexpr HashType Hash(const HashType seed = DefaultSeed)
 	{
 		return seed;
 	}
 
-	static constexpr HashType Hash(const CharType* __restrict str, const HashType seed = DefaultSeed, const HashType prime = DefaultPrime) noexcept
+	static constexpr HashType Hash(const CharType* __restrict str, const size_t length = 0, const HashType seed = DefaultSeed, const HashType prime = DefaultPrime) noexcept
 	{
 		HashType hash = seed;
 		
-		while (*str != 0)
-			hash = (hash ^ *str++) * prime;
+		for (size_t i = 0; i < length; ++i)
+			hash = (hash ^ str[i]) * prime;
 
 		return hash;
 	}
