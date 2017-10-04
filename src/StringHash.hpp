@@ -15,6 +15,7 @@
 
 #include <Epic/StringHashAlgorithm.hpp>
 #include <cstdint>
+#include <cstring>
 #include <functional>
 #include <string>
 #include <string_view>
@@ -58,22 +59,22 @@ public:
 
 public:
 	constexpr BasicStringHash() noexcept
-		: m_Hash{ AlgorithmType::Hash(nullptr) } { }
+		: m_Hash{ AlgorithmType::Hash() } { }
 
 	template<size_t N>
 	constexpr BasicStringHash(const CharType(&cstr)[N]) noexcept
-		: m_Hash{ AlgorithmType::Hash(cstr) } { }
+		: m_Hash{ AlgorithmType::Hash<N>(cstr) } { }
 
 	constexpr BasicStringHash(CStringWrapper cstr) noexcept
-		: m_Hash{ AlgorithmType::Hash(cstr.Str) } { }
+		: m_Hash{ AlgorithmType::Hash(cstr.Str, std::strlen(cstr.Str)) } { }
 
 	template<typename Traits>
 	constexpr BasicStringHash(const std::basic_string_view<CharType, Traits> str) noexcept
-		: m_Hash{ AlgorithmType::Hash(str.data()) } { }
+		: m_Hash{ AlgorithmType::Hash(str.data(), str.length()) } { }
 
 	template<typename Traits, typename Alloc>
 	constexpr BasicStringHash(const std::basic_string<CharType, Traits, Alloc>& str) noexcept
-		: m_Hash{ AlgorithmType::Hash(str.data()) } { }
+		: m_Hash{ AlgorithmType::Hash(str.data(), str.length()) } { }
 
 	template<class C2>
 	constexpr BasicStringHash(const BasicStringHash<C2, A>& other) noexcept
@@ -87,7 +88,7 @@ public:
 
 	constexpr Type& operator = (std::nullptr_t) noexcept
 	{
-		m_Hash = AlgorithmType::Hash(nullptr);
+		m_Hash = AlgorithmType::Hash();
 		return *this;
 	}
 
@@ -100,21 +101,21 @@ public:
 
 	constexpr Type& operator = (const CStringWrapper cstr) noexcept
 	{
-		m_Hash = AlgorithmType::Hash(cstr.Str);
+		m_Hash = AlgorithmType::Hash(cstr.Str, std::strlen(cstr.Str));
 		return *this;
 	}
 
 	template<typename Traits>
 	constexpr Type& operator = (const std::basic_string_view<CharType, Traits> str) noexcept
 	{
-		m_Hash = AlgorithmType::Hash(str.data());
+		m_Hash = AlgorithmType::Hash(str.data(), str.length());
 		return *this;
 	}
 
 	template<typename Traits, typename Alloc>
 	constexpr Type& operator = (const std::basic_string<CharType, Traits, Alloc>& str) noexcept
 	{
-		m_Hash = AlgorithmType::Hash(str.data());
+		m_Hash = AlgorithmType::Hash(str.data(), str.length());
 		return *this;
 	}
 
