@@ -14,8 +14,10 @@
 #pragma once
 
 #include <Epic/Math/Constants.hpp>
+#include <cassert>
 #include <cmath>
 #include <iostream>
+#include <type_traits>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -36,14 +38,14 @@ namespace Epic
 	namespace
 	{
 		// Convert a degree value to radians
-		template<typename T>
+		template<class T>
 		constexpr T DegToRad(const T value) noexcept
 		{
 			return Epic::Pi<T> * value / T(180);
 		}
 
 		// Convert a radian value to degrees
-		template<typename T>
+		template<class T>
 		constexpr T RadToDeg(const T value) noexcept
 		{
 			return T(180) * value / Epic::Pi<T>;
@@ -69,12 +71,13 @@ public:
 	Radian(const Type&) = default;
 	Radian(Type&&) = default;
 
-	constexpr Radian(const T value) noexcept
-		: m_Value(value) { }
+	template<class U, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
+	constexpr Radian(const U value) noexcept
+		: m_Value(static_cast<T>(value)) { }
 
-	template<typename U>
+	template<class U, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
 	constexpr Radian(const Degree<U>& value) noexcept
-		: m_Value(Epic::DegToRad(T(value.Value()))) { }
+		: m_Value(Epic::DegToRad(static_cast<T>(value.Value()))) { }
 
 public:
 	constexpr T Value() const noexcept
@@ -116,6 +119,7 @@ public:
 
 public:
 	#pragma region Assignment Operators
+	
 	#define CREATE_ASSIGNMENT_OPERATOR(Op)	\
 																		\
 	inline Type& operator Op (const ValueType& value) noexcept			\
@@ -130,17 +134,19 @@ public:
 		return *this;													\
 	}																	\
 																		\
-	template<typename U>												\
+	template<class U,													\
+			 typename = std::enable_if_t<std::is_convertible_v<U, T>>>	\
 	inline Type& operator Op (const Radian<U>& value) noexcept			\
 	{																	\
-		m_Value Op T(value.Value());									\
+		m_Value Op static_cast<T>(value.Value());						\
 		return *this;													\
 	}																	\
 																		\
-	template<typename U>												\
+	template<class U,													\
+			 typename = std::enable_if_t<std::is_convertible_v<U, T>>>	\
 	inline Type& operator Op (const Degree<U>& value) noexcept			\
 	{																	\
-		m_Value Op Epic::DegToRad(T(value.Value()));					\
+		m_Value Op Epic::DegToRad(static_cast<T>(value.Value()));		\
 		return *this;													\
 	}
 
@@ -150,15 +156,8 @@ public:
 	CREATE_ASSIGNMENT_OPERATOR(*= );
 	CREATE_ASSIGNMENT_OPERATOR(/= );
 
-	// The following assignment operators will fail for non-integral types
-	CREATE_ASSIGNMENT_OPERATOR(|= );
-	CREATE_ASSIGNMENT_OPERATOR(&= );
-	CREATE_ASSIGNMENT_OPERATOR(^= );
-	CREATE_ASSIGNMENT_OPERATOR(%= );
-	CREATE_ASSIGNMENT_OPERATOR(<<= );
-	CREATE_ASSIGNMENT_OPERATOR(>>= );
-
 	#undef CREATE_ASSIGNMENT_OPERATOR
+
 	#pragma endregion
 
 public:
@@ -207,14 +206,6 @@ public:
 	CREATE_ARITHMETIC_OPERATOR(*);
 	CREATE_ARITHMETIC_OPERATOR(/);
 
-	// The following arithmetic operators are only defined for integral types
-	CREATE_ARITHMETIC_OPERATOR(|);
-	CREATE_ARITHMETIC_OPERATOR(&);
-	CREATE_ARITHMETIC_OPERATOR(^);
-	CREATE_ARITHMETIC_OPERATOR(%);
-	CREATE_ARITHMETIC_OPERATOR(<<);
-	CREATE_ARITHMETIC_OPERATOR(>>);
-
 	#undef CREATE_ARITHMETIC_OPERATOR
 	#pragma endregion
 
@@ -232,10 +223,11 @@ public:
 		return m_Value Op value.Value();								\
 	}																	\
 																		\
-	template<typename U>												\
+	template<class U,													\
+			 typename = std::enable_if_t<std::is_convertible_v<U, T>>>	\
 	constexpr bool operator Op (const Radian<U>& value) const noexcept	\
 	{																	\
-		return m_Value Op value.Value();								\
+		return m_Value Op static_cast<T>(value.Value());				\
 	}
 
 	CREATE_COMPARISON_OPERATOR(< );
@@ -249,27 +241,27 @@ public:
 	#pragma endregion
 
 public:
-	static const Radian Zero;
-	static const Radian QuarterCircle;
-	static const Radian HalfCircle;
-	static const Radian ThreeQuarterCircle;
-	static const Radian Circle;
+	static const Type Zero;
+	static const Type QuarterCircle;
+	static const Type HalfCircle;
+	static const Type ThreeQuarterCircle;
+	static const Type Circle;
 };
 
 template<class T> 
-decltype(Epic::Radian<T>::Zero) Epic::Radian<T>::Zero(T(0));
+const Epic::Radian<T> Epic::Radian<T>::Zero = T(0);
 
 template<class T>
-decltype(Epic::Radian<T>::QuarterCircle) Epic::Radian<T>::QuarterCircle(Epic::HalfPi<T>);
+const Epic::Radian<T> Epic::Radian<T>::QuarterCircle = Epic::HalfPi<T>;
 
 template<class T>
-decltype(Epic::Radian<T>::HalfCircle) Epic::Radian<T>::HalfCircle(Epic::Pi<T>);
+const Epic::Radian<T> Epic::Radian<T>::HalfCircle = Epic::Pi<T>;
 
 template<class T>
-decltype(Epic::Radian<T>::ThreeQuarterCircle) Epic::Radian<T>::ThreeQuarterCircle(Epic::Pi<T> + Epic::HalfPi<T>);
+const Epic::Radian<T> Epic::Radian<T>::ThreeQuarterCircle = Epic::Pi<T> + Epic::HalfPi<T>;
 
 template<class T>
-decltype(Epic::Radian<T>::Circle) Epic::Radian<T>::Circle(Epic::TwoPi<T>);
+const Epic::Radian<T> Epic::Radian<T>::Circle = Epic::TwoPi<T>;
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -289,12 +281,13 @@ public:
 	Degree(const Type&) noexcept = default;
 	Degree(Type&&) noexcept = default;
 
-	constexpr Degree(const T value) noexcept
-		: m_Value(value) { }
+	template<class U, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
+	constexpr Degree(const U value) noexcept
+		: m_Value(static_cast<T>(value)) { }
 
-	template<typename U>
+	template<class U, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
 	constexpr Degree(const Radian<U>& value) noexcept
-		: m_Value(Epic::RadToDeg(T(value.Value()))) { }
+		: m_Value(Epic::RadToDeg(static_cast<T>(value.Value()))) { }
 
 public:
 	constexpr T Value() const noexcept
@@ -336,31 +329,34 @@ public:
 
 public:
 	#pragma region Assignment Operators
+	
 	#define CREATE_ASSIGNMENT_OPERATOR(Op)	\
 																		\
-	Type& operator Op (const ValueType& value) noexcept					\
+	inline Type& operator Op (const ValueType& value) noexcept			\
 	{																	\
 		m_Value Op value;												\
 		return *this;													\
 	}																	\
 																		\
-	Type& operator Op (const Type& value) noexcept						\
+	inline Type& operator Op (const Type& value) noexcept				\
 	{																	\
-		m_Value Op T(value.Value());									\
+		m_Value Op value.Value();										\
 		return *this;													\
 	}																	\
 																		\
-	template<typename U>												\
-	Type& operator Op (const Degree<U>& value) noexcept					\
+	template<class U,													\
+			 typename = std::enable_if_t<std::is_convertible_v<U, T>>>	\
+	inline Type& operator Op (const Degree<U>& value) noexcept			\
 	{																	\
-		m_Value Op T(value.Value());									\
+		m_Value Op static_cast<T>(value.Value());						\
 		return *this;													\
 	}																	\
 																		\
-	template<typename U>												\
-	Type& operator Op (const Radian<U>& value) noexcept					\
+	template<class U,													\
+			 typename = std::enable_if_t<std::is_convertible_v<U, T>>>	\
+	inline Type& operator Op (const Radian<U>& value) noexcept			\
 	{																	\
-		m_Value Op Epic::RadToDeg(T(value.Value()));					\
+		m_Value Op Epic::RadToDeg(static_cast<T>(value.Value()));		\
 		return *this;													\
 	}
 
@@ -369,16 +365,9 @@ public:
 	CREATE_ASSIGNMENT_OPERATOR(-= );
 	CREATE_ASSIGNMENT_OPERATOR(*= );
 	CREATE_ASSIGNMENT_OPERATOR(/= );
-
-	// The following assignment operators will fail for non-integral types
-	CREATE_ASSIGNMENT_OPERATOR(|= );
-	CREATE_ASSIGNMENT_OPERATOR(&= );
-	CREATE_ASSIGNMENT_OPERATOR(^= );
-	CREATE_ASSIGNMENT_OPERATOR(%= );
-	CREATE_ASSIGNMENT_OPERATOR(<<= );
-	CREATE_ASSIGNMENT_OPERATOR(>>= );
-
+	
 	#undef CREATE_ASSIGNMENT_OPERATOR
+
 	#pragma endregion
 
 public:
@@ -427,14 +416,6 @@ public:
 	CREATE_ARITHMETIC_OPERATOR(*);
 	CREATE_ARITHMETIC_OPERATOR(/);
 
-	// The following arithmetic operators are only defined for integral types
-	CREATE_ARITHMETIC_OPERATOR(|);
-	CREATE_ARITHMETIC_OPERATOR(&);
-	CREATE_ARITHMETIC_OPERATOR(^);
-	CREATE_ARITHMETIC_OPERATOR(%);
-	CREATE_ARITHMETIC_OPERATOR(<<);
-	CREATE_ARITHMETIC_OPERATOR(>>);
-
 	#undef CREATE_ARITHMETIC_OPERATOR
 	#pragma endregion
 
@@ -452,10 +433,11 @@ public:
 		return m_Value Op value.Value();										\
 	}																			\
 																				\
-	template<typename U>														\
+	template<class U,															\
+			 typename = std::enable_if_t<std::is_convertible_v<U, T>>>			\
 	constexpr bool operator Op (const Degree<U>& value) const noexcept			\
 	{																			\
-		return m_Value Op value.Value();										\
+		return m_Value Op static_cast<T>(value.Value());						\
 	}
 
 	CREATE_COMPARISON_OPERATOR(< );
@@ -469,27 +451,27 @@ public:
 	#pragma endregion
 
 public:
-	static const Degree Zero;
-	static const Degree QuarterCircle;
-	static const Degree HalfCircle;
-	static const Degree ThreeQuarterCircle;
-	static const Degree Circle;
+	static const Type Zero;
+	static const Type QuarterCircle;
+	static const Type HalfCircle;
+	static const Type ThreeQuarterCircle;
+	static const Type Circle;
 };
 
 template<class T>
-decltype(Epic::Degree<T>::Zero) Epic::Degree<T>::Zero(T(0));
+const Epic::Degree<T> Epic::Degree<T>::Zero = T(0);
 
 template<class T>
-decltype(Epic::Degree<T>::QuarterCircle) Epic::Degree<T>::QuarterCircle(T(90));
+const Epic::Degree<T> Epic::Degree<T>::QuarterCircle = T(90);
 
 template<class T>
-decltype(Epic::Degree<T>::HalfCircle) Epic::Degree<T>::HalfCircle(T(180));
+const Epic::Degree<T> Epic::Degree<T>::HalfCircle = T(180);
 
 template<class T>
-decltype(Epic::Degree<T>::ThreeQuarterCircle) Epic::Degree<T>::ThreeQuarterCircle(T(270));
+const Epic::Degree<T> Epic::Degree<T>::ThreeQuarterCircle = T(270);
 
 template<class T>
-decltype(Epic::Degree<T>::Circle) Epic::Degree<T>::Circle(T(360));
+const Epic::Degree<T> Epic::Degree<T>::Circle = T(360);
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -529,6 +511,17 @@ namespace Epic
 
 		return in;
 	}
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+// Externs
+namespace Epic
+{
+	extern template class Radian<float>;
+	extern template class Radian<double>;
+	extern template class Degree<float>;
+	extern template class Degree<double>;
 }
 
 //////////////////////////////////////////////////////////////////////////////

@@ -14,6 +14,7 @@
 #pragma once
 
 #include <cstdint>
+#include <type_traits>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -67,12 +68,12 @@ struct Epic::StringHashAlgorithm<C, Epic::StringHashAlgorithms::PaulLarson>
 		return hash;
 	}
 
-	template<size_t N>
+	template<size_t N, typename = std::enable_if_t<(N > 0)>>
 	static constexpr HashType Hash(const CharType(&str)[N], const HashType seed = DefaultSeed) noexcept
 	{
 		HashType hash = seed;
 
-		for (size_t i = 0; i < N; ++i)
+		for (size_t i = 0; i < (N - 1); ++i)
 			hash = (hash * 101) + str[i];
 
 		return hash;
@@ -97,7 +98,7 @@ struct Epic::StringHashAlgorithm<C, Epic::StringHashAlgorithms::FNV1a>
 		return seed;
 	}
 
-	static constexpr HashType Hash(const CharType* __restrict str, const size_t length = 0, const HashType seed = DefaultSeed, const HashType prime = DefaultPrime) noexcept
+	static constexpr HashType Hash(const CharType* __restrict str, const size_t length, const HashType seed = DefaultSeed, const HashType prime = DefaultPrime) noexcept
 	{
 		HashType hash = seed;
 		
@@ -107,12 +108,12 @@ struct Epic::StringHashAlgorithm<C, Epic::StringHashAlgorithms::FNV1a>
 		return hash;
 	}
 
-	template<size_t N>
+	template<size_t N, typename = std::enable_if_t<(N > 0)>>
 	static constexpr HashType Hash(const char(&str)[N], const HashType seed = DefaultSeed, const HashType prime = DefaultPrime) noexcept
 	{
 		HashType hash = seed;
 
-		for (size_t i = 0; i < N; ++i)
+		for (size_t i = 0; i < N - 1; ++i)
 			hash = (hash ^ str[i]) * prime;
 
 		return hash;

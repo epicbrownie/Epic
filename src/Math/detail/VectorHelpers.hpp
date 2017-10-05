@@ -85,9 +85,7 @@ struct Epic::detail::Span
 template<class T, class... Ts>
 struct Epic::detail::Span<T, Ts...>
 {
-	constexpr static std::size_t Value = 
-		Epic::detail::SpanOf<std::remove_reference_t<std::remove_cv_t<T>>>::Value + 
-		Span<Ts...>::Value;
+	constexpr static std::size_t Value = Epic::detail::SpanOf<std::remove_reference_t<std::remove_cv_t<T>>>::Value + Span<Ts...>::Value;
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -125,6 +123,6 @@ struct Epic::detail::SVectorHelper
 
 	using VH = VectorHelper<T, Size>;
 	using TArray = typename VH::TArray;
-
+	
 	using BaseType = Epic::detail::SVectorBase<Size, typename VH::SwizzlerGenerator, TArray>;
 };

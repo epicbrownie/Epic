@@ -59,7 +59,7 @@ public:
 
 public:
 	constexpr BasicStringHash() noexcept
-		: m_Hash{ AlgorithmType::Hash() } { }
+		: m_Hash{ AlgorithmType::Hash(nullptr, 0) } { }
 
 	template<size_t N>
 	constexpr BasicStringHash(const CharType(&cstr)[N]) noexcept
@@ -88,7 +88,7 @@ public:
 
 	constexpr Type& operator = (std::nullptr_t) noexcept
 	{
-		m_Hash = AlgorithmType::Hash();
+		m_Hash = AlgorithmType::Hash(nullptr, 0);
 		return *this;
 	}
 
@@ -137,7 +137,7 @@ public:
 		template<class C2>																		\
 		constexpr bool operator Op (const Epic::BasicStringHash<C2, A>& rhs) const noexcept		\
 		{																						\
-			return m_Hash Op rhs.m_Hash;														\
+			return m_Hash Op rhs.Value();														\
 		}
 
 	CREATE_COMPARISON_OPERATOR(== );

@@ -121,30 +121,31 @@ public:
 	Selector(StringView path) noexcept
 		: m_TotalPath{ path }
 	{
-		// Globals
+		// Global
 		if (!path.empty())
-		{
-			if (path.front() == detail::GlobalRequired)
 			{
-				m_PathIsOptional = false;
-				path.remove_prefix(1);
+				if (path.front() == detail::GlobalRequired)
+				{
+					m_PathIsOptional = false;
+					path.remove_prefix(1);
+				}
+
+				if (path.front() == detail::GlobalOptional)
+				{
+					m_PathIsOptional = true;
+					path.remove_prefix(1);
+				}
 			}
 
-			if (path.front() == detail::GlobalOptional)
-			{
-				m_PathIsOptional = true;
-				path.remove_prefix(1);
-			}
-		}
-
+		// Segments
 		while (!path.empty())
-		{
-			bool isSet = false;
-			Segment segment{ path, eScope::Default, eMatch::Default, eEONVariantType::Any, EONName(), EONNameHash() };
-
-			// Matches
-			switch(path.front())
 			{
+				bool isSet = false;
+				Segment segment{ path, eScope::Default, eMatch::Default, eEONVariantType::Any, EONName(), EONNameHash() };
+
+				// Matches
+				switch (path.front())
+				{
 				case detail::MatchAll:
 					segment.Match = eMatch::All;
 					path.remove_prefix(1);
@@ -166,7 +167,7 @@ public:
 				default /* Identifier */:
 				{
 					std::size_t ide = 0;
-					while(ide < path.size())
+					while (ide < path.size())
 					{
 						const auto c = path.at(ide);
 						if (!std::isalnum(c) && c != StringView::traits_type::to_char_type('_'))
@@ -183,94 +184,94 @@ public:
 					}
 				}
 				break;
-			}
-
-			// Filters
-			if (!path.empty())
-			{
-				do
-				{
-					if (path.front() == detail::FilterTypeB)
-					{
-						auto filter = path.find(detail::FilterTypeE, 1);
-						if (filter != StringView::npos)
-						{
-							auto typeFilters = path.substr(1, filter - 1);
-							std::size_t result = 0;
-							
-							while (!typeFilters.empty())
-							{
-								EONName typeFilter{ typeFilters };
-
-								if (auto i = typeFilters.find(detail::FilterDivider); i != StringView::npos)
-								{
-									typeFilter = typeFilters.substr(0, i);
-									typeFilters.remove_prefix(i + 1);
-								}
-								else
-									typeFilters.remove_suffix(typeFilters.length());
-
-								if (typeFilter == "INTEGER")
-									result |= (std::size_t)eEONVariantType::Integer;
-								else if (typeFilter == "FLOAT")
-									result |= (std::size_t)eEONVariantType::Float;
-								else if (typeFilter == "BOOLEAN")
-									result |= (std::size_t)eEONVariantType::Boolean;
-								else if (typeFilter == "STRING")
-									result |= (std::size_t)eEONVariantType::String;
-								else if (typeFilter == "ARRAY")
-									result |= (std::size_t)eEONVariantType::Array;
-								else if (typeFilter == "OBJECT")
-									result |= (std::size_t)eEONVariantType::Object;
-							}
-
-							segment.TypeFilter = (eEONVariantType)result;
-							isSet = true;
-						}
-						else
-							filter = path.size() - 1;
-
-						path.remove_prefix(filter + 1);
-					}
-					else if (path.front() == detail::FilterParentB)
-					{
-						auto filter = path.find(detail::FilterParentE, 1);
-						if (filter != StringView::npos)
-						{
-							auto parentFilter = path.substr(1, filter - 1);
-							if (!parentFilter.empty())
-								segment.ParentFilter = parentFilter;
-
-							isSet = true;
-						}
-						else
-							filter = path.size() - 1;
-
-						path.remove_prefix(filter + 1);
-					}
-					else
-						break;
-				} while (!path.empty());
-			}
-			
-			// Scopes
-			if (!path.empty())
-			{
-				if (path.front() == detail::ScopeMatched)
-				{
-					segment.Scope = eScope::Matched;
-					path.remove_prefix(1);
-					isSet = true;
 				}
+
+				// Filters
+				if (!path.empty())
+				{
+					do
+					{
+						if (path.front() == detail::FilterTypeB)
+						{
+							auto filter = path.find(detail::FilterTypeE, 1);
+							if (filter != StringView::npos)
+							{
+								auto typeFilters = path.substr(1, filter - 1);
+								std::size_t result = 0;
+
+								while (!typeFilters.empty())
+								{
+									EONName typeFilter{ typeFilters };
+
+									if (auto i = typeFilters.find(detail::FilterDivider); i != StringView::npos)
+									{
+										typeFilter = typeFilters.substr(0, i);
+										typeFilters.remove_prefix(i + 1);
+									}
+									else
+										typeFilters.remove_suffix(typeFilters.length());
+
+									if (typeFilter == "INTEGER")
+										result |= (std::size_t)eEONVariantType::Integer;
+									else if (typeFilter == "FLOAT")
+										result |= (std::size_t)eEONVariantType::Float;
+									else if (typeFilter == "BOOLEAN")
+										result |= (std::size_t)eEONVariantType::Boolean;
+									else if (typeFilter == "STRING")
+										result |= (std::size_t)eEONVariantType::String;
+									else if (typeFilter == "ARRAY")
+										result |= (std::size_t)eEONVariantType::Array;
+									else if (typeFilter == "OBJECT")
+										result |= (std::size_t)eEONVariantType::Object;
+								}
+
+								segment.TypeFilter = (eEONVariantType)result;
+								isSet = true;
+							}
+							else
+								filter = path.size() - 1;
+
+							path.remove_prefix(filter + 1);
+						}
+						else if (path.front() == detail::FilterParentB)
+						{
+							auto filter = path.find(detail::FilterParentE, 1);
+							if (filter != StringView::npos)
+							{
+								auto parentFilter = path.substr(1, filter - 1);
+								if (!parentFilter.empty())
+									segment.ParentFilter = parentFilter;
+
+								isSet = true;
+							}
+							else
+								filter = path.size() - 1;
+
+							path.remove_prefix(filter + 1);
+						}
+						else
+							break;
+					} while (!path.empty());
+				}
+
+				// Scopes
+				if (!path.empty())
+				{
+					if (path.front() == detail::ScopeMatched)
+					{
+						segment.Scope = eScope::Matched;
+						path.remove_prefix(1);
+						isSet = true;
+					}
+				}
+
+				segment.Selector.remove_suffix(path.size());
+
+				m_Segments.emplace_back(std::move(segment));
+
+				if (!isSet)
+					break;
 			}
-
-			segment.Selector.remove_suffix(path.size());
-
-			m_Segments.emplace_back(std::move(segment));
-			
-			if(!isSet) 
-				break;
-		}
 	}
 
 public:
@@ -299,7 +300,7 @@ private:
 	{
 		constexpr auto BlankIdentifier = EONNameHash();
 		
-		if (segment.Identifier != BlankIdentifier && v.NameHash != segment.Identifier)
+		if (segment.Identifier != BlankIdentifier && segment.Identifier != v.NameHash)
 			return false;
 
 		if (!segment.ParentFilter.empty())
@@ -340,7 +341,7 @@ private:
 
 	bool IsSegmentMatch(const Segment& segment, const EONVariant& v) const
 	{
-		constexpr auto BlankIdentifier = Epic::Hash("");
+		constexpr auto BlankIdentifier = EONNameHash();
 
 		if (segment.Identifier != BlankIdentifier)
 			return false;

@@ -33,7 +33,7 @@ class Epic::detail::MatrixBase
 public:
 	using Type = Epic::detail::MatrixBase<T, S>;
 	
-	using ValueType = T;
+	using value_type = T;
 	static constexpr size_t Size = S * S;
 	
 	using ColumnType = Epic::Vector<T, S>;
@@ -42,7 +42,7 @@ public:
 	union
 	{
 		std::array<ColumnType, ColumnCount> Columns;
-		std::array<ValueType, Size> Values;
+		std::array<value_type, Size> Values;
 	};
 };
 
@@ -55,7 +55,7 @@ class Epic::detail::MatrixBase<T, 1>
 public:
 	using Type = Epic::detail::MatrixBase<T, 1>;
 
-	using ValueType = T;
+	using value_type = T;
 	static constexpr size_t Size = 1;
 
 	using ColumnType = Epic::Vector<T, 1>;
@@ -64,7 +64,7 @@ public:
 	union
 	{
 		std::array<ColumnType, ColumnCount> Columns;
-		std::array<ValueType, Size> Values;
+		std::array<value_type, Size> Values;
 
 		struct
 		{
@@ -82,7 +82,7 @@ class Epic::detail::MatrixBase<T, 2>
 public:
 	using Type = Epic::detail::MatrixBase<T, 2>;
 
-	using ValueType = T;
+	using value_type = T;
 	static constexpr size_t Size = 4;
 
 	using ColumnType = Epic::Vector<T, 2>;
@@ -91,7 +91,7 @@ public:
 	union
 	{
 		std::array<ColumnType, ColumnCount> Columns;
-		std::array<ValueType, Size> Values;
+		std::array<value_type, Size> Values;
 
 		struct
 		{
@@ -110,7 +110,7 @@ class Epic::detail::MatrixBase<T, 3>
 public:
 	using Type = Epic::detail::MatrixBase<T, 3>;
 
-	using ValueType = T;
+	using value_type = T;
 	static constexpr size_t Size = 9;
 
 	using ColumnType = Epic::Vector<T, 3>;
@@ -119,7 +119,7 @@ public:
 	union
 	{
 		std::array<ColumnType, ColumnCount> Columns;
-		std::array<ValueType, Size> Values;
+		std::array<value_type, Size> Values;
 
 		struct
 		{
@@ -139,7 +139,7 @@ class Epic::detail::MatrixBase<T, 4>
 public:
 	using Type = Epic::detail::MatrixBase<T, 4>;
 
-	using ValueType = T;
+	using value_type = T;
 	static constexpr size_t Size = 16;
 
 	using ColumnType = Epic::Vector<T, 4>;
@@ -148,7 +148,7 @@ public:
 	union
 	{
 		std::array<ColumnType, ColumnCount> Columns;
-		std::array<ValueType, Size> Values;
+		std::array<value_type, Size> Values;
 
 		struct
 		{
