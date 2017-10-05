@@ -121,68 +121,69 @@ public:
 	Selector(StringView path) noexcept
 		: m_TotalPath{ path }
 	{
-		// Globals
+		// Global
 		if (!path.empty())
-		{
-			if (path.front() == detail::GlobalRequired)
 			{
-				m_PathIsOptional = false;
-				path.remove_prefix(1);
+				if (path.front() == detail::GlobalRequired)
+				{
+					m_PathIsOptional = false;
+					path.remove_prefix(1);
+				}
+
+				if (path.front() == detail::GlobalOptional)
+				{
+					m_PathIsOptional = true;
+					path.remove_prefix(1);
+				}
 			}
 
-			if (path.front() == detail::GlobalOptional)
-			{
-				m_PathIsOptional = true;
-				path.remove_prefix(1);
-			}
-		}
-
+		// Segments
 		while (!path.empty())
 		{
 			bool isSet = false;
 			Segment segment{ path, eScope::Default, eMatch::Default, eEONVariantType::Any, EONName(), EONNameHash() };
 
 			// Matches
-			switch(path.front())
+			switch (path.front())
 			{
-				case detail::MatchAll:
-					segment.Match = eMatch::All;
-					path.remove_prefix(1);
-					isSet = true;
-					break;
-
-				case detail::MatchFirst:
-					segment.Match = eMatch::First;
-					path.remove_prefix(1);
-					isSet = true;
-					break;
-
-				case detail::MatchLast:
-					segment.Match = eMatch::Last;
-					path.remove_prefix(1);
-					isSet = true;
-					break;
-
-				default /* Identifier */:
-				{
-					std::size_t ide = 0;
-					while(ide < path.size())
-					{
-						const auto c = path.at(ide);
-						if (!std::isalnum(c) && c != StringView::traits_type::to_char_type('_'))
-							break;
-
-						++ide;
-					}
-
-					if (ide != 0)
-					{
-						segment.Identifier = path.substr(0, ide);
-						path.remove_prefix(ide);
-						isSet = true;
-					}
-				}
+			case detail::MatchAll:
+				segment.Match = eMatch::All;
+				path.remove_prefix(1);
+				isSet = true;
 				break;
+
+			case detail::MatchFirst:
+				segment.Match = eMatch::First;
+				path.remove_prefix(1);
+				isSet = true;
+				break;
+
+			case detail::MatchLast:
+				segment.Match = eMatch::Last;
+				path.remove_prefix(1);
+				isSet = true;
+				break;
+
+			default /* Identifier */:
+			{
+				std::size_t ide = 0;
+				while (ide < path.size())
+				{
+					const auto c = path.at(ide);
+					if (!std::isalnum(c) && c != StringView::traits_type::to_char_type('_'))
+						break;
+
+					++ide;
+				}
+
+				if (ide != 0)
+				{
+					segment.Identifier = path.substr(0, ide);
+					path.remove_prefix(ide);
+					isSet = true;
+				}
+			}
+			break;
 			}
 
 			// Filters
@@ -197,7 +198,7 @@ public:
 						{
 							auto typeFilters = path.substr(1, filter - 1);
 							std::size_t result = 0;
-							
+
 							while (!typeFilters.empty())
 							{
 								EONName typeFilter{ typeFilters };
@@ -252,7 +253,7 @@ public:
 						break;
 				} while (!path.empty());
 			}
-			
+
 			// Scopes
 			if (!path.empty())
 			{
@@ -267,8 +268,8 @@ public:
 			segment.Selector.remove_suffix(path.size());
 
 			m_Segments.emplace_back(std::move(segment));
-			
-			if(!isSet) 
+
+			if (!isSet)
 				break;
 		}
 	}
@@ -299,7 +300,7 @@ private:
 	{
 		constexpr auto BlankIdentifier = EONNameHash();
 		
-		if (segment.Identifier != BlankIdentifier && v.NameHash != segment.Identifier)
+		if (segment.Identifier != BlankIdentifier && segment.Identifier != v.NameHash)
 			return false;
 
 		if (!segment.ParentFilter.empty())
@@ -340,7 +341,7 @@ private:
 
 	bool IsSegmentMatch(const Segment& segment, const EONVariant& v) const
 	{
-		constexpr auto BlankIdentifier = Epic::Hash("");
+		constexpr auto BlankIdentifier = EONNameHash();
 
 		if (segment.Identifier != BlankIdentifier)
 			return false;

@@ -40,8 +40,8 @@ public:
 	friend class Epic::Quaternion;
 
 public:
-	using ValueType = T;
-	constexpr static std::size_t Size = 4;
+	using value_type = typename Base::value_type;
+	constexpr static size_t Size = 4;
 
 private:
 	using Base::Values;
@@ -124,8 +124,13 @@ public:
 	}
 
 	// Constructs a rotation quaternion from an axis and angle
-	template<std::size_t S, typename EnabledForVector3OrGreater = std::enable_if_t<(S >= 3)>>
-	inline Quaternion(const Vector<T, S>& axis, const Radian<T>& angle) noexcept
+	inline Quaternion(const Vector<T, 3>& axis, const Radian<T>& angle) noexcept
+	{
+		MakeRotation(axis[0], axis[1], axis[2], angle);
+	}
+
+	// Constructs a rotation quaternion from an axis and angle
+	inline Quaternion(const Vector<T, 4>& axis, const Radian<T>& angle) noexcept
 	{
 		MakeRotation(axis[0], axis[1], axis[2], angle);
 	}
@@ -136,7 +141,7 @@ public:
 	#pragma region Range Accessors
 
 	// Accesses the element at 'index'
-	inline T& at(std::size_t index) noexcept
+	inline T& at(const size_t index) noexcept
 	{
 		assert(index >= 0 && index < Size);
 
@@ -144,7 +149,7 @@ public:
 	}
 
 	// Accesses the element at 'index'
-	inline const T& at(std::size_t index) const noexcept
+	inline const T& at(const size_t index) const noexcept
 	{
 		assert(index >= 0 && index < Size);
 
@@ -152,7 +157,7 @@ public:
 	}
 
 	// Accesses the element at 'index'
-	inline T& operator[] (std::size_t index) noexcept
+	inline T& operator[] (const size_t index) noexcept
 	{
 		assert(index >= 0 && index < Size);
 
@@ -160,7 +165,7 @@ public:
 	}
 
 	// Accesses the element at 'index'
-	inline const T& operator[] (std::size_t index) const noexcept
+	inline const T& operator[] (const size_t index) const noexcept
 	{
 		assert(index >= 0 && index < Size);
 
@@ -176,17 +181,17 @@ public:
 	// Retrieves an iterator to the first element
 	constexpr decltype(Values.cbegin()) begin() const noexcept
 	{
-		return Values.cbegin();
+		return Values.begin();
 	}
 
 	// Retrieves an iterator to one past the last element
 	constexpr decltype(Values.cend()) end() const noexcept
 	{
-		return Values.cend();
+		return Values.end();
 	}
 
 	// Retrieves the number of elements
-	constexpr std::size_t size() const noexcept
+	constexpr size_t size() const noexcept
 	{
 		return Size;
 	}
@@ -205,10 +210,9 @@ public:
 
 	#pragma endregion
 
-public:
-	// Rotates a vector by this quaternion.
-	template<std::size_t S, typename EnabledForVector3Or4 = std::enable_if_t<(S == 3) || (S == 4)>>
-	inline void Transform(Vector<T, S>& vec) const noexcept
+private:
+	template<size_t S>
+	inline void _Transform(Vector<T, S>& vec) const noexcept
 	{
 		// vec.xyz = (*this * Quaternion{vec.xyz, 0} * ConjugateOf(*this)).xyz
 
@@ -229,6 +233,19 @@ public:
 		vec[0] = (T(1) - (t5 + t6)) * src[0] + (t7 - t12) * src[1] + (t8 + t11) * src[2];
 		vec[1] = (t7 + t12) * src[0] + (T(1) - (t4 + t6)) * src[1] + (t9 - t10) * src[2];
 		vec[2] = (t8 - t11) * src[0] + (t9 + t10) * src[1] + (T(1) - (t4 + t5)) * src[2];
+	}
+
+public:
+	// Rotates a vector3 by this quaternion.
+	inline void Transform(Vector<T, 3>& vec) const noexcept
+	{
+		_Transform(vec);
+	}
+
+	// Rotates a vector4 by this quaternion.
+	inline void Transform(Vector<T, 4>& vec) const noexcept
+	{
+		_Transform(vec);
 	}
 
 public:
@@ -334,8 +351,13 @@ public:
 	}
 
 	// Sets this quaternion to a rotation quaternion using an axis and an angle
-	template<std::size_t S, typename EnabledForVector3OrGreater = std::enable_if_t<(S >= 3)>>
-	inline Type& MakeRotation(const Vector<T, S>& axis, const Radian<T>& angle) noexcept
+	inline Type& MakeRotation(const Vector<T, 3>& axis, const Radian<T>& angle) noexcept
+	{
+		return MakeRotation(axis[0], axis[1], axis[2], angle);
+	}
+
+	// Sets this quaternion to a rotation quaternion using an axis and an angle
+	inline Type& MakeRotation(const Vector<T, 4>& axis, const Radian<T>& angle) noexcept
 	{
 		return MakeRotation(axis[0], axis[1], axis[2], angle);
 	}
@@ -345,9 +367,9 @@ public:
 	inline T Dot(const Quaternion& quat) const noexcept
 	{
 		return (Values[0] * quat[0]) + 
-			(Values[1] * quat[1]) + 
-			(Values[2] * quat[2]) +
-			(Values[3] * quat[3]);
+			   (Values[1] * quat[1]) + 
+			   (Values[2] * quat[2]) +
+			   (Values[3] * quat[3]);
 	}
 
 	// Calculates the squared length of this quaternion
@@ -458,7 +480,7 @@ public:
 			return Identity;
 
 		t = T(1) / std::sqrt(t);
-		return{ Values[0] * t, Values[1] * t, Values[2] * t };
+		return Vector<T, 3>(Values[0] * t, Values[1] * t, Values[2] * t);
 	}
 
 	// Calculates the angle of rotation
@@ -588,60 +610,69 @@ public:
 
 public:
 	// Calculates the linear interpolation of normalized quaternions 'from' and 'to'
-	template<typename EnabledForFloatingPoint = std::enable_if_t<std::is_floating_point<T>::value>>
-	static inline Type Lerp(const Type& from, const Type& to, const T t) noexcept
+	static inline auto Lerp(const Type& from, const Type& to, const T t) noexcept
 	{
-		return NormalOf((from * (T(1) - t)) + (to * t));
+		if constexpr (std::is_floating_point<T>::value)
+			return NormalOf((from * (T(1) - t)) + (to * t));
+		else
+			return detail::MathOperationUnavailable();
 	}
 
 	// Calculates the spherical linear interpolation of normalized quaternions 'from' and 'to'.
 	// Reduces spinning by checking if 'from' and 'to' are more than 90 deg apart.
-	template<typename EnabledForFloatingPoint = std::enable_if_t<std::is_floating_point<T>::value>>
-	static Type SlerpSR(const Type& from, const Type& to, const T t) noexcept
+	static auto SlerpSR(const Type& from, const Type& to, const T t) noexcept
 	{
-		Type qt = to;
-		auto dot = from.Dot(to);
-
-		// When from and to > 90 deg apart, perform spin reduction
-		if (dot < T(0))
+		if constexpr (std::is_floating_point<T>::value)
 		{
-			// Invert 'to'.  Since it's normalized, its conjugate will suffice 
-			dot = -dot;
-			qt.Conjugate();
+			Type qt = to;
+			auto dot = from.Dot(to);
+
+			// When from and to > 90 deg apart, perform spin reduction
+			if (dot < T(0))
+			{
+				// Invert 'to'.  Since it's normalized, its conjugate will suffice 
+				dot = -dot;
+				qt.Conjugate();
+			}
+
+			// Linear interpolation when sin(acos(dot)) close to 0
+			if (dot > T(1) - Epsilon<T>)
+				return Lerp(from, to, t);
+
+			// Spherical interpolation
+			Radian<T> theta = acos(dot);
+			Radian<T> thetaFrom = theta.Value() * (T(1) - t);
+			Radian<T> thetaTo = theta.Value() * t;
+
+			return ((from * thetaFrom.Sin()) + (qt * thetaTo.Sin())) / theta.Sin();
 		}
-
-		// Linear interpolation when sin(acos(dot)) close to 0
-		if(dot > T(1) - Epsilon<T>)
-			return Lerp(from, to, t);
-
-		// Spherical interpolation
-		Radian<T> theta = acos(dot);
-		Radian<T> thetaFrom = theta.Value() * (T(1) - t);
-		Radian<T> thetaTo = theta.Value() * t;
-
-		return ( (from * thetaFrom.Sin()) + (qt * thetaTo.Sin()) ) / theta.Sin();
+		else
+			return detail::MathOperationUnavailable();
 	}
 
 	// Calculates the spherical linear interpolation of normalized quaternions 'from' and 'to'
-	template<typename EnabledForFloatingPoint = std::enable_if_t<std::is_floating_point<T>::value>>
-	static inline Type Slerp(const Type& from, const Type& to, const T t) noexcept
+	static inline auto Slerp(const Type& from, const Type& to, const T t) noexcept
 	{
-		auto dot = from.Dot(to);
+		if constexpr (std::is_floating_point<T>::value)
+		{
+			auto dot = from.Dot(to);
 
-		// Linear interpolation when sin(acos(dot)) close to 0
-		if(dot > T(1) - Epsilon<T>)
-			return Lerp(from, to, t);
+			// Linear interpolation when sin(acos(dot)) close to 0
+			if (dot > T(1) - Epsilon<T>)
+				return Lerp(from, to, t);
 
-		Radian<T> theta = acos(dot);
-		Radian<T> thetaFrom = theta.Value() * (T(1) - t);
-		Radian<T> thetaTo = theta.Value() * t;
+			Radian<T> theta = acos(dot);
+			Radian<T> thetaFrom = theta.Value() * (T(1) - t);
+			Radian<T> thetaTo = theta.Value() * t;
 
-		return ( (from * thetaFrom.Sin()) + (to * thetaTo.Sin()) ) / theta.Sin();
+			return ((from * thetaFrom.Sin()) + (to * thetaTo.Sin())) / theta.Sin();
+		}
+		else
+			return detail::MathOperationUnavailable();
 	}
 
 	// Calculates the spherical cubic interpolation of normalized quaternions 'from', 'to', 'a', and 'b'
-	template<typename EnabledForFloatingPoint = std::enable_if_t<std::is_floating_point<T>::value>>
-	static inline Type Squad(const Type& from, const Type& to, const Type& a, const Type& b, const T t) noexcept
+	static inline auto Squad(const Type& from, const Type& to, const Type& a, const Type& b, const T t) noexcept
 	{
 		return Slerp(Slerp(from, to, t), Slerp(a, b, t), T(2) * t * (T(1) - t));
 	}
@@ -725,7 +756,7 @@ public:
 	template<class U>																		\
 	inline Type& operator Op (const U(&values)[Size]) noexcept								\
 	{																						\
-		for (std::size_t i = 0; i < Size; ++i)													\
+		for (size_t i = 0; i < Size; ++i)													\
 			Values[i] Op values[i];															\
 																							\
 		return *this;																		\
@@ -733,7 +764,7 @@ public:
 																							\
 	inline Type& operator Op (const Type& quat) noexcept									\
 	{																						\
-		for (std::size_t i = 0; i < Size; ++i)													\
+		for (size_t i = 0; i < Size; ++i)													\
 			Values[i] Op quat[i];															\
 																							\
 		return *this;																		\
@@ -928,20 +959,38 @@ namespace Epic
 // Vector * Quaternion operators
 namespace Epic
 {
-	template<class T, std::size_t S>
+	template<class T, size_t S>
 	inline Vector<T, S>& Epic::Vector<T, S>::operator *= (const Epic::Quaternion<T>& quat) noexcept
 	{
-		quat.Transform(*this);
+		if constexpr (S == 3 || S == 4)
+			quat.Transform(*this);
+		else
+			assert(false && "Operation is only available for vectors of sizes 3 or 4.");
+
 		return *this;
 	}
 
-	template<class T, std::size_t S>
+	template<class T, size_t S>
 	inline auto operator * (const Vector<T, S>& vec, const Quaternion<T>& quat) noexcept
 	{
-		auto result = vec;
-		quat.Transform(result);
-		return result;
+		if constexpr (S == 3 || S == 4)
+		{
+			auto result = vec;
+			quat.Transform(result);
+			return result;
+		}
+		else
+			return detail::MathOperationUnavailable();
 	}
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+// Externs
+namespace Epic
+{
+	extern template class Quaternion<float>;
+	extern template class Quaternion<double>;
 }
 
 //////////////////////////////////////////////////////////////////////////////

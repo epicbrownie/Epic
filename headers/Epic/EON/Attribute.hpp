@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 //
-//            Copyright (c) 2016 Ronnie Brohn (EpicBrownie)      
+//            Copyright (c) 2017 Ronnie Brohn (EpicBrownie)      
 //
 //                Distributed under The MIT License (MIT).
 //             (See accompanying file License.txt or copy at 
@@ -13,35 +13,15 @@
 
 #pragma once
 
-#include <array>
-
 //////////////////////////////////////////////////////////////////////////////
 
-namespace Epic::detail
+namespace Epic::EON
 {
-	template<class T>
-	class QuaternionBase;
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
-// QuaternionBase
-template<class T>
-class Epic::detail::QuaternionBase
-{
-public:
-	using Type = Epic::detail::QuaternionBase<T>;
-	using value_type = T;
-
-	union
+	enum class eAttribute : short
 	{
-		// Value Array
-		std::array<value_type, 4> Values;
-
-		// Components
-		struct
-		{
-			value_type x, y, z, w;
-		};
+		Name,
+		Type,
+		Index,
+		Parent
 	};
-};
+}

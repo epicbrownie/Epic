@@ -69,23 +69,24 @@ private:
 			FailTag>>>>;
 		
 		template<class Converter = DefaultConverter>
-		static bool DoExtract(T&, Converter, const Selector::MatchList&, FailTag) noexcept
+		static bool DoExtract(T&, Converter, const Selector::MatchList&, const EONObject&, FailTag) noexcept
 		{
 			return false;
 		}
 
 		template<class E, class Converter = DefaultConverter>
-		static bool DoExtract(T&, const Parser<E>&, Converter, const Selector::MatchList&, FailTag) noexcept
+		static bool DoExtract(T&, const Parser<E>&, Converter, const Selector::MatchList&, const EONObject&, FailTag) noexcept
 		{
 			return false;
 		}
 
 		template<class Converter = DefaultConverter>
-		static bool DoExtract(T& to, Converter fnConvert, const Selector::MatchList& vars, ScalarTag)
+		static bool DoExtract(T& to, Converter fnConvert, const Selector::MatchList& vars, 
+							  const EONObject& scope, ScalarTag)
 		{
 			for (const auto& var : vars)
 			{
-				if (!std::visit(detail::ConversionVisitor<T, Converter>(to, fnConvert), var.second->Data))
+				if (!std::visit(detail::ConversionVisitor<T, Converter>(to, fnConvert, scope), var.second->Data))
 					return false;
 			}
 
@@ -93,13 +94,14 @@ private:
 		}
 
 		template<class E, class Converter = DefaultConverter>
-		static bool DoExtract(T& to, const Parser<E>& parser, Converter fnConvert, const Selector::MatchList& vars, ScalarTag)
+		static bool DoExtract(T& to, const Parser<E>& parser, Converter fnConvert, 
+							  const Selector::MatchList& vars, const EONObject& scope, ScalarTag)
 		{
 			for (const auto& var : vars)
 			{
 				E extracted;
 
-				if (!parser.Assign(extracted, *var.second))
+				if (!parser.Assign(extracted, *var.second, scope))
 					return false;
 
 				if (!detail::ConvertIf<E, T, Converter>::Apply(fnConvert, to, extracted))
@@ -110,7 +112,8 @@ private:
 		}
 
 		template<class Converter = DefaultConverter>
-		static bool DoExtract(T& to, Converter fnConvert, const Selector::MatchList& vars, ArrayTag)
+		static bool DoExtract(T& to, Converter fnConvert, const Selector::MatchList& vars, 
+							  const EONObject& scope, ArrayTag)
 		{
 			using Item = typename T::value_type;
 
@@ -123,7 +126,7 @@ private:
 			{
 				Item item;
 
-				if (!std::visit(detail::ConversionVisitor<Item, Converter>(item, fnConvert), var.second->Data))
+				if (!std::visit(detail::ConversionVisitor<Item, Converter>(item, fnConvert, scope), var.second->Data))
 					return false;
 				
 				items.emplace_back(std::move(item));
@@ -135,7 +138,8 @@ private:
 		}
 
 		template<class E, class Converter = DefaultConverter>
-		static bool DoExtract(T& to, const Parser<E>& parser, Converter fnConvert, const Selector::MatchList& vars, ArrayTag)
+		static bool DoExtract(T& to, const Parser<E>& parser, Converter fnConvert, 
+							  const Selector::MatchList& vars, const EONObject& scope, ArrayTag)
 		{
 			using Item = typename T::value_type;
 
@@ -147,7 +151,7 @@ private:
 			for (const auto& var : vars)
 			{
 				E extracted;
-				if (!parser.Assign(extracted, *var.second))
+				if (!parser.Assign(extracted, *var.second, scope))
 					return false;
 
 				Item item;
@@ -163,7 +167,8 @@ private:
 		}
 
 		template<class Converter = DefaultConverter>
-		static bool DoExtract(T& to, Converter fnConvert, const Selector::MatchList& vars, SetTag)
+		static bool DoExtract(T& to, Converter fnConvert, const Selector::MatchList& vars, 
+							  const EONObject& scope, SetTag)
 		{
 			using Item = typename T::key_type;
 
@@ -176,7 +181,7 @@ private:
 			{
 				Item item;
 
-				if (!std::visit(detail::ConversionVisitor<Item, Converter>(item, fnConvert), var.second->Data))
+				if (!std::visit(detail::ConversionVisitor<Item, Converter>(item, fnConvert, scope), var.second->Data))
 					return false;
 
 				items.emplace(std::move(item));
@@ -188,7 +193,8 @@ private:
 		}
 
 		template<class E, class Converter = DefaultConverter>
-		static bool DoExtract(T& to, const Parser<E>& parser, Converter fnConvert, const Selector::MatchList& vars, SetTag)
+		static bool DoExtract(T& to, const Parser<E>& parser, Converter fnConvert, 
+							  const Selector::MatchList& vars, const EONObject& scope, SetTag)
 		{
 			using Item = typename T::key_type;
 
@@ -200,7 +206,7 @@ private:
 			for (const auto& var : vars)
 			{
 				E extracted;
-				if (!parser.Assign(extracted, *var.second))
+				if (!parser.Assign(extracted, *var.second, scope))
 					return false;
 
 				Item item;
@@ -216,7 +222,8 @@ private:
 		}
 
 		template<class Converter = DefaultConverter>
-		static bool DoExtract(T& to, Converter fnConvert, const Selector::MatchList& vars, MapTag)
+		static bool DoExtract(T& to, Converter fnConvert, const Selector::MatchList& vars, 
+							  const EONObject& scope, MapTag)
 		{
 			using Key = typename T::key_type;
 			using Item = typename T::mapped_type;
@@ -236,7 +243,7 @@ private:
 
 				Item item;
 
-				if (!std::visit(detail::ConversionVisitor<Item, Converter>(item, fnConvert), var.second->Data))
+				if (!std::visit(detail::ConversionVisitor<Item, Converter>(item, fnConvert, scope), var.second->Data))
 					return false;
 
 				items.emplace(std::move(key), std::move(item));
@@ -248,7 +255,8 @@ private:
 		}
 
 		template<class E, class Converter = DefaultConverter>
-		static bool DoExtract(T& to, const Parser<E>& parser, Converter fnConvert, const Selector::MatchList& vars, MapTag)
+		static bool DoExtract(T& to, const Parser<E>& parser, Converter fnConvert, 
+							  const Selector::MatchList& vars, const EONObject& scope, MapTag)
 		{
 			using Key = typename T::key_type;
 			using Item = typename T::mapped_type;
@@ -267,7 +275,7 @@ private:
 					return false;
 
 				E extracted;
-				if (!parser.Assign(extracted, *var.second))
+				if (!parser.Assign(extracted, *var.second, scope))
 					return false;
 
 				Item item;
@@ -294,7 +302,7 @@ private:
 			if (std::empty(matches))
 				return result.Empty(selector.Path(), selector.IsOptional());
 
-			if (T extracted; DoExtract(extracted, fnConvert, matches, MakeAssignTag()))
+			if (T extracted; DoExtract(extracted, fnConvert, matches, scope, MakeAssignTag()))
 				return result.Success(std::move(extracted));
 			else
 				return result.Failed(selector.Path());
@@ -311,7 +319,7 @@ private:
 			if (std::empty(matches))
 				return result.Empty(selector.Path(), selector.IsOptional());
 
-			if (T extracted; DoExtract(extracted, parser, fnConvert, matches, MakeAssignTag()))
+			if (T extracted; DoExtract(extracted, parser, fnConvert, matches, scope, MakeAssignTag()))
 				return result.Success(std::move(extracted));
 			else
 				return result.Failed(selector.Path());

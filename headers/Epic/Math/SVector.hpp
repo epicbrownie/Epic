@@ -17,7 +17,6 @@
 #include <Epic/Math/detail/VectorHelpers.hpp>
 #include <Epic/Math/detail/MathHelpers.hpp>
 #include <Epic/Math/Swizzler.hpp>
-#include <cstddef>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -30,7 +29,7 @@ public:
 	using Type = Epic::SVector<T, S>;
 
 public:
-	using ValueType = T;
+	using value_type = T;
 	constexpr static std::size_t Size = S;
 
 	using VectorType = Epic::Vector<T, S>;
@@ -69,13 +68,13 @@ public:
 	}
 
 	// Implicitly converts to Vector
-	operator VectorType& () noexcept
+	operator VectorType&() noexcept
 	{
 		return ToVector();
 	}
 
 	// Implicitly converts to Vector
-	operator const VectorType& () const noexcept
+	operator VectorType&() const noexcept
 	{
 		return ToVector();
 	}
@@ -86,6 +85,13 @@ public:
 		assert(index >= 0 && index < Size);
 		return Values[index];
 	}
+	
+public:
+	template<class U, std::size_t Sz>
+	friend bool operator == (const SVector<U, Sz>& vecA, const SVector<U, Sz>& vecB) noexcept;
+
+	template<class U, std::size_t Sz>
+	friend bool operator != (const SVector<U, Sz>& vecA, const SVector<U, Sz>& vecB) noexcept;
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -95,14 +101,14 @@ namespace Epic
 	namespace
 	{
 		template<class T, std::size_t S>
-		inline Epic::SVector<T, S>& Swizzle(Epic::Vector<T, S>& v)
+		constexpr Epic::SVector<T, S>& Swizzle(Epic::Vector<T, S>& v)
 		{
 			static_assert(sizeof(Epic::SVector<T, S>) == sizeof(Epic::Vector<T, S>));
 			return reinterpret_cast<Epic::SVector<T, S>&>(v);
 		}
 
 		template<class T, std::size_t S>
-		inline const Epic::SVector<T, S>& Swizzle(const Epic::Vector<T, S>& v)
+		constexpr const Epic::SVector<T, S>& Swizzle(const Epic::Vector<T, S>& v)
 		{
 			static_assert(sizeof(Epic::SVector<T, S>) == sizeof(Epic::Vector<T, S>));
 			return reinterpret_cast<const Epic::SVector<T, S>&>(v);
@@ -110,3 +116,30 @@ namespace Epic
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////////
+
+// Friend Operators
+namespace Epic
+{
+	template<class U, std::size_t Sz>
+	inline bool operator == (const SVector<U, Sz>& vecA, const SVector<U, Sz>& vecB) noexcept
+	{
+		bool result = true;
+
+		for (std::size_t i = 0; i < Sz; ++i)
+			result &= (vecA[i] == vecB[i]);
+
+		return result;
+	}
+
+	template<class U, std::size_t Sz>
+	inline bool operator != (const SVector<U, Sz>& vecA, const SVector<U, Sz>& vecB) noexcept
+	{
+		bool result = true;
+
+		for (std::size_t i = 0; i < Sz; ++i)
+			result &= (vecA[i] != vecB[i]);
+
+		return result;
+	}
+}

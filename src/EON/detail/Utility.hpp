@@ -18,7 +18,9 @@
 #include <Epic/EON/detail/Visitors.hpp>
 #include <Epic/STL/Stack.hpp>
 #include <cassert>
+#include <cstdint>
 #include <stdexcept>
+#include <tuple>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -27,7 +29,8 @@ namespace Epic::EON::detail
 	namespace
 	{
 		const EONVariable* FindVariableInObject(const EONObject& scope, const EONName& name);
-		const EONVariable* FindParent(const EONObject& scope, const EONName& name);
+		std::tuple<bool, const EONVariable*, std::uint32_t> GetAttributes(const EONVariant* pVar, const EONObject& scope);
+		std::pair<const EONObject*, const EONVariable*> FindParent(const EONObject& scope, const EONName& name);
 		STLStack<EONName> TraceInheritance(const EONVariable& variable, const EONObject& scope);
 		bool Tidy(const EONObject* pGlobal, EONObject* pScope, EONVariable& variable, bool resolveInheritance = true);
 		void ResolveInheritance(EONVariable& variable, const EONObject* pGlobal);
@@ -87,22 +90,41 @@ namespace Epic::EON::detail
 			return pVariable;
 		}
 
-		const EONVariable* FindParent(const EONObject& scope, const EONName& name)
+		std::tuple<bool, const EONVariable*, std::size_t> GetAttributes(const EONVariant* pVar, const EONObject& scope)
 		{
-			if(auto pV = FindVariableInObject(scope, name); pV != nullptr)
-				return pV;
+			for (std::size_t i = 0; i < scope.Members.size(); ++i)
+			{
+				auto& v = scope.Members[i];
+
+				if (&v.Value == pVar)
+					return { true, &v, i };
+
+				if (auto pAsObject = std::get_if<EONObject>(&v.Value.Data); pAsObject)
+				{
+					if (auto attr = GetAttributes(pVar, *pAsObject); std::get<0>(attr))
+						return attr;
+				}
+			}
+
+			return { false, nullptr, 0 };
+		}
+
+		std::pair<const EONObject*, const EONVariable*> FindParent(const EONObject& scope, const EONName& name)
+		{
+			if (auto pV = FindVariableInObject(scope, name); pV != nullptr)
+				return { &scope, pV };
 
 			for (const auto& v : scope.Members)
 			{
 				auto pAsObject = std::get_if<EONObject>(&v.Value.Data);
 				if (pAsObject)
 				{
-					if (auto pV = FindParent(*pAsObject, name); pV != nullptr)
+					if (auto pV = FindParent(*pAsObject, name); pV.second != nullptr)
 						return pV;
 				}
 			}
 			
-			return nullptr;
+			return { nullptr, nullptr };
 		}
 
 		STLStack<EONName> TraceInheritance(const EONVariable& variable, const EONObject& scope)
@@ -110,11 +132,12 @@ namespace Epic::EON::detail
 			STLStack<EONName> results;
 
 			auto pParent = &variable;
+			auto pScope = &scope;
 
-			while (pParent && !pParent->Parent.empty())
+			while (pScope && pParent && !pParent->Parent.empty())
 			{
 				results.emplace(pParent->Parent);
-				pParent = FindParent(scope, pParent->Parent);
+				std::tie(pScope, pParent) = FindParent(*pScope, pParent->Parent);
 			}
 
 			return results;
