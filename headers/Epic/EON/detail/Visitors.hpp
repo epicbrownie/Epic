@@ -32,6 +32,7 @@ namespace Epic::EON::detail
 	class InheritVisitor;
 	class MergeVisitor;
 	class FilterVisitor;
+	class TypeNameVisitor;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -324,4 +325,18 @@ public:
 	bool operator() (const EONString& v) { return (_Filter & std::size_t(eEONVariantType::String)) != 0; }
 	bool operator() (const EONArray& v) { return (_Filter & std::size_t(eEONVariantType::Array)) != 0; }
 	bool operator() (const EONObject& v) { return (_Filter & std::size_t(eEONVariantType::Object)) != 0; }
+};
+
+//////////////////////////////////////////////////////////////////////////////
+
+// TypeNameVisitor
+class Epic::EON::detail::TypeNameVisitor
+{
+public:
+	STLString<char> operator() (const EONInteger& v) { return "INTEGER"; }
+	STLString<char> operator() (const EONFloat& v) { return "FLOAT"; }
+	STLString<char> operator() (const EONBoolean& v) { return "BOOLEAN"; }
+	STLString<char> operator() (const EONString& v) { return "STRING"; }
+	STLString<char> operator() (const EONArray& v) { return "ARRAY"; }
+	STLString<char> operator() (const EONObject& v) { return "OBJECT"; }
 };

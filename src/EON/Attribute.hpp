@@ -17,9 +17,11 @@
 
 namespace Epic::EON
 {
-	enum class eAttribute
+	enum class eAttribute : short
 	{
 		Name,
+		Type,
+		Index,
 		Parent
 	};
 }

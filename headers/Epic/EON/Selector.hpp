@@ -139,139 +139,139 @@ public:
 
 		// Segments
 		while (!path.empty())
+		{
+			bool isSet = false;
+			Segment segment{ path, eScope::Default, eMatch::Default, eEONVariantType::Any, EONName(), EONNameHash() };
+
+			// Matches
+			switch (path.front())
 			{
-				bool isSet = false;
-				Segment segment{ path, eScope::Default, eMatch::Default, eEONVariantType::Any, EONName(), EONNameHash() };
-
-				// Matches
-				switch (path.front())
-				{
-				case detail::MatchAll:
-					segment.Match = eMatch::All;
-					path.remove_prefix(1);
-					isSet = true;
-					break;
-
-				case detail::MatchFirst:
-					segment.Match = eMatch::First;
-					path.remove_prefix(1);
-					isSet = true;
-					break;
-
-				case detail::MatchLast:
-					segment.Match = eMatch::Last;
-					path.remove_prefix(1);
-					isSet = true;
-					break;
-
-				default /* Identifier */:
-				{
-					std::size_t ide = 0;
-					while (ide < path.size())
-					{
-						const auto c = path.at(ide);
-						if (!std::isalnum(c) && c != StringView::traits_type::to_char_type('_'))
-							break;
-
-						++ide;
-					}
-
-					if (ide != 0)
-					{
-						segment.Identifier = path.substr(0, ide);
-						path.remove_prefix(ide);
-						isSet = true;
-					}
-				}
+			case detail::MatchAll:
+				segment.Match = eMatch::All;
+				path.remove_prefix(1);
+				isSet = true;
 				break;
+
+			case detail::MatchFirst:
+				segment.Match = eMatch::First;
+				path.remove_prefix(1);
+				isSet = true;
+				break;
+
+			case detail::MatchLast:
+				segment.Match = eMatch::Last;
+				path.remove_prefix(1);
+				isSet = true;
+				break;
+
+			default /* Identifier */:
+			{
+				std::size_t ide = 0;
+				while (ide < path.size())
+				{
+					const auto c = path.at(ide);
+					if (!std::isalnum(c) && c != StringView::traits_type::to_char_type('_'))
+						break;
+
+					++ide;
 				}
 
-				// Filters
-				if (!path.empty())
+				if (ide != 0)
 				{
-					do
+					segment.Identifier = path.substr(0, ide);
+					path.remove_prefix(ide);
+					isSet = true;
+				}
+			}
+			break;
+			}
+
+			// Filters
+			if (!path.empty())
+			{
+				do
+				{
+					if (path.front() == detail::FilterTypeB)
 					{
-						if (path.front() == detail::FilterTypeB)
+						auto filter = path.find(detail::FilterTypeE, 1);
+						if (filter != StringView::npos)
 						{
-							auto filter = path.find(detail::FilterTypeE, 1);
-							if (filter != StringView::npos)
-							{
-								auto typeFilters = path.substr(1, filter - 1);
-								std::size_t result = 0;
+							auto typeFilters = path.substr(1, filter - 1);
+							std::size_t result = 0;
 
-								while (!typeFilters.empty())
+							while (!typeFilters.empty())
+							{
+								EONName typeFilter{ typeFilters };
+
+								if (auto i = typeFilters.find(detail::FilterDivider); i != StringView::npos)
 								{
-									EONName typeFilter{ typeFilters };
-
-									if (auto i = typeFilters.find(detail::FilterDivider); i != StringView::npos)
-									{
-										typeFilter = typeFilters.substr(0, i);
-										typeFilters.remove_prefix(i + 1);
-									}
-									else
-										typeFilters.remove_suffix(typeFilters.length());
-
-									if (typeFilter == "INTEGER")
-										result |= (std::size_t)eEONVariantType::Integer;
-									else if (typeFilter == "FLOAT")
-										result |= (std::size_t)eEONVariantType::Float;
-									else if (typeFilter == "BOOLEAN")
-										result |= (std::size_t)eEONVariantType::Boolean;
-									else if (typeFilter == "STRING")
-										result |= (std::size_t)eEONVariantType::String;
-									else if (typeFilter == "ARRAY")
-										result |= (std::size_t)eEONVariantType::Array;
-									else if (typeFilter == "OBJECT")
-										result |= (std::size_t)eEONVariantType::Object;
+									typeFilter = typeFilters.substr(0, i);
+									typeFilters.remove_prefix(i + 1);
 								}
+								else
+									typeFilters.remove_suffix(typeFilters.length());
 
-								segment.TypeFilter = (eEONVariantType)result;
-								isSet = true;
+								if (typeFilter == "INTEGER")
+									result |= (std::size_t)eEONVariantType::Integer;
+								else if (typeFilter == "FLOAT")
+									result |= (std::size_t)eEONVariantType::Float;
+								else if (typeFilter == "BOOLEAN")
+									result |= (std::size_t)eEONVariantType::Boolean;
+								else if (typeFilter == "STRING")
+									result |= (std::size_t)eEONVariantType::String;
+								else if (typeFilter == "ARRAY")
+									result |= (std::size_t)eEONVariantType::Array;
+								else if (typeFilter == "OBJECT")
+									result |= (std::size_t)eEONVariantType::Object;
 							}
-							else
-								filter = path.size() - 1;
 
-							path.remove_prefix(filter + 1);
-						}
-						else if (path.front() == detail::FilterParentB)
-						{
-							auto filter = path.find(detail::FilterParentE, 1);
-							if (filter != StringView::npos)
-							{
-								auto parentFilter = path.substr(1, filter - 1);
-								if (!parentFilter.empty())
-									segment.ParentFilter = parentFilter;
-
-								isSet = true;
-							}
-							else
-								filter = path.size() - 1;
-
-							path.remove_prefix(filter + 1);
+							segment.TypeFilter = (eEONVariantType)result;
+							isSet = true;
 						}
 						else
-							break;
-					} while (!path.empty());
-				}
+							filter = path.size() - 1;
 
-				// Scopes
-				if (!path.empty())
-				{
-					if (path.front() == detail::ScopeMatched)
-					{
-						segment.Scope = eScope::Matched;
-						path.remove_prefix(1);
-						isSet = true;
+						path.remove_prefix(filter + 1);
 					}
-				}
+					else if (path.front() == detail::FilterParentB)
+					{
+						auto filter = path.find(detail::FilterParentE, 1);
+						if (filter != StringView::npos)
+						{
+							auto parentFilter = path.substr(1, filter - 1);
+							if (!parentFilter.empty())
+								segment.ParentFilter = parentFilter;
 
-				segment.Selector.remove_suffix(path.size());
+							isSet = true;
+						}
+						else
+							filter = path.size() - 1;
 
-				m_Segments.emplace_back(std::move(segment));
-
-				if (!isSet)
-					break;
+						path.remove_prefix(filter + 1);
+					}
+					else
+						break;
+				} while (!path.empty());
 			}
+
+			// Scopes
+			if (!path.empty())
+			{
+				if (path.front() == detail::ScopeMatched)
+				{
+					segment.Scope = eScope::Matched;
+					path.remove_prefix(1);
+					isSet = true;
+				}
+			}
+
+			segment.Selector.remove_suffix(path.size());
+
+			m_Segments.emplace_back(std::move(segment));
+
+			if (!isSet)
+				break;
+		}
 	}
 
 public:

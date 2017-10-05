@@ -332,18 +332,30 @@ struct Epic::EON::detail::FreeAttributeAssigner : public Assigner<T>
 
 	bool Assign(T& to, const Selector&, const EONVariant& scope, const EONObject& globalScope) const override
 	{
-		auto pVar = FindVariableFor(&scope, globalScope);
-		if(!pVar) return false;
+		auto [isValid, pVariable, index] = GetAttributes(&scope, globalScope);
+		if(!isValid) return false;
 
 		switch (Attribute)
 		{
+
 			case eAttribute::Name:
-				if (!ConvertIf<EONName, T, Converter>::Apply(fnConvert, to, pVar->Name))
+				if (!ConvertIf<EONName, T, Converter>::Apply(fnConvert, to, pVariable->Name))
+					return false;
+				break;
+
+			case eAttribute::Type:
+				if (!ConvertIf<STLString<char>, T, Converter>
+					::Apply(fnConvert, to, std::visit(TypeNameVisitor(), scope.Data)))
+					return false;
+				break;
+
+			case eAttribute::Index:
+				if (!ConvertIf<std::size_t, T, Converter>::Apply(fnConvert, to, index))
 					return false;
 				break;
 
 			case eAttribute::Parent:
-				if (!ConvertIf<EONName, T, Converter>::Apply(fnConvert, to, pVar->Parent))
+				if (!ConvertIf<EONName, T, Converter>::Apply(fnConvert, to, pVariable->Parent))
 					return false;
 				break;
 
@@ -464,18 +476,30 @@ struct Epic::EON::detail::MemberAttributeAssigner : public Assigner<T>
 
 	bool Assign(T& to, const Selector&, const EONVariant& scope, const EONObject& globalScope) const override
 	{
-		auto pVar = FindVariableFor(&scope, globalScope);
-		if(!pVar) return false;
+		auto [isValid, pVariable, index] = GetAttributes(&scope, globalScope);
+
+		if (!isValid) return false;
 
 		switch (Attribute)
 		{
 			case eAttribute::Name:
-				if (!ConvertIf<EONName, U, Converter>::Apply(fnConvert, to.*pDest, pVar->Name))
+				if (!ConvertIf<EONName, U, Converter>::Apply(fnConvert, to.*pDest, pVariable->Name))
 					return false;
 				break;
 
+			case eAttribute::Type:
+				if (!ConvertIf<STLString<char>, U, Converter>
+					::Apply(fnConvert, to.*pDest, std::visit(TypeNameVisitor(), scope.Data)))
+					return false;
+				break;
+
+//			case eAttribute::Index:
+//				if (!ConvertIf<std::size_t, U, Converter>::Apply(fnConvert, to.*pDest, index))
+//					return false;
+//				break;
+
 			case eAttribute::Parent:
-				if (!ConvertIf<EONName, U, Converter>::Apply(fnConvert, to.*pDest, pVar->Parent))
+				if (!ConvertIf<EONName, U, Converter>::Apply(fnConvert, to.*pDest, pVariable->Parent))
 					return false;
 				break;
 
