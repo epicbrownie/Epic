@@ -80,7 +80,7 @@ private:
 	template<class S> 
 	bool DoScalarConversion(const S& v, ScalarTag)
 	{
-		return ConvertIf<S, T, Converter>::Apply(m_ConvertFn, m_To, v);
+		return ConvertIf(m_ConvertFn, m_To, v);
 	}
 
 	template<class S>
@@ -91,7 +91,7 @@ private:
 
 		Item item;
 
-		if (!ConvertIf<S, Item, Converter>::Apply(m_ConvertFn, item, v))
+		if (!ConvertIf(m_ConvertFn, item, v))
 			return false;
 
 		m_To.emplace_back(std::move(item));
@@ -107,7 +107,7 @@ private:
 
 		Item item;
 
-		if (!ConvertIf<S, Item, Converter>::Apply(m_ConvertFn, item, v))
+		if (!ConvertIf(m_ConvertFn, item, v))
 			return false;
 
 		m_To.emplace(std::move(item));
@@ -172,7 +172,7 @@ private:
 		for (const auto& vm : v.Members)
 		{
 			typename T::key_type key;
-			if (!ConvertIf<decltype(vm.Name), typename T::key_type, Converter>::Apply(m_ConvertFn, key, vm.Name))
+			if (!ConvertIf(m_ConvertFn, key, vm.Name))
 				return false;
 
 			typename T::mapped_type value;

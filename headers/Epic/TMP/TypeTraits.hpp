@@ -89,14 +89,14 @@ namespace Epic::TMP
 	/*	Derives from std::true_type if Function(Args...) could be called and would result in
 		a type that is implicitly convertible to ReturnType.  Derives from std::false_type otherwise. */
 
-	template<class Function, class Return, class Enable = void>
-	struct IsCallable : std::false_type { };
+//	template<class Function, class Return, class Enable = void>
+//	struct IsCallable : std::false_type { };
 
-	template<class Function, class Return, class... Ts>
-	struct IsCallable<Function(Ts...), Return,
-		std::void_t< decltype(std::declval<Function>() (std::declval<Ts>()...))> >
-		: std::is_convertible<decltype(std::declval<Function>() (std::declval<Ts>()...)), Return>
-	{ };
+//	template<class Function, class Return, class... Ts>
+//	struct IsCallable<Function(Ts...), Return,
+//		std::void_t< decltype(std::declval<Function>() (std::declval<Ts>()...))> >
+//		: std::is_convertible<decltype(std::declval<Function>() (std::declval<Ts>()...)), Return>
+//	{ };
 }
 
 //////////////////////////////////////////////////////////////////////////////

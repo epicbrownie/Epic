@@ -116,8 +116,7 @@ namespace Epic::EON::detail
 
 			for (const auto& v : scope.Members)
 			{
-				auto pAsObject = std::get_if<EONObject>(&v.Value.Data);
-				if (pAsObject)
+				if (auto pAsObject = std::get_if<EONObject>(&v.Value.Data); pAsObject)
 				{
 					if (auto pV = FindParent(*pAsObject, name); pV.second != nullptr)
 						return pV;
@@ -155,6 +154,7 @@ namespace Epic::EON::detail
 
 			// If the variable is an object, resolve the inheritance of its native members
 			EONObject* pObject = std::get_if<EONObject>(&variable.Value.Data);
+			
 			if (pObject)
 			{
 				for (auto& member : pObject->Members)

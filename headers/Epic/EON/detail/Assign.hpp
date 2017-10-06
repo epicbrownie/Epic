@@ -87,7 +87,7 @@ namespace Epic::EON::detail
 				if (!parser.Assign(extracted, *var.second, globalScope))
 					return false;
 
-				if (!ConvertIf<E, T, Converter>::Apply(fnConvert, to, extracted))
+				if (!ConvertIf(fnConvert, to, extracted))
 					return false;
 			}
 
@@ -121,7 +121,7 @@ namespace Epic::EON::detail
 						return false;
 
 					typename T::value_type item;
-					if (!ConvertIf<E, typename T::value_type, Converter>::Apply(fnConvert, item, extracted))
+					if (!ConvertIf(fnConvert, item, extracted))
 						return false;
 
 					items.emplace_back(std::move(item));
@@ -160,7 +160,7 @@ namespace Epic::EON::detail
 						return false;
 
 					typename T::key_type item;
-					if (!ConvertIf<E, typename T::key_type, Converter>::Apply(fnConvert, item, extracted))
+					if (!ConvertIf(fnConvert, item, extracted))
 						return false;
 
 					items.emplace(std::move(item));
@@ -191,7 +191,7 @@ namespace Epic::EON::detail
 				for (const auto& vm : pAsObject->Members)
 				{
 					typename T::key_type key;
-					if (!ConvertIf<decltype(vm.Name), typename T::key_type, Converter>::Apply(fnConvert, key, vm.Name))
+					if (!ConvertIf(fnConvert, key, vm.Name))
 						return false;
 
 					const auto pItemAsObject = std::get_if<EONObject>(&vm.Value.Data);
@@ -203,7 +203,7 @@ namespace Epic::EON::detail
 						return false;
 
 					typename T::mapped_type item;
-					if (!ConvertIf<E, typename T::mapped_type, Converter>::Apply(fnConvert, item, extracted))
+					if (!ConvertIf(fnConvert, item, extracted))
 						return false;
 
 					items.emplace(std::move(key), std::move(item));
@@ -338,23 +338,22 @@ struct Epic::EON::detail::FreeAttributeAssigner : public Assigner<T>
 		switch (Attribute)
 		{
 			case eAttribute::Name:
-				if (!ConvertIf<EONName, T, Converter>::Apply(fnConvert, to, pVariable->Name))
+				if (!ConvertIf(fnConvert, to, pVariable->Name))
 					return false;
 				break;
 
 			case eAttribute::Type:
-				if (!ConvertIf<STLString<char>, T, Converter>
-					::Apply(fnConvert, to, std::visit(TypeNameVisitor(), scope.Data)))
+				if (!ConvertIf(fnConvert, to, std::visit(TypeNameVisitor(), scope.Data)))
 					return false;
 				break;
 
 			case eAttribute::Index:
-				if (!ConvertIf<std::size_t, T, Converter>::Apply(fnConvert, to, index))
+				if (!ConvertIf(fnConvert, to, index))
 					return false;
 				break;
 
 			case eAttribute::Parent:
-				if (!ConvertIf<EONName, T, Converter>::Apply(fnConvert, to, pVariable->Parent))
+				if (!ConvertIf(fnConvert, to, pVariable->Parent))
 					return false;
 				break;
 
@@ -482,27 +481,22 @@ struct Epic::EON::detail::MemberAttributeAssigner : public Assigner<T>
 		switch (Attribute)
 		{
 			case eAttribute::Name:
-				if (!ConvertIf<decltype(pVariable->Name), U, Converter>
-					::Apply(fnConvert, to.*pDest, pVariable->Name))
+				if (!ConvertIf(fnConvert, to.*pDest, pVariable->Name))
 					return false;
 				break;
 
 			case eAttribute::Type:
-				if (!ConvertIf<STLString<char>, U, Converter>
-					::Apply(fnConvert, to.*pDest, std::visit(TypeNameVisitor(), scope.Data)))
+				if (!ConvertIf(fnConvert, to.*pDest, std::visit(TypeNameVisitor(), scope.Data)))
 					return false;
 				break;
 
 			case eAttribute::Index:
-				// TODO: When MSVC stops ICEing without the cast, remove it
-				if (!ConvertIf<double, U, Converter>
-					::Apply(fnConvert, to.*pDest, static_cast<double>(index)))
+				if (!ConvertIf(fnConvert, to.*pDest, index))
 					return false;
 				break;
 
 			case eAttribute::Parent:
-				if (!ConvertIf<decltype(pVariable->Parent), U, Converter>
-					::Apply(fnConvert, to.*pDest, pVariable->Parent))
+				if (!ConvertIf(fnConvert, to.*pDest, pVariable->Parent))
 					return false;
 				break;
 

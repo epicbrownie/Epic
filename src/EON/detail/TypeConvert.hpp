@@ -128,6 +128,17 @@ public:
 		return true;
 	}
 
+	// size_t -> string
+	template<typename C, class Tr, class A>
+	bool operator() (std::basic_string<C, Tr, A>& to, const std::size_t& from)
+	{
+		std::basic_ostringstream<C, Tr, A> ss;
+		ss << from;
+		to = ss.str();
+
+		return true;
+	}
+
 	// string -> VectorN
 	template<class C, class Tr, class A, class T, std::size_t Sz>
 	bool operator() (Epic::Vector<T, Sz>& to, const std::basic_string<C, Tr, A>& from)

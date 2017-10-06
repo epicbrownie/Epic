@@ -122,7 +122,7 @@ private:
 				if (!parser.Assign(extracted, *var.second, scope))
 					return false;
 
-				if (!detail::ConvertIf<E, T, Converter>::Apply(fnConvert, to, extracted))
+				if (!detail::ConvertIf(fnConvert, to, extracted))
 					return false;
 			}
 
@@ -143,23 +143,22 @@ private:
 				switch (attr)
 				{
 					case eAttribute::Name:
-						if (!detail::ConvertIf<EONName, T, Converter>::Apply(fnConvert, to, pVariable->Name))
+						if (!detail::ConvertIf(fnConvert, to, pVariable->Name))
 							return false;
 						break;
 
 					case eAttribute::Type:
-						if (!detail::ConvertIf<STLString<char>, T, Converter>
-							::Apply(fnConvert, to, std::visit(detail::TypeNameVisitor(), var.second->Data)))
+						if (!detail::ConvertIf(fnConvert, to, std::visit(detail::TypeNameVisitor(), var.second->Data)))
 							return false;
 						break;
 
 					case eAttribute::Index:
-						if (!detail::ConvertIf<std::size_t, T, Converter>::Apply(fnConvert, to, index))
+						if (!detail::ConvertIf(fnConvert, to, index))
 							return false;
 						break;
 
 					case eAttribute::Parent:
-						if (!detail::ConvertIf<EONName, T, Converter>::Apply(fnConvert, to, pVariable->Parent))
+						if (!detail::ConvertIf(fnConvert, to, pVariable->Parent))
 							return false;
 						break;
 
@@ -217,7 +216,7 @@ private:
 					return false;
 
 				Item item;
-				if (!detail::ConvertIf<E, Item, Converter>::Apply(fnConvert, item, extracted))
+				if (!detail::ConvertIf(fnConvert, item, extracted))
 					return false;
 
 				items.emplace_back(std::move(item));
@@ -251,23 +250,22 @@ private:
 				switch (attr)
 				{
 					case eAttribute::Name:
-						if (!detail::ConvertIf<EONName, Item, Converter>::Apply(fnConvert, item, pVariable->Name))
+						if (!detail::ConvertIf(fnConvert, item, pVariable->Name))
 							return false;
 						break;
 
 					case eAttribute::Type:
-						if (!detail::ConvertIf<STLString<char>, Item, Converter>
-							::Apply(fnConvert, item, std::visit(detail::TypeNameVisitor(), var.second->Data)))
+						if (!detail::ConvertIf(fnConvert, item, std::visit(detail::TypeNameVisitor(), var.second->Data)))
 							return false;
 						break;
 
 					case eAttribute::Index:
-						if (!detail::ConvertIf<std::size_t, Item, Converter>::Apply(fnConvert, item, index))
+						if (!detail::ConvertIf(fnConvert, item, index))
 							return false;
 						break;
 
 					case eAttribute::Parent:
-						if (!detail::ConvertIf<EONName, Item, Converter>::Apply(fnConvert, item, pVariable->Parent))
+						if (!detail::ConvertIf(fnConvert, item, pVariable->Parent))
 							return false;
 						break;
 
@@ -329,7 +327,7 @@ private:
 					return false;
 
 				Item item;
-				if (!detail::ConvertIf<E, Item, Converter>::Apply(fnConvert, item, extracted))
+				if (!detail::ConvertIf(fnConvert, item, extracted))
 					return false;
 
 				items.emplace(std::move(item));
@@ -363,23 +361,22 @@ private:
 				switch (attr)
 				{
 					case eAttribute::Name:
-						if (!detail::ConvertIf<EONName, Item, Converter>::Apply(fnConvert, item, pVariable->Name))
+						if (!detail::ConvertIf(fnConvert, item, pVariable->Name))
 							return false;
 						break;
 
 					case eAttribute::Type:
-						if (!detail::ConvertIf<STLString<char>, Item, Converter>
-							::Apply(fnConvert, item, std::visit(detail::TypeNameVisitor(), var.second->Data)))
+						if (!detail::ConvertIf(fnConvert, item, std::visit(detail::TypeNameVisitor(), var.second->Data)))
 							return false;
 						break;
 
 					case eAttribute::Index:
-						if (!detail::ConvertIf<std::size_t, Item, Converter>::Apply(fnConvert, item, index))
+						if (!detail::ConvertIf(fnConvert, item, index))
 							return false;
 						break;
 
 					case eAttribute::Parent:
-						if (!detail::ConvertIf<EONName, Item, Converter>::Apply(fnConvert, item, pVariable->Parent))
+						if (!detail::ConvertIf(fnConvert, item, pVariable->Parent))
 							return false;
 						break;
 
@@ -413,7 +410,7 @@ private:
 			{
 				Key key;
 
-				if (!detail::ConvertIf<decltype(var.first), Key, Converter>::Apply(fnConvert, key, var.first))
+				if (!detail::ConvertIf(fnConvert, key, var.first))
 					return false;
 
 				Item item;
@@ -447,7 +444,7 @@ private:
 			{
 				Key key;
 
-				if (!detail::ConvertIf<decltype(var.first), Key, Converter>::Apply(fnConvert, key, var.first))
+				if (!detail::ConvertIf(fnConvert, key, var.first))
 					return false;
 
 				E extracted;
@@ -455,7 +452,7 @@ private:
 					return false;
 
 				Item item;
-				if (!detail::ConvertIf<E, Item, Converter>::Apply(fnConvert, item, extracted))
+				if (!detail::ConvertIf(fnConvert, item, extracted))
 					return false;
 
 				items.emplace(std::move(key), std::move(item));

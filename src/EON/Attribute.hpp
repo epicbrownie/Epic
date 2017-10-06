@@ -17,7 +17,7 @@
 
 namespace Epic::EON
 {
-	enum class eAttribute : short
+	enum class eAttribute
 	{
 		Name,
 		Type,
