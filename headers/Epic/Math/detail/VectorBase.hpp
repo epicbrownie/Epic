@@ -121,7 +121,7 @@ public:
 		typename SwizzlerGenerator<2, 2>::Type zz;
 		typename SwizzlerGenerator<0, 1>::Type xy;
 		typename SwizzlerGenerator<1, 0>::Type yx;
-
+		
 		// 3-Component Swizzlers
 		typename SwizzlerGenerator<0, 0, 0>::Type xxx;
 		typename SwizzlerGenerator<1, 1, 1>::Type yyy;
@@ -166,7 +166,7 @@ public:
 		typename SwizzlerGenerator<3, 3>::Type ww;
 		typename SwizzlerGenerator<0, 1>::Type xy;
 		typename SwizzlerGenerator<1, 0>::Type yx;
-
+		
 		// 3-Component Swizzlers
 		typename SwizzlerGenerator<0, 0, 0>::Type xxx;
 		typename SwizzlerGenerator<1, 1, 1>::Type yyy;

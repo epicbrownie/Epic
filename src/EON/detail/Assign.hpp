@@ -14,6 +14,7 @@
 #pragma once
 
 #include <Epic/EON/Selector.hpp>
+#include <Epic/EON/Attribute.hpp>
 #include <Epic/EON/detail/ParserFwd.hpp>
 #include <Epic/EON/detail/Utility.hpp>
 #include <Epic/EON/detail/Traits.hpp>
@@ -32,11 +33,17 @@ namespace Epic::EON::detail
 	template<class T, class E, class Converter>
 	struct FreeObjectAssigner;
 
+	template<class T, class Converter>
+	struct FreeAttributeAssigner;
+
 	template<class T, class U, class Converter>
 	struct MemberAssigner;
 
 	template<class T, class U, class E, class Converter>
 	struct MemberObjectAssigner;
+
+	template<class T, class U, class Converter>
+	struct MemberAttributeAssigner;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -47,21 +54,23 @@ namespace Epic::EON::detail
 	namespace
 	{
 		template<class T, class Converter>
-		bool DoConvertAssign(T& to, const Selector& selector, Converter fnConvert, const EONVariant& scope)
+		bool DoConvertAssign(T& to, const Selector& selector, Converter fnConvert, 
+							 const EONVariant& scope, const EONObject& globalScope)
 		{
 			auto vars = selector.Evaluate(&scope);
 			if (std::empty(vars))
 				return selector.IsOptional();
 
 			for (const auto& var : vars)
-				if (!std::visit(ConversionVisitor<T, Converter>(to, fnConvert), var.second->Data))
+				if (!std::visit(ConversionVisitor<T, Converter>(to, fnConvert, globalScope), var.second->Data))
 					return false;
 
 			return true;
 		}
 
 		template<class T, class E, class Converter>
-		bool DoScalarAssign(T& to, const Selector& selector, const Parser<E>& parser, Converter fnConvert, const EONVariant& scope)
+		bool DoScalarAssign(T& to, const Selector& selector, const Parser<E>& parser, Converter fnConvert, 
+							const EONVariant& scope, const EONObject& globalScope)
 		{
 			auto vars = selector.Evaluate(&scope);
 			if (std::empty(vars))
@@ -75,10 +84,10 @@ namespace Epic::EON::detail
 
 				E extracted;
 
-				if (!parser.Assign(extracted, *var.second))
+				if (!parser.Assign(extracted, *var.second, globalScope))
 					return false;
 
-				if (!ConvertIf<E, T, Converter>::Apply(fnConvert, to, extracted))
+				if (!ConvertIf(fnConvert, to, extracted))
 					return false;
 			}
 
@@ -86,7 +95,8 @@ namespace Epic::EON::detail
 		}
 
 		template<class T, class E, class Converter>
-		bool DoArrayAssign(T& to, const Selector& selector, const Parser<E>& parser, Converter fnConvert, const EONVariant& scope)
+		bool DoArrayAssign(T& to, const Selector& selector, const Parser<E>& parser, Converter fnConvert, 
+						   const EONVariant& scope, const EONObject& globalScope)
 		{
 			auto vars = selector.Evaluate(&scope);
 			if (std::empty(vars))
@@ -107,11 +117,11 @@ namespace Epic::EON::detail
 						return false;
 
 					E extracted;
-					if (!parser.Assign(extracted, vm))
+					if (!parser.Assign(extracted, vm, globalScope))
 						return false;
 
 					typename T::value_type item;
-					if (!ConvertIf<E, typename T::value_type, Converter>::Apply(fnConvert, item, extracted))
+					if (!ConvertIf(fnConvert, item, extracted))
 						return false;
 
 					items.emplace_back(std::move(item));
@@ -124,7 +134,8 @@ namespace Epic::EON::detail
 		}
 
 		template<class T, class E, class Converter>
-		bool DoSetAssign(T& to, const Selector& selector, const Parser<E>& parser, Converter fnConvert, const EONVariant& scope)
+		bool DoSetAssign(T& to, const Selector& selector, const Parser<E>& parser, Converter fnConvert, 
+						 const EONVariant& scope, const EONObject& globalScope)
 		{
 			auto vars = selector.Evaluate(&scope);
 			if (std::empty(vars))
@@ -145,11 +156,11 @@ namespace Epic::EON::detail
 						return false;
 
 					E extracted;
-					if (!parser.Assign(extracted, vm))
+					if (!parser.Assign(extracted, vm, globalScope))
 						return false;
 
 					typename T::key_type item;
-					if (!ConvertIf<E, typename T::key_type, Converter>::Apply(fnConvert, item, extracted))
+					if (!ConvertIf(fnConvert, item, extracted))
 						return false;
 
 					items.emplace(std::move(item));
@@ -162,7 +173,8 @@ namespace Epic::EON::detail
 		}
 
 		template<class T, class E, class Converter>
-		bool DoMapAssign(T& to, const Selector& selector, const Parser<E>& parser, Converter fnConvert, const EONVariant& scope)
+		bool DoMapAssign(T& to, const Selector& selector, const Parser<E>& parser, Converter fnConvert, 
+						 const EONVariant& scope, const EONObject& globalScope)
 		{
 			auto vars = selector.Evaluate(&scope);
 			if (std::empty(vars))
@@ -179,7 +191,7 @@ namespace Epic::EON::detail
 				for (const auto& vm : pAsObject->Members)
 				{
 					typename T::key_type key;
-					if (!ConvertIf<decltype(vm.Name), typename T::key_type, Converter>::Apply(fnConvert, key, vm.Name))
+					if (!ConvertIf(fnConvert, key, vm.Name))
 						return false;
 
 					const auto pItemAsObject = std::get_if<EONObject>(&vm.Value.Data);
@@ -187,11 +199,11 @@ namespace Epic::EON::detail
 						return false;
 
 					E extracted;
-					if (!parser.Assign(extracted, vm.Value))
+					if (!parser.Assign(extracted, vm.Value, globalScope))
 						return false;
 
 					typename T::mapped_type item;
-					if (!ConvertIf<E, typename T::mapped_type, Converter>::Apply(fnConvert, item, extracted))
+					if (!ConvertIf(fnConvert, item, extracted))
 						return false;
 
 					items.emplace(std::move(key), std::move(item));
@@ -211,7 +223,7 @@ namespace Epic::EON::detail
 template<class T>
 struct Epic::EON::detail::Assigner
 {
-	virtual bool Assign(T& to, const Selector& selector, const EONVariant& scope) const = 0;
+	virtual bool Assign(T& to, const Selector& selector, const EONVariant& scope, const EONObject& globalScope) const = 0;
 };
 
 // FreeAssigner
@@ -220,15 +232,12 @@ struct Epic::EON::detail::FreeAssigner : public Assigner<T>
 {
 	Converter fnConvert;
 
-	FreeAssigner() noexcept
-		: fnConvert() { }
-
 	explicit FreeAssigner(Converter convert)
 		: fnConvert(convert) { }
 
-	bool Assign(T& to, const Selector& selector, const EONVariant& scope) const override
+	bool Assign(T& to, const Selector& selector, const EONVariant& scope, const EONObject& globalScope) const override
 	{
-		return DoConvertAssign(to, selector, fnConvert, scope);
+		return DoConvertAssign(to, selector, fnConvert, scope, globalScope);
 	}
 };
 
@@ -257,56 +266,102 @@ private:
 		FailTag>>>>;
 
 private:
-	bool DoAssign(T&, const Selector&, const EONVariant&, FailTag) const
+	bool DoAssign(T&, const Selector&, const EONVariant&, const EONObject&, FailTag) const
 	{
 		return false;
 	}
 
-	bool DoAssign(T& to, const Selector& selector, const EONVariant& scope, ScalarTag) const
+	bool DoAssign(T& to, const Selector& selector, const EONVariant& scope, 
+				  const EONObject& globalScope, ScalarTag) const
 	{
 		static_assert(std::is_default_constructible_v<E>, "Extracted type must be default constructible.");
 
-		return DoScalarAssign(to, selector, Ext, fnConvert, scope);
+		return DoScalarAssign(to, selector, Ext, fnConvert, scope, globalScope);
 	}
 
-	bool DoAssign(T& to, const Selector& selector, const EONVariant& scope, ArrayTag) const
+	bool DoAssign(T& to, const Selector& selector, const EONVariant& scope, 
+				  const EONObject& globalScope, ArrayTag) const
 	{
 		static_assert(std::is_default_constructible_v<T>, "Array type must be default constructible.");
 		static_assert(std::is_default_constructible_v<typename T::value_type>, "Value type must be default constructible.");
 		static_assert(std::is_default_constructible_v<E>, "Extracted type must be default constructible.");
 
-		return DoArrayAssign(to, selector, Ext, fnConvert, scope);
+		return DoArrayAssign(to, selector, Ext, fnConvert, scope, globalScope);
 	}
 
-	bool DoAssign(T& to, const Selector& selector, const EONVariant& scope, SetTag) const
+	bool DoAssign(T& to, const Selector& selector, const EONVariant& scope, 
+				  const EONObject& globalScope, SetTag) const
 	{
 		static_assert(std::is_default_constructible_v<T>, "Set type must be default constructible.");
 		static_assert(std::is_default_constructible_v<typename T::key_type>, "Key type must be default constructible.");
 		static_assert(std::is_default_constructible_v<E>, "Extracted type must be default constructible.");
 
-		return DoSetAssign(to, selector, Ext, fnConvert, scope);
+		return DoSetAssign(to, selector, Ext, fnConvert, scope, globalScope);
 	}
 
-	bool DoAssign(T& to, const Selector& selector, const EONVariant& scope, MapTag) const
+	bool DoAssign(T& to, const Selector& selector, const EONVariant& scope, 
+				  const EONObject& globalScope, MapTag) const
 	{
 		static_assert(std::is_default_constructible_v<T>, "Map type must be default constructible.");
 		static_assert(std::is_default_constructible_v<typename T::key_type>, "Key type must be default constructible.");
 		static_assert(std::is_default_constructible_v<typename T::mapped_type>, "Value type must be default constructible.");
 		static_assert(std::is_default_constructible_v<E>, "Extracted type must be default constructible.");
 
-		return DoMapAssign(to, selector, Ext, fnConvert, scope);
+		return DoMapAssign(to, selector, Ext, fnConvert, scope, globalScope);
 	}
 
 public:
-	explicit FreeObjectAssigner(const Parser<E>& extractor)
-		: Ext(extractor), fnConvert() { }
-
 	FreeObjectAssigner(const Parser<E>& extractor, Converter convert)
 		: Ext(extractor), fnConvert(convert) { }
 
-	bool Assign(T& to, const Selector& selector, const EONVariant& scope) const override
+	bool Assign(T& to, const Selector& selector, const EONVariant& scope, const EONObject& globalScope) const override
 	{
-		return DoAssign(to, selector, scope, MakeAssignTag());
+		return DoAssign(to, selector, scope, globalScope, MakeAssignTag());
+	}
+};
+
+// FreeAttributeAssigner
+template<class T, class Converter>
+struct Epic::EON::detail::FreeAttributeAssigner : public Assigner<T>
+{
+	eAttribute Attribute;
+	Converter fnConvert;
+
+	FreeAttributeAssigner(eAttribute attr, Converter convert)
+		: Attribute(attr), fnConvert(convert) { }
+
+	bool Assign(T& to, const Selector&, const EONVariant& scope, const EONObject& globalScope) const override
+	{
+		auto [isValid, pVariable, index] = GetAttributes(&scope, globalScope);
+		if(!isValid) return false;
+
+		switch (Attribute)
+		{
+			case eAttribute::Name:
+				if (!ConvertIf(fnConvert, to, pVariable->Name))
+					return false;
+				break;
+
+			case eAttribute::Type:
+				if (!ConvertIf(fnConvert, to, std::visit(TypeNameVisitor(), scope.Data)))
+					return false;
+				break;
+
+			case eAttribute::Index:
+				if (!ConvertIf(fnConvert, to, index))
+					return false;
+				break;
+
+			case eAttribute::Parent:
+				if (!ConvertIf(fnConvert, to, pVariable->Parent))
+					return false;
+				break;
+
+			default:
+				return false;
+		}
+
+		return true;
 	}
 };
 
@@ -317,15 +372,12 @@ struct Epic::EON::detail::MemberAssigner : public Assigner<T>
 	U T::* pDest;
 	Converter fnConvert;
 
-	explicit MemberAssigner(U T::* dest)
-		: pDest(dest), fnConvert() { }
-
 	MemberAssigner(U T::* dest, Converter convert)
 		: pDest(dest), fnConvert(convert) { }
 
-	bool Assign(T& to, const Selector& selector, const EONVariant& scope) const override
+	bool Assign(T& to, const Selector& selector, const EONVariant& scope, const EONObject& globalScope) const override
 	{
-		return DoConvertAssign(to.*pDest, selector, fnConvert, scope);
+		return DoConvertAssign(to.*pDest, selector, fnConvert, scope, globalScope);
 	}
 };
 
@@ -355,55 +407,103 @@ private:
 		FailTag>>>>;
 
 private:
-	bool DoAssign(T&, const Selector&, const EONVariant&, FailTag) const
+	bool DoAssign(T&, const Selector&, const EONVariant&, const EONObject&, FailTag) const
 	{
 		return false;
 	}
 
-	bool DoAssign(T& to, const Selector& selector, const EONVariant& scope, ScalarTag) const
+	bool DoAssign(T& to, const Selector& selector, const EONVariant& scope, 
+				  const EONObject& globalScope, ScalarTag) const
 	{
 		static_assert(std::is_default_constructible_v<E>, "Extracted type must be default constructible.");
 
-		return DoScalarAssign(to.*pDest, selector, Ext, fnConvert, scope);
+		return DoScalarAssign(to.*pDest, selector, Ext, fnConvert, scope, globalScope);
 	}
 
-	bool DoAssign(T& to, const Selector& selector, const EONVariant& scope, ArrayTag) const
+	bool DoAssign(T& to, const Selector& selector, const EONVariant& scope, 
+				  const EONObject& globalScope, ArrayTag) const
 	{
 		static_assert(std::is_default_constructible_v<U>, "Array type must be default constructible.");
 		static_assert(std::is_default_constructible_v<typename U::value_type>, "Value type must be default constructible.");
 		static_assert(std::is_default_constructible_v<E>, "Extracted type must be default constructible.");
 
-		return DoArrayAssign(to.*pDest, selector, Ext, fnConvert, scope);
+		return DoArrayAssign(to.*pDest, selector, Ext, fnConvert, scope, globalScope);
 	}
 
-	bool DoAssign(T& to, const Selector& selector, const EONVariant& scope, SetTag) const
+	bool DoAssign(T& to, const Selector& selector, const EONVariant& scope, 
+				  const EONObject& globalScope, SetTag) const
 	{
 		static_assert(std::is_default_constructible_v<U>, "Set type must be default constructible.");
 		static_assert(std::is_default_constructible_v<typename U::key_type>, "Key type must be default constructible.");
 		static_assert(std::is_default_constructible_v<E>, "Extracted type must be default constructible.");
 
-		return DoSetAssign(to.*pDest, selector, Ext, fnConvert, scope);
+		return DoSetAssign(to.*pDest, selector, Ext, fnConvert, scope, globalScope);
 	}
 
-	bool DoAssign(T& to, const Selector& selector, const EONVariant& scope, MapTag) const
+	bool DoAssign(T& to, const Selector& selector, const EONVariant& scope, 
+				  const EONObject& globalScope, MapTag) const
 	{
 		static_assert(std::is_default_constructible_v<U>, "Map type must be default constructible.");
 		static_assert(std::is_default_constructible_v<typename U::key_type>, "Key type must be default constructible.");
 		static_assert(std::is_default_constructible_v<typename U::mapped_type>, "Value type must be default constructible.");
 		static_assert(std::is_default_constructible_v<E>, "Extracted type must be default constructible.");
 
-		return DoMapAssign(to.*pDest, selector, Ext, fnConvert, scope);
+		return DoMapAssign(to.*pDest, selector, Ext, fnConvert, scope, globalScope);
 	}
 
 public:
-	MemberObjectAssigner(U T::* dest, const Parser<E>& extractor)
-		: pDest(dest), Ext(extractor), fnConvert() { }
-
 	MemberObjectAssigner(U T::* dest, const Parser<E>& extractor, Converter convert)
 		: pDest(dest), Ext(extractor), fnConvert(convert) { }
 
-	bool Assign(T& to, const Selector& selector, const EONVariant& scope) const override
+	bool Assign(T& to, const Selector& selector, const EONVariant& scope, const EONObject& globalScope) const override
 	{
-		return DoAssign(to, selector, scope, MakeAssignTag());
+		return DoAssign(to, selector, scope, globalScope, MakeAssignTag());
+	}
+};
+
+// MemberAttributeAssigner
+template<class T, class U, class Converter>
+struct Epic::EON::detail::MemberAttributeAssigner : public Assigner<T>
+{
+	U T::* pDest;
+	eAttribute Attribute;
+	Converter fnConvert;
+
+	MemberAttributeAssigner(eAttribute attr, U T::* dest, Converter convert)
+		: Attribute(attr), pDest(dest), fnConvert(convert) { }
+
+	bool Assign(T& to, const Selector&, const EONVariant& scope, const EONObject& globalScope) const override
+	{
+		auto [isValid, pVariable, index] = GetAttributes(&scope, globalScope);
+
+		if (!isValid) return false;
+
+		switch (Attribute)
+		{
+			case eAttribute::Name:
+				if (!ConvertIf(fnConvert, to.*pDest, pVariable->Name))
+					return false;
+				break;
+
+			case eAttribute::Type:
+				if (!ConvertIf(fnConvert, to.*pDest, std::visit(TypeNameVisitor(), scope.Data)))
+					return false;
+				break;
+
+			case eAttribute::Index:
+				if (!ConvertIf(fnConvert, to.*pDest, index))
+					return false;
+				break;
+
+			case eAttribute::Parent:
+				if (!ConvertIf(fnConvert, to.*pDest, pVariable->Parent))
+					return false;
+				break;
+
+			default:
+				return false;
+		}
+
+		return true;
 	}
 };

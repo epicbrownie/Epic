@@ -73,6 +73,7 @@
     <ClInclude Include="src\EON\Parser.hpp" />
     <ClInclude Include="src\EON\ResultPolicy.hpp" />
     <ClInclude Include="src\EON\Selector.hpp" />
+    <ClInclude Include="src\EON\Attribute.hpp" />
     <ClInclude Include="src\EON\Types.hpp" />
     <ClInclude Include="src\Event.hpp" />
     <ClInclude Include="src\Ext\Erase.hpp" />

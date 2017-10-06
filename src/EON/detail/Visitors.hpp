@@ -32,6 +32,7 @@ namespace Epic::EON::detail
 	class InheritVisitor;
 	class MergeVisitor;
 	class FilterVisitor;
+	class TypeNameVisitor;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -43,11 +44,12 @@ class Epic::EON::detail::ConversionVisitor
 private:
 	T& m_To;
 	Converter m_ConvertFn;
+	const EONObject& m_GlobalScope;
 
 public:
 	ConversionVisitor() = delete;
-	ConversionVisitor(T& to, Converter convertFn)
-		: m_To(to), m_ConvertFn(convertFn) { }
+	ConversionVisitor(T& to, Converter convertFn, const EONObject& scope)
+		: m_To(to), m_ConvertFn(convertFn), m_GlobalScope(scope) { }
 
 private:
 	using Traits = EONTraits<T>;
@@ -78,7 +80,7 @@ private:
 	template<class S> 
 	bool DoScalarConversion(const S& v, ScalarTag)
 	{
-		return ConvertIf<S, T, Converter>::Apply(m_ConvertFn, m_To, v);
+		return ConvertIf(m_ConvertFn, m_To, v);
 	}
 
 	template<class S>
@@ -89,7 +91,7 @@ private:
 
 		Item item;
 
-		if (!ConvertIf<S, Item, Converter>::Apply(m_ConvertFn, item, v))
+		if (!ConvertIf(m_ConvertFn, item, v))
 			return false;
 
 		m_To.emplace_back(std::move(item));
@@ -105,7 +107,7 @@ private:
 
 		Item item;
 
-		if (!ConvertIf<S, Item, Converter>::Apply(m_ConvertFn, item, v))
+		if (!ConvertIf(m_ConvertFn, item, v))
 			return false;
 
 		m_To.emplace(std::move(item));
@@ -129,7 +131,7 @@ private:
 			const auto& vm = v.Members[i];
 			typename T::value_type value;
 
-			if (!std::visit(ConversionVisitor<typename T::value_type, Converter>(value, m_ConvertFn), vm.Data))
+			if (!std::visit(ConversionVisitor<typename T::value_type, Converter>(value, m_ConvertFn, m_GlobalScope), vm.Data))
 				return false;
 
 			item[i] = value;
@@ -148,7 +150,7 @@ private:
 
 		for (const auto& vm : v.Members)
 		{
-			if (!std::visit(ConversionVisitor<T, Converter>(items, m_ConvertFn), vm.Data))
+			if (!std::visit(ConversionVisitor<T, Converter>(items, m_ConvertFn, m_GlobalScope), vm.Data))
 				return false;
 		}
 
@@ -170,11 +172,11 @@ private:
 		for (const auto& vm : v.Members)
 		{
 			typename T::key_type key;
-			if (!ConvertIf<decltype(vm.Name), typename T::key_type, Converter>::Apply(m_ConvertFn, key, vm.Name))
+			if (!ConvertIf(m_ConvertFn, key, vm.Name))
 				return false;
 
 			typename T::mapped_type value;
-			if (!std::visit(ConversionVisitor<typename T::mapped_type, Converter>(value, m_ConvertFn), vm.Value.Data))
+			if (!std::visit(ConversionVisitor<typename T::mapped_type, Converter>(value, m_ConvertFn, m_GlobalScope), vm.Value.Data))
 				return false;
 
 			items.emplace(std::move(key), std::move(value));
@@ -323,4 +325,18 @@ public:
 	bool operator() (const EONString& v) { return (_Filter & std::size_t(eEONVariantType::String)) != 0; }
 	bool operator() (const EONArray& v) { return (_Filter & std::size_t(eEONVariantType::Array)) != 0; }
 	bool operator() (const EONObject& v) { return (_Filter & std::size_t(eEONVariantType::Object)) != 0; }
+};
+
+//////////////////////////////////////////////////////////////////////////////
+
+// TypeNameVisitor
+class Epic::EON::detail::TypeNameVisitor
+{
+public:
+	STLString<char> operator() (const EONInteger& v) { return "INTEGER"; }
+	STLString<char> operator() (const EONFloat& v) { return "FLOAT"; }
+	STLString<char> operator() (const EONBoolean& v) { return "BOOLEAN"; }
+	STLString<char> operator() (const EONString& v) { return "STRING"; }
+	STLString<char> operator() (const EONArray& v) { return "ARRAY"; }
+	STLString<char> operator() (const EONObject& v) { return "OBJECT"; }
 };
