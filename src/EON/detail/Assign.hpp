@@ -337,7 +337,6 @@ struct Epic::EON::detail::FreeAttributeAssigner : public Assigner<T>
 
 		switch (Attribute)
 		{
-
 			case eAttribute::Name:
 				if (!ConvertIf<EONName, T, Converter>::Apply(fnConvert, to, pVariable->Name))
 					return false;
@@ -483,7 +482,8 @@ struct Epic::EON::detail::MemberAttributeAssigner : public Assigner<T>
 		switch (Attribute)
 		{
 			case eAttribute::Name:
-				if (!ConvertIf<EONName, U, Converter>::Apply(fnConvert, to.*pDest, pVariable->Name))
+				if (!ConvertIf<decltype(pVariable->Name), U, Converter>
+					::Apply(fnConvert, to.*pDest, pVariable->Name))
 					return false;
 				break;
 
@@ -493,13 +493,16 @@ struct Epic::EON::detail::MemberAttributeAssigner : public Assigner<T>
 					return false;
 				break;
 
-//			case eAttribute::Index:
-//				if (!ConvertIf<std::size_t, U, Converter>::Apply(fnConvert, to.*pDest, index))
-//					return false;
-//				break;
+			case eAttribute::Index:
+				// TODO: When MSVC stops ICEing without the cast, remove it
+				if (!ConvertIf<double, U, Converter>
+					::Apply(fnConvert, to.*pDest, static_cast<double>(index)))
+					return false;
+				break;
 
 			case eAttribute::Parent:
-				if (!ConvertIf<EONName, U, Converter>::Apply(fnConvert, to.*pDest, pVariable->Parent))
+				if (!ConvertIf<decltype(pVariable->Parent), U, Converter>
+					::Apply(fnConvert, to.*pDest, pVariable->Parent))
 					return false;
 				break;
 

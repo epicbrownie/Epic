@@ -29,7 +29,7 @@ namespace Epic::EON::detail
 	namespace
 	{
 		const EONVariable* FindVariableInObject(const EONObject& scope, const EONName& name);
-		std::tuple<bool, const EONVariable*, std::uint32_t> GetAttributes(const EONVariant* pVar, const EONObject& scope);
+		std::tuple<bool, const EONVariable*, std::size_t> GetAttributes(const EONVariant* pVar, const EONObject& scope);
 		std::pair<const EONObject*, const EONVariable*> FindParent(const EONObject& scope, const EONName& name);
 		STLStack<EONName> TraceInheritance(const EONVariable& variable, const EONObject& scope);
 		bool Tidy(const EONObject* pGlobal, EONObject* pScope, EONVariable& variable, bool resolveInheritance = true);
