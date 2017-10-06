@@ -55,10 +55,11 @@ namespace Epic::EON
 namespace Epic::EON::detail
 {
 	template<class T, class From, class To>
-	constexpr bool CanConvert = Epic::TMP::IsCallable<T(To&, const From&), bool>::value ||
-								Epic::TMP::IsCallable<T(To&, const From&) const, bool>::value;	
+	constexpr bool CanConvertWith = 
+		std::disjunction_v<Epic::TMP::IsCallable<T(To&, const From&), bool>,
+						   Epic::TMP::IsCallable<T(To&, const From&) const, bool>>;	
 
-	template<class From, class To, class Converter, bool Enabled = CanConvert<Converter, From, To>>
+	template<class From, class To, class Converter, bool Enabled = CanConvertWith<Converter, From, To>>
 	struct ConvertIf
 	{
 		static bool Apply(Converter, To& to, const From& from)
@@ -167,7 +168,7 @@ struct Epic::EON::detail::AutoConvert
 		std::conditional_t<std::is_enum_v<F> || std::is_enum_v<T>, EnumConvert<F, T>,
 		std::conditional_t<std::is_convertible_v<F, T>, CastConvert<F, T>,
 		std::conditional_t<Epic::TMP::IsExplicitlyConvertibleV<F, T>, ConstructConvert<F, T>,
-		std::conditional_t<CanConvert<TypeConvert<F, T>, F, T>, TypeConvert<F, T>, 
+		std::conditional_t<CanConvertWith<TypeConvert<F, T>, F, T>, TypeConvert<F, T>, 
 		NullConvert<F, T>>>>>>;
 };
 

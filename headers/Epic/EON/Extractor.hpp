@@ -17,6 +17,7 @@
 #include <Epic/EON/ResultPolicy.hpp>
 #include <Epic/EON/Selector.hpp>
 #include <Epic/EON/detail/Traits.hpp>
+#include <Epic/EON/detail/Utility.hpp>
 #include <Epic/EON/detail/Visitors.hpp>
 #include <algorithm>
 #include <cassert>
@@ -67,19 +68,35 @@ private:
 			std::conditional_t<Traits::IsSetLike, SetTag,
 			std::conditional_t<Traits::IsMapLike, MapTag,
 			FailTag>>>>;
+
+		using MakeAttrAssignTag =
+			std::conditional_t<!Traits::IsContainer, ScalarTag,
+			std::conditional_t<Traits::IsVectorLike, ArrayTag,
+			std::conditional_t<Traits::IsSetLike, SetTag,
+			FailTag>>>;
 		
+		// DoExtract - Fail
 		template<class Converter = DefaultConverter>
 		static bool DoExtract(T&, Converter, const Selector::MatchList&, const EONObject&, FailTag) noexcept
 		{
 			return false;
 		}
 
+		// DoExtract - Parser<E> - Fail
 		template<class E, class Converter = DefaultConverter>
 		static bool DoExtract(T&, const Parser<E>&, Converter, const Selector::MatchList&, const EONObject&, FailTag) noexcept
 		{
 			return false;
 		}
 
+		// DoExtract - Attribute - Fail
+		template<class Converter = DefaultConverter>
+		static bool DoExtract(T&, eAttribute, Converter, const Selector::MatchList&, const EONObject&, FailTag) noexcept
+		{
+			return false;
+		}
+
+		// DoExtract - Scalar
 		template<class Converter = DefaultConverter>
 		static bool DoExtract(T& to, Converter fnConvert, const Selector::MatchList& vars, 
 							  const EONObject& scope, ScalarTag)
@@ -93,6 +110,7 @@ private:
 			return true;
 		}
 
+		// DoExtract - Parser<E> - Scalar
 		template<class E, class Converter = DefaultConverter>
 		static bool DoExtract(T& to, const Parser<E>& parser, Converter fnConvert, 
 							  const Selector::MatchList& vars, const EONObject& scope, ScalarTag)
@@ -111,6 +129,49 @@ private:
 			return true;
 		}
 
+		// DoExtract - Attribute - Scalar
+		template<class Converter = DefaultConverter>
+		static bool DoExtract(T& to, eAttribute attr, Converter fnConvert, const Selector::MatchList& vars, 
+							  const EONObject& scope, ScalarTag)
+		{
+			for (const auto& var : vars)
+			{
+				auto [isValid, pVariable, index] = detail::GetAttributes(var.second, scope);
+
+				if (!isValid) return false;
+
+				switch (attr)
+				{
+					case eAttribute::Name:
+						if (!detail::ConvertIf<EONName, T, Converter>::Apply(fnConvert, to, pVariable->Name))
+							return false;
+						break;
+
+					case eAttribute::Type:
+						if (!detail::ConvertIf<STLString<char>, T, Converter>
+							::Apply(fnConvert, to, std::visit(detail::TypeNameVisitor(), var.second->Data)))
+							return false;
+						break;
+
+					case eAttribute::Index:
+						if (!detail::ConvertIf<std::size_t, T, Converter>::Apply(fnConvert, to, index))
+							return false;
+						break;
+
+					case eAttribute::Parent:
+						if (!detail::ConvertIf<EONName, T, Converter>::Apply(fnConvert, to, pVariable->Parent))
+							return false;
+						break;
+
+					default:
+						return false;
+				}
+			}
+
+			return true;
+		}
+
+		// DoExtract - Array
 		template<class Converter = DefaultConverter>
 		static bool DoExtract(T& to, Converter fnConvert, const Selector::MatchList& vars, 
 							  const EONObject& scope, ArrayTag)
@@ -137,6 +198,7 @@ private:
 			return true;
 		}
 
+		// DoExtract - Array
 		template<class E, class Converter = DefaultConverter>
 		static bool DoExtract(T& to, const Parser<E>& parser, Converter fnConvert, 
 							  const Selector::MatchList& vars, const EONObject& scope, ArrayTag)
@@ -166,6 +228,62 @@ private:
 			return true;
 		}
 
+		// DoExtract - Attribute - Array
+		template<class Converter = DefaultConverter>
+		static bool DoExtract(T& to, eAttribute attr, Converter fnConvert, const Selector::MatchList& vars, 
+							  const EONObject& scope, ArrayTag)
+		{
+			using Item = typename T::value_type;
+
+			static_assert(std::is_default_constructible_v<T>, "Array type must be default constructible.");
+			static_assert(std::is_default_constructible_v<Item>, "Value type must be default constructible.");
+
+			T items;
+
+			for (const auto& var : vars)
+			{
+				Item item;
+
+				auto [isValid, pVariable, index] = detail::GetAttributes(var.second, scope);
+
+				if (!isValid) return false;
+
+				switch (attr)
+				{
+					case eAttribute::Name:
+						if (!detail::ConvertIf<EONName, Item, Converter>::Apply(fnConvert, item, pVariable->Name))
+							return false;
+						break;
+
+					case eAttribute::Type:
+						if (!detail::ConvertIf<STLString<char>, Item, Converter>
+							::Apply(fnConvert, item, std::visit(detail::TypeNameVisitor(), var.second->Data)))
+							return false;
+						break;
+
+					case eAttribute::Index:
+						if (!detail::ConvertIf<std::size_t, Item, Converter>::Apply(fnConvert, item, index))
+							return false;
+						break;
+
+					case eAttribute::Parent:
+						if (!detail::ConvertIf<EONName, Item, Converter>::Apply(fnConvert, item, pVariable->Parent))
+							return false;
+						break;
+
+					default:
+						return false;
+				}
+				
+				items.emplace_back(std::move(item));
+			}
+
+			to = std::move(items);
+
+			return true;
+		}
+
+		// DoExtract - Set
 		template<class Converter = DefaultConverter>
 		static bool DoExtract(T& to, Converter fnConvert, const Selector::MatchList& vars, 
 							  const EONObject& scope, SetTag)
@@ -192,6 +310,7 @@ private:
 			return true;
 		}
 
+		// DoExtract - Parser<E> - Set
 		template<class E, class Converter = DefaultConverter>
 		static bool DoExtract(T& to, const Parser<E>& parser, Converter fnConvert, 
 							  const Selector::MatchList& vars, const EONObject& scope, SetTag)
@@ -221,6 +340,62 @@ private:
 			return true;
 		}
 
+		// DoExtract - Attribute - Set
+		template<class Converter = DefaultConverter>
+		static bool DoExtract(T& to, eAttribute attr, Converter fnConvert, const Selector::MatchList& vars,
+							  const EONObject& scope, SetTag)
+		{
+			using Item = typename T::key_type;
+
+			static_assert(std::is_default_constructible_v<T>, "Set type must be default constructible.");
+			static_assert(std::is_default_constructible_v<Item>, "Key type must be default constructible.");
+
+			T items;
+
+			for (const auto& var : vars)
+			{
+				Item item;
+
+				auto [isValid, pVariable, index] = detail::GetAttributes(var.second, scope);
+
+				if (!isValid) return false;
+
+				switch (attr)
+				{
+					case eAttribute::Name:
+						if (!detail::ConvertIf<EONName, Item, Converter>::Apply(fnConvert, item, pVariable->Name))
+							return false;
+						break;
+
+					case eAttribute::Type:
+						if (!detail::ConvertIf<STLString<char>, Item, Converter>
+							::Apply(fnConvert, item, std::visit(detail::TypeNameVisitor(), var.second->Data)))
+							return false;
+						break;
+
+					case eAttribute::Index:
+						if (!detail::ConvertIf<std::size_t, Item, Converter>::Apply(fnConvert, item, index))
+							return false;
+						break;
+
+					case eAttribute::Parent:
+						if (!detail::ConvertIf<EONName, Item, Converter>::Apply(fnConvert, item, pVariable->Parent))
+							return false;
+						break;
+
+					default:
+						return false;
+				}
+				
+				items.emplace(std::move(item));
+			}
+
+			to = std::move(items);
+
+			return true;
+		}
+
+		// DoExtract - Map
 		template<class Converter = DefaultConverter>
 		static bool DoExtract(T& to, Converter fnConvert, const Selector::MatchList& vars, 
 							  const EONObject& scope, MapTag)
@@ -254,6 +429,7 @@ private:
 			return true;
 		}
 
+		// DoExtract - Parser<E> - Map
 		template<class E, class Converter = DefaultConverter>
 		static bool DoExtract(T& to, const Parser<E>& parser, Converter fnConvert, 
 							  const Selector::MatchList& vars, const EONObject& scope, MapTag)
@@ -308,6 +484,23 @@ private:
 				return result.Failed(selector.Path());
 		}
 
+		template<class Converter, class ResultPolicy>
+		static auto Extract(const Selector& selector, eAttribute attr, Converter fnConvert, 
+							ResultPolicy& result, const EONObject& scope) -> typename ResultPolicy::ResultType
+		{
+			static_assert(std::is_default_constructible_v<T>, "Extracted type must be default constructible.");
+
+			auto matches = selector.Evaluate(scope);
+
+			if (std::empty(matches))
+				return result.Empty(selector.Path(), selector.IsOptional());
+
+			if (T extracted; DoExtract(extracted, attr, fnConvert, matches, scope, MakeAttrAssignTag()))
+				return result.Success(std::move(extracted));
+			else
+				return result.Failed(selector.Path());
+		}
+
 		template<class E, class Converter, class ResultPolicy>
 		static auto Extract(const Selector& selector, const Parser<E>& parser, Converter fnConvert, 
 							ResultPolicy& result, const EONObject& scope) -> typename ResultPolicy::ResultType
@@ -349,22 +542,12 @@ public:
 		);
 	}
 
-	template<class T, template<class> class ResultPolicy = GuaranteedResult, 
-			 class Converter = DefaultConverter>
-	auto ExtractOr(const Selector& selector, T&& defaultVal, Converter fnConvert = Converter())
+	template<class T, template<class> class ResultPolicy = ThrowResult,
+		class Converter = DefaultConverter, class... Args>
+	auto Extract(const Selector& selector, eAttribute attr, Converter fnConvert = Converter(), Args&&... resultPolicyArgs)
 	{
 		return ExtractHelper<T>::Extract<Converter, ResultPolicy<T>>(
-			selector, fnConvert, ResultPolicy<T>{ std::forward<T>(defaultVal) }, m_Scope
-		);
-	}
-
-	template<class T, template<class> class ResultPolicy = GuaranteedResult,
-			 class E, class Converter = DefaultConverter>
-	auto ExtractOr(const Selector& selector, const Parser<E>& parser, 
-				   E&& defaultVal, Converter fnConvert = Converter())
-	{
-		return ExtractHelper<T>::Extract<E, Converter, ResultPolicy<T>>(
-			selector, parser, fnConvert, ResultPolicy<T>{ std::forward<E>(defaultVal) }, m_Scope
+			selector, attr, fnConvert, ResultPolicy<T>{ std::forward<Args>(resultPolicyArgs)... }, m_Scope
 		);
 	}
 
@@ -381,6 +564,33 @@ public:
 	{
 		return ExtractHelper<T>::Extract<E, Converter, OptionalResult<T>>(
 			selector, parser, fnConvert, OptionalResult<T>(), m_Scope
+		);
+	}
+
+	template<class T, class Converter = DefaultConverter>
+	auto TryExtract(const Selector& selector, eAttribute attr, Converter fnConvert = Converter())
+	{
+		return ExtractHelper<T>::Extract<Converter, OptionalResult<T>>(
+			selector, attr, fnConvert, OptionalResult<T>(), m_Scope
+		);
+	}
+
+	template<class T, template<class> class ResultPolicy = GuaranteedResult, 
+			 class Converter = DefaultConverter>
+	auto ExtractOr(const Selector& selector, T&& defaultVal, Converter fnConvert = Converter())
+	{
+		return ExtractHelper<T>::Extract<Converter, ResultPolicy<T>>(
+			selector, fnConvert, ResultPolicy<T>{ std::forward<T>(defaultVal) }, m_Scope
+		);
+	}
+
+	template<class T, template<class> class ResultPolicy = GuaranteedResult,
+			 class E, class Converter = DefaultConverter>
+	auto ExtractOr(const Selector& selector, const Parser<E>& parser, 
+				   E&& defaultVal, Converter fnConvert = Converter())
+	{
+		return ExtractHelper<T>::Extract<E, Converter, ResultPolicy<T>>(
+			selector, parser, fnConvert, ResultPolicy<T>{ std::forward<E>(defaultVal) }, m_Scope
 		);
 	}
 };

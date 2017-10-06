@@ -476,10 +476,10 @@ public:
 																							\
 	template<class U, std::size_t US, std::size_t... Is,									\
 		typename = std::enable_if_t<(sizeof...(Is) == Size)>>								\
-	Type& operator Op (const Swizzler<U, US, Is...>& vec) noexcept					\
+	Type& operator Op (const Swizzler<U, US, Is...>& vec) noexcept							\
 	{																						\
 		if constexpr (std::is_integral<T>::value &&											\
-					  std::is_integral<VectorT::value_type>::value)							\
+					  std::is_integral<U>::value)											\
 		{																					\
 			Epic::TMP::ForEach2<															\
 				Epic::TMP::MakeSequence<std::size_t, Size>,									\
