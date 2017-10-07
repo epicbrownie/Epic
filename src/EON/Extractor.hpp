@@ -518,57 +518,82 @@ private:
 
 public:
 	template<class T, template<class> class ResultPolicy = ThrowResult, 
-		class Converter = DefaultConverter, class... Args>
+			 class Converter = DefaultConverter, class... Args>
 	auto Extract(const Selector& selector, Converter fnConvert = Converter(), Args&&... resultPolicyArgs)
 	{
-		return ExtractHelper<T>::Extract<Converter, ResultPolicy<T>>(
-			selector, fnConvert, ResultPolicy<T>{ std::forward<Args>(resultPolicyArgs)... }, m_Scope
-		);
-	}
-
-	template<class T, template<class> class ResultPolicy = ThrowResult,
-		class Converter = DefaultConverter, class E, class... Args>
-	auto Extract(const Selector& selector, const Parser<E>& parser, 
-				 Converter fnConvert = Converter(), Args&&... resultPolicyArgs)
-	{
-		return ExtractHelper<T>::Extract<E, Converter, ResultPolicy<T>>
+		return ExtractHelper<T>::Extract
 		(
-			selector, parser, fnConvert, 
+			selector, 
+			fnConvert, 
 			ResultPolicy<T>{ std::forward<Args>(resultPolicyArgs)... }, 
 			m_Scope
 		);
 	}
 
 	template<class T, template<class> class ResultPolicy = ThrowResult,
-		class Converter = DefaultConverter, class... Args>
+			 class Converter = DefaultConverter, class E, class... Args>
+	auto Extract(const Selector& selector, const Parser<E>& parser, 
+				 Converter fnConvert = Converter(), Args&&... resultPolicyArgs)
+	{
+		return ExtractHelper<T>::Extract
+		(
+			selector, 
+			parser, 
+			fnConvert, 
+			ResultPolicy<T>{ std::forward<Args>(resultPolicyArgs)... }, 
+			m_Scope
+		);
+	}
+
+	template<class T, template<class> class ResultPolicy = ThrowResult,
+			 class Converter = DefaultConverter, class... Args>
 	auto Extract(const Selector& selector, eAttribute attr, Converter fnConvert = Converter(), Args&&... resultPolicyArgs)
 	{
-		return ExtractHelper<T>::Extract<Converter, ResultPolicy<T>>(
-			selector, attr, fnConvert, ResultPolicy<T>{ std::forward<Args>(resultPolicyArgs)... }, m_Scope
+		return ExtractHelper<T>::Extract
+		(
+			selector, 
+			attr, 
+			fnConvert, 
+			ResultPolicy<T>{ std::forward<Args>(resultPolicyArgs)... }, 
+			m_Scope
 		);
 	}
 
 	template<class T, class Converter = DefaultConverter>
 	auto TryExtract(const Selector& selector, Converter fnConvert = Converter())
 	{
-		return ExtractHelper<T>::Extract<Converter, OptionalResult<T>>(
-			selector, fnConvert, OptionalResult<T>(), m_Scope
+		return ExtractHelper<T>::Extract
+		(
+			selector, 
+			fnConvert, 
+			OptionalResult<T>(), 
+			m_Scope
 		);
 	}
 
 	template<class T, class Converter = DefaultConverter, class E>
 	auto TryExtract(const Selector& selector, const Parser<E>& parser, Converter fnConvert = Converter())
 	{
-		return ExtractHelper<T>::Extract<E, Converter, OptionalResult<T>>(
-			selector, parser, fnConvert, OptionalResult<T>(), m_Scope
+		return ExtractHelper<T>::Extract
+		(
+			selector, 
+			parser, 
+			fnConvert, 
+			OptionalResult<T>(), 
+			m_Scope
 		);
 	}
 
 	template<class T, class Converter = DefaultConverter>
 	auto TryExtract(const Selector& selector, eAttribute attr, Converter fnConvert = Converter())
 	{
-		return ExtractHelper<T>::Extract<Converter, OptionalResult<T>>(
-			selector, attr, fnConvert, OptionalResult<T>(), m_Scope
+		return ExtractHelper<T>
+		(
+			selector, 
+			attr, 
+			fnConvert, 
+			OptionalResult<T>(), 
+			m_Scope
 		);
 	}
 
@@ -576,8 +601,12 @@ public:
 			 class Converter = DefaultConverter>
 	auto ExtractOr(const Selector& selector, T&& defaultVal, Converter fnConvert = Converter())
 	{
-		return ExtractHelper<T>::Extract<Converter, ResultPolicy<T>>(
-			selector, fnConvert, ResultPolicy<T>{ std::forward<T>(defaultVal) }, m_Scope
+		return ExtractHelper<T>::Extract
+		(
+			selector, 
+			fnConvert, 
+			ResultPolicy<T>{ std::forward<T>(defaultVal) }, 
+			m_Scope
 		);
 	}
 
@@ -586,8 +615,13 @@ public:
 	auto ExtractOr(const Selector& selector, const Parser<E>& parser, 
 				   E&& defaultVal, Converter fnConvert = Converter())
 	{
-		return ExtractHelper<T>::Extract<E, Converter, ResultPolicy<T>>(
-			selector, parser, fnConvert, ResultPolicy<T>{ std::forward<E>(defaultVal) }, m_Scope
+		return ExtractHelper<T>::Extract
+		(
+			selector, 
+			parser, 
+			fnConvert, 
+			ResultPolicy<T>{ std::forward<E>(defaultVal) }, 
+			m_Scope
 		);
 	}
 };
