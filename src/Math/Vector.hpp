@@ -62,14 +62,14 @@ public:
 	template<class U, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
 	explicit Vector(const Vector<U, Size>& vec) noexcept
 	{
-		ForEach([&](std::size_t n) { Values[n] = static_cast<T>(vec[n]); });
+		ForEach([&](std::size_t n) { Values[n] = vec[n]; });
 	}
 
 	// Constructs a vector from a list of values.
 	template<class U, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
 	explicit Vector(const U(&values)[Size]) noexcept
 	{
-		ForEach([&](std::size_t n) { Values[n] = static_cast<T>(values[n]); });
+		ForEach([&](std::size_t n) { Values[n] = values[n]; });
 	}
 
 	// Constructs a vector from a span of values
