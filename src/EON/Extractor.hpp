@@ -464,7 +464,7 @@ private:
 		}
 
 	public:
-		template<class Converter, class ResultPolicy>
+		template<class ResultPolicy, class Converter>
 		static auto Extract(const Selector& selector, Converter fnConvert, 
 							ResultPolicy& result, const EONObject& scope) -> typename ResultPolicy::ResultType
 		{
@@ -481,7 +481,7 @@ private:
 				return result.Failed(selector.Path());
 		}
 
-		template<class Converter, class ResultPolicy>
+		template<class ResultPolicy, class Converter>
 		static auto Extract(const Selector& selector, eAttribute attr, Converter fnConvert, 
 							ResultPolicy& result, const EONObject& scope) -> typename ResultPolicy::ResultType
 		{
@@ -498,7 +498,7 @@ private:
 				return result.Failed(selector.Path());
 		}
 
-		template<class E, class Converter, class ResultPolicy>
+		template<class E, class ResultPolicy, class Converter>
 		static auto Extract(const Selector& selector, const Parser<E>& parser, Converter fnConvert, 
 							ResultPolicy& result, const EONObject& scope) -> typename ResultPolicy::ResultType
 		{
