@@ -92,6 +92,7 @@
     <ClInclude Include="src\InputDeviceManager.hpp" />
     <ClInclude Include="src\InputResolver.hpp" />
     <ClInclude Include="src\InputSystem.hpp" />
+    <ClInclude Include="src\Math.hpp" />
     <ClInclude Include="src\Math\Algorithm.hpp" />
     <ClInclude Include="src\Math\Angle.hpp" />
     <ClInclude Include="src\Math\Constants.hpp" />
@@ -141,6 +142,7 @@
     <ClInclude Include="src\NullMutex.hpp" />
     <ClInclude Include="src\NumericalResolver.hpp" />
     <ClInclude Include="src\OS.h" />
+    <ClInclude Include="src\ShaderMath.hpp" />
     <ClInclude Include="src\Singleton.hpp" />
     <ClInclude Include="src\Sound.hpp" />
     <ClInclude Include="src\Specs.hpp" />

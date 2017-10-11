@@ -29,77 +29,22 @@ namespace Epic
 {
 	namespace
 	{
-		#pragma region Epic::Distance
-
 		// Calculate the distance between two Vectors
-		template<class T, class U, std::size_t Size>
+		template<class T, class U, size_t Size>
 		inline auto Distance(const Vector<T, Size>& vecA, const Vector<U, Size>& vecB) noexcept
 		{
 			return (vecA - vecB).Magnitude();
 		}
 
-		// Calculate the distance between two Swizzlers
-		template<class T1, class T2, std::size_t TS1, std::size_t TS2, 
-				 std::size_t... Indices1, std::size_t... Indices2,
-				 typename = std::enable_if_t<(sizeof...(Indices1) == sizeof...(Indices2))>>
-		inline auto Distance(const Swizzler<T1, TS1, Indices1...>& vecA,
-							 const Swizzler<T2, TS2, Indices2...>& vecB) noexcept
-		{
-			return Distance(vecA.ToVector(), vecB.ToVector());
-		}
-
-		// Calculate the distance between a Vector and a Swizzler
-		template<class T1, std::size_t Size, class T2, std::size_t TS2, std::size_t... Indices,
-				 typename = std::enable_if_t<(Size == sizeof...(Indices))>>
-		inline auto Distance(const Vector<T1, Size>& vecA, 
-							 const Swizzler<T2, TS2, Indices...>& vecB) noexcept
-		{
-			return Distance(vecA, vecB.ToVector());
-		}
-		
-		// Calculate the distance between a Vector and a Swizzler
-		template<class T1, std::size_t Size, class T2, std::size_t TS2, std::size_t... Indices,
-				 typename = std::enable_if_t<(Size == sizeof...(Indices))>>
-		inline auto Distance(const Swizzler<T2, TS2, Indices...>& vecA, 
-							 const Vector<T1, Size>& vecB) noexcept
-		{
-			return Distance(vecA.ToVector(), vecB);
-		}
-
-		#pragma endregion
-
-		#pragma region Epic::Min
-
-		// Calculate the min values of two Vectors
-		template<class T, std::size_t SizeA, std::size_t SizeB>
-		inline auto Min(const Vector<T, SizeA>& vecA, const Vector<T, SizeB>& vecB) noexcept
-		{
-			static constexpr std::size_t N = (SizeA > SizeB) ? SizeA : SizeB;
-			
-			Vector<T, N> result;
-
-			Epic::TMP::ForEach<Epic::TMP::MakeSequence<std::size_t, N>>::Apply([&](std::size_t i) 
-			{
-				if (i >= SizeA)
-					result[i] = vecB[i];
-				else if (i >= SizeB)
-					result[i] = vecA[i];
-				else
-					result[i] = std::min(vecA[i], vecB[i]);
-			});
-
-			return result;
-		}
-
 		// Calculate the min values of two Vectors using 'comp' to compare elements
-		template<class Compare, class T, std::size_t SizeA, std::size_t SizeB>
-		inline auto Min(const Vector<T, SizeA>& vecA, const Vector<T, SizeB>& vecB, Compare comp) noexcept
+		template<class T, size_t SizeA, size_t SizeB, class Compare = std::less<T>>
+		inline auto Min(const Vector<T, SizeA>& vecA, const Vector<T, SizeB>& vecB, Compare comp = Compare()) noexcept
 		{
-			static constexpr std::size_t N = (SizeA > SizeB) ? SizeA : SizeB;
+			static constexpr size_t N = (SizeA > SizeB) ? SizeA : SizeB;
 			
 			Vector<T, N> result;
 
-			Epic::TMP::ForEach<Epic::TMP::MakeSequence<std::size_t, N>>::Apply([&](std::size_t i) 
+			Epic::TMP::ForEach<Epic::TMP::MakeSequence<size_t, N>>::Apply([&](size_t i) 
 			{
 				if (i >= SizeA)
 					result[i] = vecB[i];
@@ -112,99 +57,15 @@ namespace Epic
 			return result;
 		}
 
-		// Calculate the min values of two Swizzlers
-		template<class T1, class T2, std::size_t TS1, std::size_t TS2, 
-				 std::size_t... Indices1, std::size_t... Indices2,
-				 typename = std::enable_if_t<std::is_same<T1, T2>::value>>
-		inline auto Min(const Swizzler<T1, TS1, Indices1...>& vecA,
-						const Swizzler<T2, TS2, Indices2...>& vecB) noexcept
+		// Calculate the max values of two Vectors using 'comp' to compare elements
+		template<class T, size_t SizeA, size_t SizeB, class Compare = std::less<T>>
+		inline auto Max(const Vector<T, SizeA>& vecA, const Vector<T, SizeB>& vecB, Compare comp = Compare()) noexcept
 		{
-			return Min(vecA.ToVector(), vecB.ToVector());
-		}
-
-		// Calculate the min values of two Swizzlers using 'comp' to compare elements
-		template<class Compare, class T1, class T2, std::size_t TS1, std::size_t TS2, 
-				 std::size_t... Indices1, std::size_t... Indices2,
-				 typename = std::enable_if_t<std::is_same<T1, T2>::value>>
-		inline auto Min(const Swizzler<T1, TS1, Indices1...>& vecA,
-						const Swizzler<T2, TS2, Indices2...>& vecB,
-						Compare comp) noexcept
-		{
-			return Min(vecA.ToVector(), vecB.ToVector(), comp);
-		}
-
-		// Calculate the min values of a Vector and a Swizzler
-		template<class T1, std::size_t Size, class T2, std::size_t TS2, std::size_t... Indices,
-				 typename = std::enable_if_t<std::is_same<T1, T2>::value>>
-		inline auto Min(const Vector<T1, Size>& vecA, 
-						const Swizzler<T2, TS2, Indices...>& vecB) noexcept
-		{
-			return Min(vecA, vecB.ToVector());
-		}
-		
-		// Calculate the min values of a Vector and a Swizzler using 'comp' to compare elements
-		template<class Compare, class T1, std::size_t Size, class T2, std::size_t TS2, std::size_t... Indices,
-				 typename = std::enable_if_t<std::is_same<T1, T2>::value>>
-		inline auto Min(const Vector<T1, Size>& vecA, 
-						const Swizzler<T2, TS2, Indices...>& vecB,
-						Compare comp) noexcept
-		{
-			return Min(vecA, vecB.ToVector(), comp);
-		}
-		
-		// Calculate the min values of a Swizzler and a Vector
-		template<class T1, std::size_t Size, class T2, std::size_t TS2, std::size_t... Indices,
-				 typename = std::enable_if_t<std::is_same<T1, T2>::value>>
-		inline auto Min(const Swizzler<T2, TS2, Indices...>& vecA, 
-						const Vector<T1, Size>& vecB) noexcept
-		{
-			return Min(vecA.ToVector(), vecB);
-		}
-
-		// Calculate the min values of a Swizzler and a Vector using 'comp' to compare elements
-		template<class Compare, class T1, std::size_t Size, class T2, std::size_t TS2, std::size_t... Indices,
-				 typename = std::enable_if_t<std::is_same<T1, T2>::value>>
-		inline auto Min(const Swizzler<T2, TS2, Indices...>& vecA, 
-						const Vector<T1, Size>& vecB,
-						Compare comp) noexcept
-		{
-			return Min(vecA.ToVector(), vecB, comp);
-		}
-
-		#pragma endregion
-
-		#pragma region Epic::Max
-
-		// Calculate the min values of two Vectors
-		template<class T, std::size_t SizeA, std::size_t SizeB>
-		inline auto Max(const Vector<T, SizeA>& vecA, const Vector<T, SizeB>& vecB) noexcept
-		{
-			static constexpr std::size_t N = (SizeA > SizeB) ? SizeA : SizeB;
+			static constexpr size_t N = (SizeA > SizeB) ? SizeA : SizeB;
 			
 			Vector<T, N> result;
 
-			Epic::TMP::ForEach<Epic::TMP::MakeSequence<std::size_t, N>>::Apply([&](std::size_t i) 
-			{
-				if (i >= SizeA)
-					result[i] = vecB[i];
-				else if (i >= SizeB)
-					result[i] = vecA[i];
-				else
-					result[i] = std::max(vecA[i], vecB[i]);
-			});
-
-			return result;
-		}
-
-		// Calculate the min values of two Vectors using 'comp' to compare elements
-		template<class Compare, class T, std::size_t SizeA, std::size_t SizeB>
-		inline auto Max(const Vector<T, SizeA>& vecA, const Vector<T, SizeB>& vecB, Compare comp) noexcept
-		{
-			static constexpr std::size_t N = (SizeA > SizeB) ? SizeA : SizeB;
-			
-			Vector<T, N> result;
-
-			Epic::TMP::ForEach<Epic::TMP::MakeSequence<std::size_t, N>>::Apply([&](std::size_t i) 
+			Epic::TMP::ForEach<Epic::TMP::MakeSequence<size_t, N>>::Apply([&](size_t i) 
 			{
 				if (i >= SizeA)
 					result[i] = vecB[i];
@@ -217,109 +78,27 @@ namespace Epic
 			return result;
 		}
 
-		// Calculate the min values of two Swizzlers
-		template<class T1, class T2, std::size_t TS1, std::size_t TS2, 
-				 std::size_t... Indices1, std::size_t... Indices2,
-				 typename = std::enable_if_t<std::is_same<T1, T2>::value>>
-		inline auto Max(const Swizzler<T1, TS1, Indices1...>& vecA,
-						const Swizzler<T2, TS2, Indices2...>& vecB) noexcept
-		{
-			return Max(vecA.ToVector(), vecB.ToVector());
-		}
-
-		// Calculate the min values of two Swizzlers using 'comp' to compare elements
-		template<class Compare, class T1, class T2, std::size_t TS1, std::size_t TS2, 
-				 std::size_t... Indices1, std::size_t... Indices2,
-				 typename = std::enable_if_t<std::is_same<T1, T2>::value>>
-		inline auto Max(const Swizzler<T1, TS1, Indices1...>& vecA,
-						const Swizzler<T2, TS2, Indices2...>& vecB,
-						Compare comp) noexcept
-		{
-			return Max(vecA.ToVector(), vecB.ToVector(), comp);
-		}
-
-		// Calculate the min values of a Vector and a Swizzler
-		template<class T1, std::size_t Size, class T2, std::size_t TS2, std::size_t... Indices,
-				 typename = std::enable_if_t<std::is_same<T1, T2>::value>>
-		inline auto Max(const Vector<T1, Size>& vecA, 
-						const Swizzler<T2, TS2, Indices...>& vecB) noexcept
-		{
-			return Max(vecA, vecB.ToVector());
-		}
-		
-		// Calculate the min values of a Vector and a Swizzler using 'comp' to compare elements
-		template<class Compare, class T1, std::size_t Size, class T2, std::size_t TS2, std::size_t... Indices,
-				 typename = std::enable_if_t<std::is_same<T1, T2>::value>>
-		inline auto Max(const Vector<T1, Size>& vecA, 
-						const Swizzler<T2, TS2, Indices...>& vecB,
-						Compare comp) noexcept
-		{
-			return Max(vecA, vecB.ToVector(), comp);
-		}
-		
-		// Calculate the min values of a Swizzler and a Vector
-		template<class T1, std::size_t Size, class T2, std::size_t TS2, std::size_t... Indices,
-				 typename = std::enable_if_t<std::is_same<T1, T2>::value>>
-		inline auto Max(const Swizzler<T2, TS2, Indices...>& vecA, 
-						const Vector<T1, Size>& vecB) noexcept
-		{
-			return Max(vecA.ToVector(), vecB);
-		}
-
-		// Calculate the min values of a Swizzler and a Vector using 'comp' to compare elements
-		template<class Compare, class T1, std::size_t Size, class T2, std::size_t TS2, std::size_t... Indices,
-				 typename = std::enable_if_t<std::is_same<T1, T2>::value>>
-		inline auto Max(const Swizzler<T2, TS2, Indices...>& vecA, 
-						const Vector<T1, Size>& vecB,
-						Compare comp) noexcept
-		{
-			return Max(vecA.ToVector(), vecB, comp);
-		}
-
-		#pragma endregion
-
-		#pragma region Epic::Clamp
-
-		// Clamp the values of a Vector
-		template<class T, std::size_t Size>
-		inline auto Clamp(const Vector<T, Size>& vec, const T& low, const T& high) noexcept
-		{
-			return Clamp(vec, low, high, std::less<>());
-		}
-
 		// Clamp the values of a Vector using 'comp' to compare elements
-		template<class Compare, class T, std::size_t Size>
-		inline auto Clamp(const Vector<T, Size>& vec, const T& low, const T& high, Compare comp) noexcept
+		template<class T, size_t Size, class Compare = std::less<T>>
+		inline auto Clamp(const Vector<T, Size>& vec, 
+						  const Vector<T, Size>& low, 
+						  const Vector<T, Size>& high, 
+						  Compare comp = Compare()) noexcept
 		{
-			assert(!comp(high, low));
+			Epic::TMP::ForEachN<Size>::Apply([&](size_t i)
+			{
+				assert(!comp(high[i], low[i]));
+			});
 			
 			Vector<T, Size> result;
 
-			Epic::TMP::ForEach<Epic::TMP::MakeSequence<std::size_t, Size>>::Apply([&](std::size_t i) 
+			Epic::TMP::ForEachN<Size>::Apply([&](size_t i) 
 			{
-				result[i] = comp(vec[i], low) ? low : comp(high, vec[i]) ? high : vec[i];
+				result[i] = comp(vec[i], low[i]) ? low[i] : comp(high[i], vec[i]) ? high[i] : vec[i];
 			});
 
 			return result;
 		}
-
-		// Clamp the values of a Swizzler
-		template<class T, std::size_t TS, std::size_t... Is>
-		inline auto Clamp(const Swizzler<T, TS, Is...>& vec, const T& low, const T& high) noexcept
-		{
-			return Clamp(vec.ToVector(), low, high, std::less<>());
-		}
-
-		// Clamp the values of a Swizzler using 'comp' to compare elements
-		template<class Compare, class T, std::size_t TS, std::size_t... Is>
-		inline auto Clamp(const Swizzler<T, TS, Is...>& vec, const T& low, const T& high, Compare comp) noexcept
-		{
-			return Clamp(vec.ToVector(), low, high, comp);
-		}
-
-		#pragma endregion
-
-		#pragma region Epic::Lerp
 
 		template<class T, class F, typename EnabledForFloatingPoint = std::enable_if_t<std::is_floating_point<F>::value>>
 		inline auto Lerp(const T& from, const T& to, const F t) noexcept
@@ -327,47 +106,35 @@ namespace Epic
 			return from + ((to - from) * t);
 		}
 
-		#pragma endregion
-
 		// Calculate the angle between unit vectors 'vecA' and 'vecB'
-		template<class T, class U, std::size_t Size>
+		template<class T, class U, size_t Size>
 		inline Radian<T> AngleOf(const Vector<T, Size>& vecA, const Vector<U, Size>& vecB) noexcept
 		{
 			return{ std::acos(vecA.Dot(vecB)) };
 		}
 
-		#pragma region Epic::Mean / Epic::WeightedMean
-
 		// Calculate the average value of Vector 'vec'
-		template<class T, std::size_t Size, typename = std::enable_if_t<(Size > 0)>>
+		template<class T, size_t Size, typename = std::enable_if_t<(Size > 0)>>
 		inline auto Mean(const Vector<T, Size>& vec) noexcept
 		{
 			T result = T(0);
 
-			Epic::TMP::ForEach<Epic::TMP::MakeSequence<std::size_t, Size>>
-				::Apply([&](std::size_t n) { result += vec[n]; });
+			Epic::TMP::ForEach<Epic::TMP::MakeSequence<size_t, Size>>
+				::Apply([&](size_t n) { result += vec[n]; });
 
 			return result / T(Size);
 		}
 
-		// Calculate the average value of Swizzler 'vec'
-		template<class T, std::size_t TS, std::size_t... Indices,
-				 typename = std::enable_if_t<(sizeof...(Indices) > 0)>>
-		inline auto Mean(const Swizzler<T, TS, Indices...>& vec) noexcept
-		{
-			return Mean(vec.ToVector());
-		}
-
 		// Calculate the weighted average value of Vector 'vec'
-		template<class T, std::size_t Size, class U, 
+		template<class T, size_t Size, class U, 
 				 typename = std::enable_if_t<(Size > 0)>>
 		inline auto WeightedMean(const Vector<T, Size>& vec, const U(&weights)[Size]) noexcept
 		{
 			T result = T(0);
 			T tweights = T(0);
 			
-			Epic::TMP::ForEach<Epic::TMP::MakeSequence<std::size_t, Size>>
-				::Apply([&](std::size_t n)
+			Epic::TMP::ForEach<Epic::TMP::MakeSequence<size_t, Size>>
+				::Apply([&](size_t n)
 				{
 					result += vec[n] * weights[n];
 					tweights += weights[n];
@@ -378,36 +145,13 @@ namespace Epic
 			return result / tweights;
 		}
 
-		// Calculate the weighted average value of Swizzler 'vec'
-		template<class T, std::size_t TS, std::size_t... Indices, class U,
-				 typename = std::enable_if_t<(sizeof...(Indices) > 0)>>
-		inline auto WeightedMean(const Swizzler<T, TS, Indices...>& vec, 
-								 const U(&weights)[sizeof...(Indices)]) noexcept
-		{
-			return WeightedMean(vec.ToVector(), weights);
-		}
-
-		#pragma endregion
-
-		#pragma region Epic::Negative
-
 		// Calculate the negative of color 'vec'
-		template<class T, std::size_t Size, 
+		template<class T, size_t Size, 
 				 typename = std::enable_if_t<(Size > 0)>>
 		inline auto Negative(const Vector<T, Size>& vec, const T ceil = T(1)) noexcept
 		{
 			return Vector<T, Size>(ceil) - vec;
 		}
-
-		// Calculate the negative of color 'vec'
-		template<class T, std::size_t TS, std::size_t... Indices, 
-				 typename = std::enable_if<(sizeof...(Indices) > 0)>>
-		inline auto Negative(const Swizzler<T, TS, Indices...>& vec, const T ceil = T(1)) noexcept
-		{
-			return Negative(vec.ToVector(), ceil);
-		}
-
-		#pragma endregion
 	}
 }
 
@@ -604,189 +348,27 @@ namespace Epic
 // std Algorithms
 namespace std
 {
-	#pragma region std::min
-
-	// Calculate the min values of two Epic::Vectors
-	template<class T, std::size_t SizeA, std::size_t SizeB>
-	inline auto min(const Epic::Vector<T, SizeA>& vecA, const Epic::Vector<T, SizeB>& vecB) noexcept
-	{
-		return Epic::Min(vecA, vecB);
-	}
-
 	// Calculate the min values of two Epic::Vectors using 'comp' to compare elements
-	template<class Compare, class T, std::size_t SizeA, std::size_t SizeB>
-	inline auto min(const Epic::Vector<T, SizeA>& vecA, const Epic::Vector<T, SizeB>& vecB, Compare comp) noexcept
+	template<class T, size_t SizeA, size_t SizeB, class Compare = std::less<T>>
+	inline auto min(const Epic::Vector<T, SizeA>& vecA, const Epic::Vector<T, SizeB>& vecB, Compare comp = Compare()) noexcept
 	{
 		return Epic::Min(vecA, vecB, comp);
-	}
-
-	// Calculate the min values of two Epic::Swizzlers
-	template<class T1, class T2, std::size_t TS1, std::size_t TS2, 
-			 std::size_t... Indices1, std::size_t... Indices2,
-			 typename = std::enable_if_t<std::is_same<T1, T2>::value>>
-	inline auto min(const Epic::Swizzler<T1, TS1, Indices1...>& vecA,
-					const Epic::Swizzler<T2, TS2, Indices2...>& vecB) noexcept
-	{
-		return Epic::Min(vecA, vecB);
-	}
-
-	// Calculate the min values of two Epic::Swizzlers using 'comp' to compare elements
-	template<class Compare, class T1, class T2, std::size_t TS1, std::size_t TS2, 
-			 std::size_t... Indices1, std::size_t... Indices2,
-			 typename = std::enable_if_t<std::is_same<T1, T2>::value>>
-	inline auto min(const Epic::Swizzler<T1, TS1, Indices1...>& vecA,
-					const Epic::Swizzler<T2, TS2, Indices2...>& vecB,
-					Compare comp) noexcept
-	{
-		return Epic::Min(vecA, vecB, comp);
-	}
-
-	// Calculate the min values of an Epic::Vector and an Epic::Swizzler
-	template<class T1, std::size_t Size, class T2, std::size_t TS2, std::size_t... Indices,
-			 typename = std::enable_if_t<std::is_same<T1, T2>::value>>
-	inline auto min(const Epic::Vector<T1, Size>& vecA, 
-					const Epic::Swizzler<T2, TS2, Indices...>& vecB) noexcept
-	{
-		return Epic::Min(vecA, vecB);
-	}
-		
-	// Calculate the min values of an Epic::Vector and an Epic::Swizzler using 'comp' to compare elements
-	template<class Compare, class T1, std::size_t Size, class T2, std::size_t TS2, std::size_t... Indices,
-			 typename = std::enable_if_t<std::is_same<T1, T2>::value>>
-	inline auto min(const Epic::Vector<T1, Size>& vecA, 
-					const Epic::Swizzler<T2, TS2, Indices...>& vecB,
-					Compare comp) noexcept
-	{
-		return Epic::Min(vecA, vecB, comp);
-	}
-		
-	// Calculate the min values of an Epic::Swizzler and an Epic::Vector
-	template<class T1, std::size_t Size, class T2, std::size_t TS2, std::size_t... Indices,
-			 typename = std::enable_if_t<std::is_same<T1, T2>::value>>
-	inline auto min(const Epic::Swizzler<T2, TS2, Indices...>& vecA, 
-					const Epic::Vector<T1, Size>& vecB) noexcept
-	{
-		return Epic::Min(vecA, vecB);
-	}
-
-	// Calculate the min values of an Epic::Swizzler and an Epic::Vector using 'comp' to compare elements
-	template<class Compare, class T1, std::size_t Size, class T2, std::size_t TS2, std::size_t... Indices,
-			 typename = std::enable_if_t<std::is_same<T1, T2>::value>>
-	inline auto min(const Epic::Swizzler<T2, TS2, Indices...>& vecA, 
-					const Epic::Vector<T1, Size>& vecB,
-					Compare comp) noexcept
-	{
-		return Epic::Min(vecA, vecB, comp);
-	}
-
-	#pragma endregion
-
-	#pragma region std::max
-
-	// Calculate the max values of two Epic::Vectors
-	template<class T, std::size_t SizeA, std::size_t SizeB>
-	inline auto max(const Epic::Vector<T, SizeA>& vecA, const Epic::Vector<T, SizeB>& vecB) noexcept
-	{
-		return Epic::Max(vecA, vecB);
 	}
 
 	// Calculate the max values of two Epic::Vectors using 'comp' to compare elements
-	template<class Compare, class T, std::size_t SizeA, std::size_t SizeB>
-	inline auto max(const Epic::Vector<T, SizeA>& vecA, const Epic::Vector<T, SizeB>& vecB, Compare comp) noexcept
+	template<class T, size_t SizeA, size_t SizeB, class Compare = std::less<T>>
+	inline auto max(const Epic::Vector<T, SizeA>& vecA, const Epic::Vector<T, SizeB>& vecB, Compare comp = Compare()) noexcept
 	{
 		return Epic::Max(vecA, vecB, comp);
-	}
-
-	// Calculate the max values of two Epic::Swizzlers
-	template<class T1, class T2, std::size_t TS1, std::size_t TS2, 
-			 std::size_t... Indices1, std::size_t... Indices2,
-			 typename = std::enable_if_t<std::is_same<T1, T2>::value>>
-	inline auto max(const Epic::Swizzler<T1, TS1, Indices1...>& vecA,
-					const Epic::Swizzler<T2, TS2, Indices2...>& vecB) noexcept
-	{
-		return Epic::Max(vecA, vecB);
-	}
-
-	// Calculate the max values of two Epic::Swizzlers using 'comp' to compare elements
-	template<class Compare, class T1, class T2, std::size_t TS1, std::size_t TS2, 
-			 std::size_t... Indices1, std::size_t... Indices2,
-			 typename = std::enable_if_t<std::is_same<T1, T2>::value>>
-	inline auto max(const Epic::Swizzler<T1, TS1, Indices1...>& vecA,
-					const Epic::Swizzler<T2, TS2, Indices2...>& vecB,
-					Compare comp) noexcept
-	{
-		return Epic::Max(vecA, vecB, comp);
-	}
-
-	// Calculate the max values of an Epic::Vector and an Epic::Swizzler
-	template<class T1, std::size_t Size, class T2, std::size_t TS2, std::size_t... Indices,
-			 typename = std::enable_if_t<std::is_same<T1, T2>::value>>
-	inline auto max(const Epic::Vector<T1, Size>& vecA, 
-					const Epic::Swizzler<T2, TS2, Indices...>& vecB) noexcept
-	{
-		return Epic::Max(vecA, vecB);
-	}
-		
-	// Calculate the max values of an Epic::Vector and an Epic::Swizzler using 'comp' to compare elements
-	template<class Compare, class T1, std::size_t Size, class T2, std::size_t TS2, std::size_t... Indices,
-			 typename = std::enable_if_t<std::is_same<T1, T2>::value>>
-	inline auto max(const Epic::Vector<T1, Size>& vecA, 
-					const Epic::Swizzler<T2, TS2, Indices...>& vecB,
-					Compare comp) noexcept
-	{
-		return Epic::Max(vecA, vecB, comp);
-	}
-		
-	// Calculate the max values of an Epic::Swizzler and an Epic::Vector
-	template<class T1, std::size_t Size, class T2, std::size_t TS2, std::size_t... Indices,
-			 typename = std::enable_if_t<std::is_same<T1, T2>::value>>
-	inline auto max(const Epic::Swizzler<T2, TS2, Indices...>& vecA, 
-					const Epic::Vector<T1, Size>& vecB) noexcept
-	{
-		return Epic::Max(vecA, vecB);
-	}
-
-	// Calculate the max values of an Epic::Swizzler and an Epic::Vector using 'comp' to compare elements
-	template<class Compare, class T1, std::size_t Size, class T2, std::size_t TS2, std::size_t... Indices,
-			 typename = std::enable_if_t<std::is_same<T1, T2>::value>>
-	inline auto max(const Epic::Swizzler<T2, TS2, Indices...>& vecA, 
-					const Epic::Vector<T1, Size>& vecB,
-					Compare comp) noexcept
-	{
-		return Epic::Max(vecA, vecB, comp);
-	}
-
-	#pragma endregion
-
-	#pragma region std::clamp
-
-	// Clamp the values of a Vector
-	template<class T, std::size_t Size>
-	inline auto clamp(const Epic::Vector<T, Size>& vec, const T& low, const T& high) noexcept
-	{
-		return Epic::Clamp(vec, low, high);
 	}
 
 	// Clamp the values of a Vector using 'comp' to compare elements
-	template<class Compare, class T, std::size_t Size>
-	inline auto clamp(const Epic::Vector<T, Size>& vec, const T& low, const T& high, Compare comp) noexcept
+	template<class T, size_t Size, class Compare = std::less<T>>
+	inline auto clamp(const Epic::Vector<T, Size>& vec, 
+					  const Epic::Vector<T, Size>& low = Epic::Zero, 
+					  const Epic::Vector<T, Size>& high = Epic::One, 
+					  Compare comp = Compare()) noexcept
 	{
 		return Epic::Clamp(vec, low, high, comp);
 	}
-
-	// Clamp the values of a Swizzler
-	template<class T, std::size_t TS, std::size_t... Indices>
-	inline auto clamp(const Epic::Swizzler<T, TS, Indices...>& vec, const T& low, const T& high) noexcept
-	{
-		return Epic::Clamp(vec, low, high);
-	}
-
-	// Clamp the values of a Swizzler using 'comp' to compare elements
-	template<class Compare, class T, std::size_t TS, std::size_t... Indices>
-	inline auto clamp(const Epic::Swizzler<T, TS, Indices...>& vec, const T& low, const T& high, Compare comp) noexcept
-	{
-		return Epic::Clamp(vec, low, high, comp);
-	}
-
-	#pragma endregion
 }

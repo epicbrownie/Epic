@@ -17,17 +17,17 @@
 
 namespace Epic::detail
 {
-	template<std::size_t Size, template<std::size_t...> class SwizzlerGenerator, class TArray>
+	template<size_t Size, template<size_t...> class SwizzlerGenerator, class TArray>
 	class VectorBase;
 
-	template<std::size_t Size, template<std::size_t...> class SwizzlerGenerator, class TArray>
+	template<size_t Size, template<size_t...> class SwizzlerGenerator, class TArray>
 	class SVectorBase;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
 // VectorBase
-template<std::size_t Size, template<std::size_t...> class SwizzlerGenerator, class TArray>
+template<size_t Size, template<size_t...> class SwizzlerGenerator, class TArray>
 class Epic::detail::VectorBase
 {
 public:
@@ -36,7 +36,7 @@ public:
 };
 
 // VectorBase<1>
-template<template<std::size_t...> class SwizzlerGenerator, class TArray>
+template<template<size_t...> class SwizzlerGenerator, class TArray>
 class Epic::detail::VectorBase<1, SwizzlerGenerator, TArray>
 {
 public:
@@ -63,7 +63,7 @@ public:
 };
 
 // VectorBase<2>
-template<template<std::size_t...> class SwizzlerGenerator, class TArray>
+template<template<size_t...> class SwizzlerGenerator, class TArray>
 class Epic::detail::VectorBase<2, SwizzlerGenerator, TArray>
 {
 public:
@@ -98,7 +98,7 @@ public:
 };
 
 // VectorBase<3>
-template<template<std::size_t...> class SwizzlerGenerator, class TArray>
+template<template<size_t...> class SwizzlerGenerator, class TArray>
 class Epic::detail::VectorBase<3, SwizzlerGenerator, TArray>
 {
 public:
@@ -141,7 +141,7 @@ public:
 };
 
 // VectorBase<4>
-template<template<std::size_t...> class SwizzlerGenerator, class TArray>
+template<template<size_t...> class SwizzlerGenerator, class TArray>
 class Epic::detail::VectorBase<4, SwizzlerGenerator, TArray>
 {
 public:
@@ -203,7 +203,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 
 // SVectorBase
-template<std::size_t Size, template<std::size_t...> class SwizzlerGenerator, class TArray>
+template<size_t Size, template<size_t...> class SwizzlerGenerator, class TArray>
 class Epic::detail::SVectorBase
 {
 public:
@@ -212,7 +212,7 @@ public:
 };
 
 // SVectorBase<1>
-template<template<std::size_t...> class SwizzlerGenerator, class TArray>
+template<template<size_t...> class SwizzlerGenerator, class TArray>
 class Epic::detail::SVectorBase<1, SwizzlerGenerator, TArray>
 {
 public:
@@ -239,7 +239,7 @@ public:
 };
 
 // SVectorBase<2>
-template<template<std::size_t...> class SwizzlerGenerator, class TArray>
+template<template<size_t...> class SwizzlerGenerator, class TArray>
 class Epic::detail::SVectorBase<2, SwizzlerGenerator, TArray>
 {
 public:
@@ -292,7 +292,7 @@ public:
 };
 
 // SVectorBase<3>
-template<template<std::size_t...> class SwizzlerGenerator, class TArray>
+template<template<size_t...> class SwizzlerGenerator, class TArray>
 class Epic::detail::SVectorBase<3, SwizzlerGenerator, TArray>
 {
 public:
@@ -435,7 +435,7 @@ public:
 };
 
 // SVectorBase<4>
-template<template<std::size_t...> class SwizzlerGenerator, class TArray>
+template<template<size_t...> class SwizzlerGenerator, class TArray>
 class Epic::detail::SVectorBase<4, SwizzlerGenerator, TArray>
 {
 public:

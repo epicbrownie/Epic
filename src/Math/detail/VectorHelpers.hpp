@@ -30,10 +30,10 @@ namespace Epic::detail
 	template<class T>
 	struct SpanOf;
 
-	template<class T, std::size_t Size>
+	template<class T, size_t Size>
 	struct VectorHelper;
 
-	template<class T, std::size_t Size>
+	template<class T, size_t Size>
 	struct SVectorHelper;
 }
 
@@ -43,68 +43,68 @@ namespace Epic::detail
 template<class T>
 struct Epic::detail::SpanOf
 {
-	constexpr static std::size_t Value = 1;
+	constexpr static size_t value = 1;
 };
 
 // SpanOf<Vector>
-template<class T, std::size_t Size>
+template<class T, size_t Size>
 struct Epic::detail::SpanOf<Epic::Vector<T, Size>>
 {
-	constexpr static std::size_t Value = Size;
+	constexpr static size_t value = Size;
 };
 
 // SpanOf<Swizzler>
-template<class T, std::size_t VS, std::size_t... Indices>
+template<class T, size_t VS, size_t... Indices>
 struct Epic::detail::SpanOf<Epic::Swizzler<T, VS, Indices...>>
 {
-	constexpr static std::size_t Value = sizeof...(Indices);
+	constexpr static size_t value = sizeof...(Indices);
 };
 
 // SpanOf<T[N]>
-template<class T, std::size_t N>
+template<class T, size_t N>
 struct Epic::detail::SpanOf<T[N]>
 {
-	static constexpr std::size_t Value = N;
+	static constexpr size_t value = N;
 };
 
 // SpanOf<std::array>
-template<class T, std::size_t Size>
+template<class T, size_t Size>
 struct Epic::detail::SpanOf<std::array<T, Size>>
 {
-	static constexpr std::size_t Value = Size;
+	static constexpr size_t value = Size;
 };
 
 // Span<...>
 template<class... Ts>
 struct Epic::detail::Span
 {
-	constexpr static std::size_t Value = 0;
+	constexpr static size_t value = 0;
 };
 
 // Span<T, ...>
 template<class T, class... Ts>
 struct Epic::detail::Span<T, Ts...>
 {
-	constexpr static std::size_t Value = Epic::detail::SpanOf<std::remove_reference_t<std::remove_cv_t<T>>>::Value + Span<Ts...>::Value;
+	constexpr static size_t value = Epic::detail::SpanOf<std::remove_reference_t<std::remove_cv_t<T>>>::value + Span<Ts...>::value;
 };
 
 //////////////////////////////////////////////////////////////////////////////
 
 // VectorHelper
-template<class T, std::size_t Size>
+template<class T, size_t Size>
 struct Epic::detail::VectorHelper
 {
 	static_assert(std::is_pod<T>::value, "T must be a POD type.");
 
 	using TArray = std::array<T, Size>;
 
-	template<std::size_t... Indices>
+	template<size_t... Indices>
 	struct SwizzlerGenerator
 	{
 		using Type = Epic::Swizzler<T, Size, Indices...>;
 	};
 
-	template<std::size_t Index>
+	template<size_t Index>
 	struct SwizzlerGenerator<Index>
 	{
 		using Type = T;
@@ -116,7 +116,7 @@ struct Epic::detail::VectorHelper
 //////////////////////////////////////////////////////////////////////////////
 
 // SVectorHelper
-template<class T, std::size_t Size>
+template<class T, size_t Size>
 struct Epic::detail::SVectorHelper
 {
 	static_assert(std::is_pod<T>::value, "T must be a POD type.");

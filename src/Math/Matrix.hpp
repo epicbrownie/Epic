@@ -120,7 +120,7 @@ public:
 
 	// Constructs a matrix from a span of values
 	template<class Arg, class... Args, 
-		typename = std::enable_if_t<(detail::Span<Arg, Args...>::Value == Size)>>
+		typename = std::enable_if_t<(detail::Span<Arg, Args...>::value == Size)>>
 	inline Matrix(const Arg& arg, const Args&... args) noexcept
 	{
 		Construct(arg, args...);
@@ -159,7 +159,7 @@ public:
 
 	// Constructs a translation matrix from a span of values
 	template<class Arg, class... Args, 
-		typename = std::enable_if_t<(detail::Span<Arg, Args...>::Value <= ColumnType::Size)>>
+		typename = std::enable_if_t<(detail::Span<Arg, Args...>::value <= ColumnType::Size)>>
 	inline Matrix(const TranslationTag&, const Arg& arg, const Args&... args) noexcept
 	{
 		MakeTranslation(arg, args...);
@@ -167,7 +167,7 @@ public:
 
 	// Constructs a scale matrix from a span of values
 	template<class Arg, class... Args,
-		typename = std::enable_if_t<(detail::Span<Arg, Args...>::Value <= ColumnType::Size)>>
+		typename = std::enable_if_t<(detail::Span<Arg, Args...>::value <= ColumnType::Size)>>
 	inline Matrix(const ScaleTag&, const Arg& arg, const Args&... args) noexcept
 	{
 		MakeScale(arg, args...);
@@ -483,7 +483,7 @@ public:
 
 public:
 	// Sets a span of values explicitly
-	template<class Arg, class... Args, typename = std::enable_if_t<(detail::Span<Arg, Args...>::Value == Size)>>
+	template<class Arg, class... Args, typename = std::enable_if_t<(detail::Span<Arg, Args...>::value == Size)>>
 	inline Type& Reset(const Arg& arg, const Args&... args) noexcept
 	{
 		Construct(arg, args...);
@@ -539,10 +539,10 @@ public:
 
 	// Sets this matrix to a translation matrix
 	template<class Arg, class... Args,
-		typename = std::enable_if_t<(detail::Span<Arg, Args...>::Value <= ColumnType::Size)>>
+		typename = std::enable_if_t<(detail::Span<Arg, Args...>::value <= ColumnType::Size)>>
 	inline Type& MakeTranslation(const Arg& arg, const Args&... args) noexcept
 	{
-		static constexpr size_t SpanV = detail::Span<Arg, Args...>::Value;
+		static constexpr size_t SpanV = detail::Span<Arg, Args...>::value;
 		static constexpr size_t DestN = Size - ColumnType::Size;
 
 		MakeIdentity();
@@ -555,10 +555,10 @@ public:
 
 	// Sets this matrix to a scale matrix
 	template<class Arg, class... Args,
-		typename = std::enable_if_t<(detail::Span<Arg, Args...>::Value <= ColumnType::Size)>>
+		typename = std::enable_if_t<(detail::Span<Arg, Args...>::value <= ColumnType::Size)>>
 	inline Type& MakeScale(const Arg& arg, const Args&... args) noexcept
 	{
-		static constexpr size_t SpanV = detail::Span<Arg, Args...>::Value;
+		static constexpr size_t SpanV = detail::Span<Arg, Args...>::value;
 
 		MakeIdentity();
 
@@ -1322,13 +1322,13 @@ private:
 	template<size_t N, class Function, class... Args>
 	inline void ForEach(Function fn, Args&&... args) noexcept
 	{
-		Epic::TMP::ForEach<Epic::TMP::MakeSequence<size_t, N>>::Apply(fn, std::forward<Args>(args)...);
+		Epic::TMP::ForEach<Epic::TMP::MakeSequence<N>>::Apply(fn, std::forward<Args>(args)...);
 	}
 
 	template<size_t N, class Function, class... Args>
 	inline void ForEach(Function fn, Args&&... args) const noexcept
 	{
-		Epic::TMP::ForEach<Epic::TMP::MakeSequence<size_t, N>>::Apply(fn, std::forward<Args>(args)...);
+		Epic::TMP::ForEachN<Epic::TMP::MakeSequence<N>>::Apply(fn, std::forward<Args>(args)...);
 	}
 
 	#pragma endregion
@@ -1350,7 +1350,7 @@ private:
 	inline void ConstructAt(size_t offset, const Val& value, const Vals&... values) noexcept
 	{
 		PlaceAt(offset, value);
-		ConstructAt(offset + Epic::detail::Span<Val>::Value, values...);
+		ConstructAt(offset + Epic::detail::Span<Val>::value, values...);
 	}
 
 	template<class U, size_t Sz>
