@@ -116,25 +116,25 @@ private:
 
 public:
 	// Called by the usual single-object new-expressions for allocating an object (of the derived type).
-	__declspec(allocator) inline static void* operator new (std::size_t sz)
+	__declspec(allocator) inline static void* operator new (size_t sz)
 	{
 		return _Allocate(sz);
 	}
 
 	// Called by the standard single-object placement new expression.
-	inline static void* operator new (std::size_t /*sz*/, void* ptr) noexcept
+	inline static void* operator new (size_t /*sz*/, void* ptr) noexcept
 	{
 		return ptr;
 	}
 
 	// Called by the usual array new[]-expressions if allocating an array of objects (of the derived type).
-	__declspec(allocator) inline static void* operator new[] (std::size_t sz)
+	__declspec(allocator) inline static void* operator new[] (size_t sz)
 	{
 		return _Allocate(sz);
 	}
 
 	// Called by the standard array form placement new expression.
-	inline static void* operator new[] (std::size_t /*sz*/, void* ptr) noexcept
+	inline static void* operator new[] (size_t /*sz*/, void* ptr) noexcept
 	{
 		return ptr;
 	}

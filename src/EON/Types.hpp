@@ -38,7 +38,7 @@ namespace Epic::EON
 	using EONStringValueType = STLString<wchar_t>;
 	using EONVariantValueType = std::variant<EONInteger, EONFloat, EONBoolean, EONString, EONArray, EONObject>;
 
-	enum class eEONVariantType : std::size_t
+	enum class eEONVariantType : size_t
 	{ 
 		Any = 0,
 		Integer	= (1 << 0), 
