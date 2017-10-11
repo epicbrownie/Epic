@@ -130,7 +130,7 @@ public:
 
 	// size_t -> string
 	template<typename C, class Tr, class A>
-	bool operator() (std::basic_string<C, Tr, A>& to, const std::size_t& from)
+	bool operator() (std::basic_string<C, Tr, A>& to, const size_t& from)
 	{
 		std::basic_ostringstream<C, Tr, A> ss;
 		ss << from;
@@ -140,7 +140,7 @@ public:
 	}
 
 	// string -> VectorN
-	template<class C, class Tr, class A, class T, std::size_t Sz>
+	template<class C, class Tr, class A, class T, size_t Sz>
 	bool operator() (Epic::Vector<T, Sz>& to, const std::basic_string<C, Tr, A>& from)
 	{
 		constexpr Epic::StringHash HOne = "One";
@@ -182,7 +182,7 @@ public:
 	}
 
 	// string -> Matrix
-	template<class C, class Tr, class A, class T, std::size_t Sz>
+	template<class C, class Tr, class A, class T, size_t Sz>
 	bool operator() (Epic::Matrix<T, Sz>& to, const std::basic_string<C, Tr, A>& from)
 	{
 		constexpr Epic::StringHash HOne = "One";

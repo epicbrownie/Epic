@@ -312,19 +312,19 @@ public:
 class Epic::EON::detail::FilterVisitor
 {
 private:
-	std::size_t _Filter;
+	size_t _Filter;
 
 public:
 	explicit FilterVisitor(eEONVariantType filter) noexcept
-		: _Filter(std::size_t(filter)) { }
+		: _Filter(size_t(filter)) { }
 
 public:	
-	bool operator() (const EONInteger& v) { return (_Filter & std::size_t(eEONVariantType::Integer)) != 0; }
-	bool operator() (const EONFloat& v) { return (_Filter & std::size_t(eEONVariantType::Float)) != 0; }
-	bool operator() (const EONBoolean& v) { return (_Filter & std::size_t(eEONVariantType::Boolean)) != 0; }
-	bool operator() (const EONString& v) { return (_Filter & std::size_t(eEONVariantType::String)) != 0; }
-	bool operator() (const EONArray& v) { return (_Filter & std::size_t(eEONVariantType::Array)) != 0; }
-	bool operator() (const EONObject& v) { return (_Filter & std::size_t(eEONVariantType::Object)) != 0; }
+	bool operator() (const EONInteger& v) { return (_Filter & size_t(eEONVariantType::Integer)) != 0; }
+	bool operator() (const EONFloat& v) { return (_Filter & size_t(eEONVariantType::Float)) != 0; }
+	bool operator() (const EONBoolean& v) { return (_Filter & size_t(eEONVariantType::Boolean)) != 0; }
+	bool operator() (const EONString& v) { return (_Filter & size_t(eEONVariantType::String)) != 0; }
+	bool operator() (const EONArray& v) { return (_Filter & size_t(eEONVariantType::Array)) != 0; }
+	bool operator() (const EONObject& v) { return (_Filter & size_t(eEONVariantType::Object)) != 0; }
 };
 
 //////////////////////////////////////////////////////////////////////////////
