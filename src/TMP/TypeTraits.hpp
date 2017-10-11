@@ -30,11 +30,11 @@ namespace Epic::TMP
 		template<class...>
 		struct Voided
 		{
-			using Type = void;
+			using type = void;
 		};
 
 		template<class... Args>
-		using VoidedT = typename Voided<Args...>::Type;
+		using VoidedT = typename Voided<Args...>::type;
 	}
 
 	/*	An implementation of the 'Detection Idiom' as seen in Marshall Clow's talk:
@@ -53,26 +53,26 @@ namespace Epic::TMP
 		template<class Default, class Void, template<class...> class Op, class... Args>
 		struct Detector : std::false_type
 		{
-			using ValueType = std::false_type;
-			using Type = Default;
+			using value_type = std::false_type;
+			using type = Default;
 		};
 
 		template<class Default, template<class...> class Op, class... Args>
 		struct Detector<Default, std::void_t<Op<Args...>>, Op, Args...>
 		{
-			using ValueType = std::true_type;
-			using Type = Op<Args...>;
+			using value_type = std::true_type;
+			using type = Op<Args...>;
 		};
 	}
 
 	template<template<class...> class Op, class... Args>
-	using IsDetected = typename detail::Detector<detail::InvalidType, void, Op, Args...>::ValueType;
+	using IsDetected = typename detail::Detector<detail::InvalidType, void, Op, Args...>::value_type;
 
 	template<template<class...> class Op, class... Args>
-	using DetectedT = typename detail::Detector<detail::InvalidType, void, Op, Args...>::Type;
+	using DetectedT = typename detail::Detector<detail::InvalidType, void, Op, Args...>::type;
 
 	template<class Default, template<class...> class Op, class... Args>
-	using DetectedOrT = typename detail::Detector<Default, void, Op, Args...>::Type;
+	using DetectedOrT = typename detail::Detector<Default, void, Op, Args...>::type;
 	
 	template<class Expected, template<class...> class Op, class... Args>
 	using IsDetectedExact = std::is_same<Expected, DetectedT<Op, Args...>>;
@@ -198,7 +198,7 @@ namespace Epic::TMP
 			std::is_same_v<C::traits_type::char_type, C::value_type> && IsDetected<detail::CanCStrImpl, C>::value;
 	};
 
-	template<class C, class I = std::size_t, bool Enabled = HasValueMember<C>>
+	template<class C, class I = size_t, bool Enabled = HasValueMember<C>>
 	struct IsIndexable : std::false_type { };
 
 	template<class C, class I>
