@@ -23,27 +23,27 @@
 //////////////////////////////////////////////////////////////////////////////
 
 // Swizzler
-template<class T, std::size_t VS, std::size_t... Indices>
+template<class T, size_t VS, size_t... Indices>
 class Epic::Swizzler
 {
 public:
 	using Type = Epic::Swizzler<T, VS, Indices...>;
 
 public:
-	static constexpr std::size_t Size = sizeof...(Indices);
+	static constexpr size_t Size = sizeof...(Indices);
 
 	using ScalarType = T;
 	using VectorType = Epic::Vector<T, sizeof...(Indices)>;
 
 private:
-	static constexpr std::size_t ParentVectorSize = VS;
+	static constexpr size_t ParentVectorSize = VS;
 	
 	static constexpr bool IsAssignableLValue = 
-		Epic::TMP::IsSequenceUnique<Epic::TMP::Sequence<std::size_t, Indices...>>::value;
+		Epic::TMP::IsSequenceUnique<Epic::TMP::Sequence<size_t, Indices...>>::value;
 		
 	using TArray = typename Epic::detail::SVectorHelper<ScalarType, ParentVectorSize>::TArray;
-	using IndexSeq = Epic::TMP::Sequence<std::size_t, Indices...>;
-	using VectorSeq = Epic::TMP::MakeSequence<std::size_t, Size>;
+	using IndexSeq = Epic::TMP::Sequence<size_t, Indices...>;
+	using VectorSeq = Epic::TMP::MakeSequence<size_t, Size>;
 
 private:
 	TArray m_Values;
@@ -56,7 +56,7 @@ public:
 	{
 		VectorType result;
 
-		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (std::size_t dest, std::size_t src)
+		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t dest, size_t src)
 		{
 			result[dest] = m_Values[src];
 		});
@@ -76,194 +76,194 @@ public:
 	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator = (const T& value) noexcept
 	{
-		Epic::TMP::ForEach<IndexSeq>::Apply([&] (std::size_t i) { m_Values[i] = value; });
+		Epic::TMP::ForEach<IndexSeq>::Apply([&] (size_t i) { m_Values[i] = value; });
 		return *this;
 	}
 
 	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator += (const T& value) noexcept
 	{
-		Epic::TMP::ForEach<IndexSeq>::Apply([&] (std::size_t i) { m_Values[i] += value; });
+		Epic::TMP::ForEach<IndexSeq>::Apply([&] (size_t i) { m_Values[i] += value; });
 		return *this;
 	}
 
 	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator -= (const T& value) noexcept
 	{
-		Epic::TMP::ForEach<IndexSeq>::Apply([&] (std::size_t i) { m_Values[i] -= value; });
+		Epic::TMP::ForEach<IndexSeq>::Apply([&] (size_t i) { m_Values[i] -= value; });
 		return *this;
 	}
 
 	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator *= (const T& value) noexcept
 	{
-		Epic::TMP::ForEach<IndexSeq>::Apply([&] (std::size_t i) { m_Values[i] *= value; });
+		Epic::TMP::ForEach<IndexSeq>::Apply([&] (size_t i) { m_Values[i] *= value; });
 		return *this;
 	}
 
 	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator /= (const T& value) noexcept
 	{
-		Epic::TMP::ForEach<IndexSeq>::Apply([&] (std::size_t i) { m_Values[i] /= value; });
+		Epic::TMP::ForEach<IndexSeq>::Apply([&] (size_t i) { m_Values[i] /= value; });
 		return *this;
 	}
 
 	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator = (const Type& other) noexcept
 	{
-		Epic::TMP::ForEach<IndexSeq>::Apply([&] (std::size_t i) { m_Values[i] = other.m_Values[i]; });
+		Epic::TMP::ForEach<IndexSeq>::Apply([&] (size_t i) { m_Values[i] = other.m_Values[i]; });
 		return *this;
 	}
 
 	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator += (const Type& other) noexcept
 	{
-		Epic::TMP::ForEach<IndexSeq>::Apply([&] (std::size_t i) { m_Values[i] += other.m_Values[i]; });
+		Epic::TMP::ForEach<IndexSeq>::Apply([&] (size_t i) { m_Values[i] += other.m_Values[i]; });
 		return *this;
 	}
 
 	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator -= (const Type& other) noexcept
 	{
-		Epic::TMP::ForEach<IndexSeq>::Apply([&] (std::size_t i) { m_Values[i] -= other.m_Values[i]; });
+		Epic::TMP::ForEach<IndexSeq>::Apply([&] (size_t i) { m_Values[i] -= other.m_Values[i]; });
 		return *this;
 	}
 
 	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator *= (const Type& other) noexcept
 	{
-		Epic::TMP::ForEach<IndexSeq>::Apply([&] (std::size_t i) { m_Values[i] *= other.m_Values[i]; });
+		Epic::TMP::ForEach<IndexSeq>::Apply([&] (size_t i) { m_Values[i] *= other.m_Values[i]; });
 		return *this;
 	}
 
 	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator /= (const Type& other) noexcept
 	{
-		Epic::TMP::ForEach<IndexSeq>::Apply([&] (std::size_t i) { m_Values[i] /= other.m_Values[i]; });
+		Epic::TMP::ForEach<IndexSeq>::Apply([&] (size_t i) { m_Values[i] /= other.m_Values[i]; });
 		return *this;
 	}
 
 	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator = (const T(&values)[Size]) noexcept
 	{
-		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (std::size_t i, std::size_t j) { m_Values[i] = values[j]; });
+		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t i, size_t j) { m_Values[i] = values[j]; });
 		return *this;
 	}
 
 	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator += (const T(&values)[Size]) noexcept
 	{
-		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (std::size_t i, std::size_t j) { m_Values[i] += values[j]; });
+		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t i, size_t j) { m_Values[i] += values[j]; });
 		return *this;
 	}
 
 	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator -= (const T(&values)[Size]) noexcept
 	{
-		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (std::size_t i, std::size_t j) { m_Values[i] -= values[j]; });
+		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t i, size_t j) { m_Values[i] -= values[j]; });
 		return *this;
 	}
 
 	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator *= (const T(&values)[Size]) noexcept
 	{
-		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (std::size_t i, std::size_t j) { m_Values[i] *= values[j]; });
+		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t i, size_t j) { m_Values[i] *= values[j]; });
 		return *this;
 	}
 
 	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator /= (const T(&values)[Size]) noexcept
 	{
-		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (std::size_t i, std::size_t j) { m_Values[i] /= values[j]; });
+		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t i, size_t j) { m_Values[i] /= values[j]; });
 		return *this;
 	}
 
 	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator = (const VectorType& vec) noexcept
 	{
-		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (std::size_t i, std::size_t j) { m_Values[i] = vec[j]; });
+		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t i, size_t j) { m_Values[i] = vec[j]; });
 		return *this;
 	}
 
 	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator += (const VectorType& vec) noexcept
 	{
-		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (std::size_t i, std::size_t j) { m_Values[i] += vec[j]; });
+		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t i, size_t j) { m_Values[i] += vec[j]; });
 		return *this;
 	}
 
 	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator -= (const VectorType& vec) noexcept
 	{
-		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (std::size_t i, std::size_t j) { m_Values[i] -= vec[j]; });
+		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t i, size_t j) { m_Values[i] -= vec[j]; });
 		return *this;
 	}
 
 	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator *= (const VectorType& vec) noexcept
 	{
-		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (std::size_t i, std::size_t j) { m_Values[i] *= vec[j]; });
+		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t i, size_t j) { m_Values[i] *= vec[j]; });
 		return *this;
 	}
 
 	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator /= (const VectorType& vec) noexcept
 	{
-		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (std::size_t i, std::size_t j) { m_Values[i] /= vec[j]; });
+		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t i, size_t j) { m_Values[i] /= vec[j]; });
 		return *this;
 	}
 
-	template<std::size_t TS, std::size_t... Is, typename = std::enable_if_t<IsAssignableLValue>>
+	template<size_t TS, size_t... Is, typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator = (const Swizzler<T, TS, Is...>& vec) noexcept
 	{
-		using IndexSeq2 = Epic::TMP::Sequence<std::size_t, Is...>;
+		using IndexSeq2 = Epic::TMP::Sequence<size_t, Is...>;
 
 		Epic::TMP::ForEach2<IndexSeq, IndexSeq2>::Apply(
-			[&] (std::size_t i, std::size_t j) { m_Values[i] = vec.m_Values[j]; });
+			[&] (size_t i, size_t j) { m_Values[i] = vec.m_Values[j]; });
 
 		return *this;
 	}
 
-	template<std::size_t TS, std::size_t... Is, typename = std::enable_if_t<IsAssignableLValue>>
+	template<size_t TS, size_t... Is, typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator += (const Swizzler<T, TS, Is...>& vec) noexcept
 	{
-		using IndexSeq2 = Epic::TMP::Sequence<std::size_t, Is...>;
+		using IndexSeq2 = Epic::TMP::Sequence<size_t, Is...>;
 
 		Epic::TMP::ForEach2<IndexSeq, IndexSeq2>::Apply(
-			[&] (std::size_t i, std::size_t j) { m_Values[i] += vec.m_Values[j]; });
+			[&] (size_t i, size_t j) { m_Values[i] += vec.m_Values[j]; });
 
 		return *this;
 	}
 
-	template<std::size_t TS, std::size_t... Is, typename = std::enable_if_t<IsAssignableLValue>>
+	template<size_t TS, size_t... Is, typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator -= (const Swizzler<T, TS, Is...>& vec) noexcept
 	{
-		using IndexSeq2 = Epic::TMP::Sequence<std::size_t, Is...>;
+		using IndexSeq2 = Epic::TMP::Sequence<size_t, Is...>;
 
 		Epic::TMP::ForEach2<IndexSeq, IndexSeq2>::Apply(
-			[&] (std::size_t i, std::size_t j) { m_Values[i] -= vec.m_Values[j]; });
+			[&] (size_t i, size_t j) { m_Values[i] -= vec.m_Values[j]; });
 
 		return *this;
 	}
 
-	template<std::size_t TS, std::size_t... Is, typename = std::enable_if_t<IsAssignableLValue>>
+	template<size_t TS, size_t... Is, typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator *= (const Swizzler<T, TS, Is...>& vec) noexcept
 	{
-		using IndexSeq2 = Epic::TMP::Sequence<std::size_t, Is...>;
+		using IndexSeq2 = Epic::TMP::Sequence<size_t, Is...>;
 
 		Epic::TMP::ForEach2<IndexSeq, IndexSeq2>::Apply(
-			[&] (std::size_t i, std::size_t j) { m_Values[i] *= vec.m_Values[j]; });
+			[&] (size_t i, size_t j) { m_Values[i] *= vec.m_Values[j]; });
 
 		return *this;
 	}
 
-	template<std::size_t TS, std::size_t... Is, typename = std::enable_if_t<IsAssignableLValue>>
+	template<size_t TS, size_t... Is, typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator /= (const Swizzler<T, TS, Is...>& vec) noexcept
 	{
-		using IndexSeq2 = Epic::TMP::Sequence<std::size_t, Is...>;
+		using IndexSeq2 = Epic::TMP::Sequence<size_t, Is...>;
 
 		Epic::TMP::ForEach2<IndexSeq, IndexSeq2>::Apply(
-			[&] (std::size_t i, std::size_t j) { m_Values[i] /= vec.m_Values[j]; });
+			[&] (size_t i, size_t j) { m_Values[i] /= vec.m_Values[j]; });
 
 		return *this;
 	}
@@ -292,25 +292,25 @@ public:
 	auto operator * (const VectorType& vec) const noexcept { return ToVector() * vec; }
 	auto operator / (const VectorType& vec) const noexcept { return ToVector() / vec; }
 
-	template<std::size_t TS, std::size_t... Is, typename = std::enable_if_t<(sizeof...(Is) == Size)>>
+	template<size_t TS, size_t... Is, typename = std::enable_if_t<(sizeof...(Is) == Size)>>
 	auto operator + (const Swizzler<T, TS, Is...>& vec) const noexcept
 	{
 		return ToVector() + vec;
 	}
 
-	template<std::size_t TS, std::size_t... Is, typename = std::enable_if_t<(sizeof...(Is) == Size)>>
+	template<size_t TS, size_t... Is, typename = std::enable_if_t<(sizeof...(Is) == Size)>>
 	auto operator - (const Swizzler<T, TS, Is...>& vec) const noexcept 
 	{
 		return ToVector() - vec;
 	}
 
-	template<std::size_t TS, std::size_t... Is, typename = std::enable_if_t<(sizeof...(Is) == Size)>>
+	template<size_t TS, size_t... Is, typename = std::enable_if_t<(sizeof...(Is) == Size)>>
 	auto operator * (const Swizzler<T, TS, Is...>& vec) const noexcept
 	{
 		return ToVector() * vec;
 	}
 	
-	template<std::size_t TS, std::size_t... Is, typename = std::enable_if_t<(sizeof...(Is) == Size)>>
+	template<size_t TS, size_t... Is, typename = std::enable_if_t<(sizeof...(Is) == Size)>>
 	auto operator / (const Swizzler<T, TS, Is...>& vec) const noexcept
 	{
 		return ToVector() / vec;
@@ -339,9 +339,9 @@ public:
 	#pragma endregion
 
 private:
-	template<class, std::size_t, std::size_t...>
+	template<class, size_t, size_t...>
 	friend class Swizzler;
 
-	template<class, std::size_t>
+	template<class, size_t>
 	friend class Vector;
 };

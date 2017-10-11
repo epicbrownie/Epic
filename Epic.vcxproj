@@ -92,6 +92,7 @@
     <ClInclude Include="src\InputDeviceManager.hpp" />
     <ClInclude Include="src\InputResolver.hpp" />
     <ClInclude Include="src\InputSystem.hpp" />
+    <ClInclude Include="src\Math.hpp" />
     <ClInclude Include="src\Math\Algorithm.hpp" />
     <ClInclude Include="src\Math\Angle.hpp" />
     <ClInclude Include="src\Math\Constants.hpp" />

@@ -21,7 +21,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 // SVector
-template<class T, std::size_t S>
+template<class T, size_t S>
 class Epic::SVector : public Epic::detail::SVectorHelper<T, S>::BaseType
 {
 public:
@@ -30,7 +30,7 @@ public:
 
 public:
 	using value_type = T;
-	constexpr static std::size_t Size = S;
+	constexpr static size_t Size = S;
 
 	using VectorType = Epic::Vector<T, S>;
 
@@ -80,17 +80,17 @@ public:
 	}
 
 public:
-	const T& operator[] (std::size_t index) const noexcept
+	const T& operator[] (size_t index) const noexcept
 	{
 		assert(index >= 0 && index < Size);
 		return Values[index];
 	}
 	
 public:
-	template<class U, std::size_t Sz>
+	template<class U, size_t Sz>
 	friend bool operator == (const SVector<U, Sz>& vecA, const SVector<U, Sz>& vecB) noexcept;
 
-	template<class U, std::size_t Sz>
+	template<class U, size_t Sz>
 	friend bool operator != (const SVector<U, Sz>& vecA, const SVector<U, Sz>& vecB) noexcept;
 };
 
@@ -100,14 +100,14 @@ namespace Epic
 {
 	namespace
 	{
-		template<class T, std::size_t S>
+		template<class T, size_t S>
 		constexpr Epic::SVector<T, S>& Swizzle(Epic::Vector<T, S>& v)
 		{
 			static_assert(sizeof(Epic::SVector<T, S>) == sizeof(Epic::Vector<T, S>));
 			return reinterpret_cast<Epic::SVector<T, S>&>(v);
 		}
 
-		template<class T, std::size_t S>
+		template<class T, size_t S>
 		constexpr const Epic::SVector<T, S>& Swizzle(const Epic::Vector<T, S>& v)
 		{
 			static_assert(sizeof(Epic::SVector<T, S>) == sizeof(Epic::Vector<T, S>));
@@ -121,23 +121,23 @@ namespace Epic
 // Friend Operators
 namespace Epic
 {
-	template<class U, std::size_t Sz>
+	template<class U, size_t Sz>
 	inline bool operator == (const SVector<U, Sz>& vecA, const SVector<U, Sz>& vecB) noexcept
 	{
 		bool result = true;
 
-		for (std::size_t i = 0; i < Sz; ++i)
+		for (size_t i = 0; i < Sz; ++i)
 			result &= (vecA[i] == vecB[i]);
 
 		return result;
 	}
 
-	template<class U, std::size_t Sz>
+	template<class U, size_t Sz>
 	inline bool operator != (const SVector<U, Sz>& vecA, const SVector<U, Sz>& vecB) noexcept
 	{
 		bool result = true;
 
-		for (std::size_t i = 0; i < Sz; ++i)
+		for (size_t i = 0; i < Sz; ++i)
 			result &= (vecA[i] != vecB[i]);
 
 		return result;

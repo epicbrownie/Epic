@@ -28,7 +28,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 // Vector
-template<class T, std::size_t S>
+template<class T, size_t S>
 class Epic::Vector : public Epic::detail::VectorHelper<T, S>::BaseType
 {
 public:
@@ -36,12 +36,12 @@ public:
 	using Type = Epic::Vector<T, S>;
 
 public:
-	template<class, std::size_t>
+	template<class, size_t>
 	friend class Epic::Vector;
 
 public:
 	using value_type = T;
-	constexpr static std::size_t Size = S;
+	constexpr static size_t Size = S;
 
 private:
 	using Base::Values;
@@ -62,18 +62,18 @@ public:
 	template<class U, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
 	explicit Vector(const Vector<U, Size>& vec) noexcept
 	{
-		ForEach([&](std::size_t n) { Values[n] = static_cast<T>(vec[n]); });
+		ForEach([&](size_t n) { Values[n] = static_cast<T>(vec[n]); });
 	}
 
 	// Constructs a vector from a list of values.
 	template<class U, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
 	explicit Vector(const U(&values)[Size]) noexcept
 	{
-		ForEach([&](std::size_t n) { Values[n] = static_cast<T>(values[n]); });
+		ForEach([&](size_t n) { Values[n] = static_cast<T>(values[n]); });
 	}
 
 	// Constructs a vector from a span of values
-	template<class Arg, class... Args, typename = std::enable_if_t<(detail::Span<Arg, Args...>::Value == Size)>>
+	template<class Arg, class... Args, typename = std::enable_if_t<(detail::Span<Arg, Args...>::value == Size)>>
 	Vector(const Arg& arg, const Args&... args) noexcept
 	{
 		Construct(arg, args...);
@@ -84,7 +84,7 @@ public:
 	Vector(const U& value) noexcept
 	{
 		const T cv = static_cast<T>(value);
-		ForEach([&] (std::size_t n) { Values[n] = cv; });
+		ForEach([&] (size_t n) { Values[n] = cv; });
 	}
 	
 	// Constructs a vector whose values are all set to 0
@@ -102,7 +102,7 @@ public:
 	{
 		const auto z = T(0);
 
-		ForEachN<Size - 1>([&] (std::size_t n) { Values[n] = z; });
+		ForEachN<Size - 1>([&] (size_t n) { Values[n] = z; });
 		Values[Size - 1] = T(1);
 	}
 
@@ -112,7 +112,7 @@ public:
 	#pragma region Range Accessors
 
 	// Retrieves the number of elements
-	constexpr std::size_t size() const noexcept
+	constexpr size_t size() const noexcept
 	{
 		return Size;
 	}
@@ -130,28 +130,28 @@ public:
 	}
 
 	// Accesses the element at 'index'
-	T& at(std::size_t index) noexcept
+	T& at(size_t index) noexcept
 	{
 		assert(index >= 0 && index < Size);
 		return Values[index];
 	}
 
 	// Accesses the element at 'index'
-	const T& at(std::size_t index) const noexcept
+	const T& at(size_t index) const noexcept
 	{
 		assert(index >= 0 && index < Size);
 		return Values[index];
 	}
 
 	// Accesses the element at 'index'
-	T& operator[] (std::size_t index) noexcept
+	T& operator[] (size_t index) noexcept
 	{
 		assert(index >= 0 && index < Size);
 		return Values[index];
 	}
 
 	// Accesses the element at 'index'
-	const T& operator[] (std::size_t index) const noexcept
+	const T& operator[] (size_t index) const noexcept
 	{
 		assert(index >= 0 && index < Size);
 		return Values[index];
@@ -179,7 +179,7 @@ public:
 
 public:
 	// Sets a span of values explicitly
-	template<class Arg, class... Args, typename = std::enable_if_t<(detail::Span<Arg, Args...>::Value == Size)>>
+	template<class Arg, class... Args, typename = std::enable_if_t<(detail::Span<Arg, Args...>::value == Size)>>
 	Type& Reset(const Arg& arg, const Args&... args) noexcept
 	{
 		Construct(arg, args...);
@@ -189,7 +189,7 @@ public:
 	// Fills this vector with 'value'
 	constexpr Type& Fill(const T& value) noexcept
 	{
-		ForEach([&] (std::size_t n) { Values[n] = value; });
+		ForEach([&] (size_t n) { Values[n] = value; });
 		return *this;
 	}
 
@@ -198,7 +198,7 @@ public:
 	{
 		const auto z = T(0);
 
-		ForEachN<Size - 1>([&] (std::size_t n) { Values[n] = z; });
+		ForEachN<Size - 1>([&] (size_t n) { Values[n] = z; });
 		Values[Size - 1] = T(1);
 
 		return *this;
@@ -207,7 +207,7 @@ public:
 	// Forces all values to the range [minValue, maxValue]
 	constexpr Type& Clamp(const T& minValue, const T& maxValue) noexcept
 	{
-		ForEach([&] (std::size_t n) { Values[n] = std::min(std::max(minValue, Values[n]), maxValue); });
+		ForEach([&] (size_t n) { Values[n] = std::min(std::max(minValue, Values[n]), maxValue); });
 		return *this;
 	}
 
@@ -256,7 +256,7 @@ public:
 		if constexpr (Size > 4)
 		{
 			T result = T(0);
-			ForEach([&] (std::size_t n) { result += Values[n] * vec[n]; });
+			ForEach([&] (size_t n) { result += Values[n] * vec[n]; });
 			return result;
 		}
 	}
@@ -296,14 +296,14 @@ public:
 	// Raises all values to the power 'exp'
 	Type& Power(const T& exp) noexcept
 	{
-		ForEach([&] (std::size_t n) { Values[n] = static_cast<T>(std::pow(Values[n], exp)); });
+		ForEach([&] (size_t n) { Values[n] = static_cast<T>(std::pow(Values[n], exp)); });
 		return *this;
 	}
 
 	// Raises all values to the powers 'exp'
 	Type& Power(const Type& exp) noexcept
 	{
-		ForEach([&] (std::size_t n) { Values[n] = static_cast<T>(std::pow(Values[n], exp[n])); });
+		ForEach([&] (size_t n) { Values[n] = static_cast<T>(std::pow(Values[n], exp[n])); });
 	}
 
 	// Calculates the projection of this vector onto unit vector 'axis'
@@ -353,7 +353,7 @@ public:
 	Type operator - () const noexcept
 	{
 		Type result;
-		ForEach([&](std::size_t n) { result[n] = -Values[n]; });
+		ForEach([&](size_t n) { result[n] = -Values[n]; });
 		return result;
 	}
 
@@ -385,23 +385,23 @@ public:
 	template<class U>																		\
 	Type& operator Op (const U(&values)[Size]) noexcept										\
 	{																						\
-		ForEach([&](std::size_t index) { Values[index] Op values[index]; });				\
+		ForEach([&](size_t index) { Values[index] Op values[index]; });				\
 		return *this;																		\
 	}																						\
 																							\
 	Type& operator Op (const Type& vec) noexcept											\
 	{																						\
-		ForEach([&](std::size_t index) { Values[index] Op vec[index]; });					\
+		ForEach([&](size_t index) { Values[index] Op vec[index]; });					\
 		return *this;																		\
 	}																						\
 																							\
-	template<class U, std::size_t Sz>														\
+	template<class U, size_t Sz>														\
 	Type& operator Op (const Vector<U, Sz>& vec) noexcept									\
 	{																						\
 		Epic::TMP::ForEach2<																\
-			Epic::TMP::MakeSequence<std::size_t, Size>,										\
-			Epic::TMP::MakeSequence<std::size_t, Sz>>										\
-		::Apply([&](std::size_t iThis, std::size_t iOther)									\
+			Epic::TMP::MakeSequence<size_t, Size>,										\
+			Epic::TMP::MakeSequence<size_t, Sz>>										\
+		::Apply([&](size_t iThis, size_t iOther)									\
 		{																					\
 			Values[iThis] Op vec[iOther];													\
 		});																					\
@@ -409,14 +409,14 @@ public:
 		return *this;																		\
 	}																						\
 																							\
-	template<class U, std::size_t US, std::size_t... Is,									\
+	template<class U, size_t US, size_t... Is,									\
 		typename = std::enable_if_t<(sizeof...(Is) == Size)>>								\
 	Type& operator Op (const Swizzler<U, US, Is...>& vec) noexcept					\
 	{																						\
 		Epic::TMP::ForEach2<																\
-			Epic::TMP::MakeSequence<std::size_t, Size>,										\
-			Epic::TMP::Sequence<std::size_t, Is...>>										\
-		::Apply([&](std::size_t iThis, std::size_t iOther)									\
+			Epic::TMP::MakeSequence<size_t, Size>,										\
+			Epic::TMP::Sequence<size_t, Is...>>										\
+		::Apply([&](size_t iThis, size_t iOther)									\
 		{																					\
 			Values[iThis] Op vec.m_Values[iOther];											\
 		});																					\
@@ -426,7 +426,7 @@ public:
 																							\
 	Type& operator Op (const T& value) noexcept												\
 	{																						\
-		ForEach([&](std::size_t index) { Values[index] Op value; });						\
+		ForEach([&](size_t index) { Values[index] Op value; });						\
 		return *this;																		\
 	}
 
@@ -446,7 +446,7 @@ public:
 	Type& operator Op (const U(&values)[Size]) noexcept										\
 	{																						\
 		if constexpr (std::is_integral<T>::value &&	std::is_integral<U>::value)				\
-			ForEach([&](std::size_t index) { Values[index] Op values[index]; });			\
+			ForEach([&](size_t index) { Values[index] Op values[index]; });			\
 		else																				\
 			assert(false && "Operation unavailable for non-integral types");				\
 		return *this;																		\
@@ -455,7 +455,7 @@ public:
 	Type& operator Op (const Type& vec) noexcept											\
 	{																						\
 		if constexpr (std::is_integral<T>::value)											\
-			ForEach([&](std::size_t index) { Values[index] Op vec[index]; });				\
+			ForEach([&](size_t index) { Values[index] Op vec[index]; });				\
 		else																				\
 			assert(false && "Operation unavailable for non-integral types");				\
 		return *this;																		\
@@ -466,7 +466,7 @@ public:
 	{																						\
 		if constexpr (std::is_integral<T>::value &&	std::is_integral<U>::value)				\
 		{																					\
-			ForEach([&](std::size_t i) { Values[i] Op vec[i]; });							\
+			ForEach([&](size_t i) { Values[i] Op vec[i]; });							\
 		}																					\
 		else																				\
 			assert(false && "Operation unavailable for non-integral types");				\
@@ -474,7 +474,7 @@ public:
 		return *this;																		\
 	}																						\
 																							\
-	template<class U, std::size_t US, std::size_t... Is,									\
+	template<class U, size_t US, size_t... Is,									\
 		typename = std::enable_if_t<(sizeof...(Is) == Size)>>								\
 	Type& operator Op (const Swizzler<U, US, Is...>& vec) noexcept							\
 	{																						\
@@ -482,9 +482,9 @@ public:
 					  std::is_integral<U>::value)											\
 		{																					\
 			Epic::TMP::ForEach2<															\
-				Epic::TMP::MakeSequence<std::size_t, Size>,									\
-				Epic::TMP::Sequence<std::size_t, Is...>>									\
-			::Apply([&](std::size_t iThis, std::size_t iOther)								\
+				Epic::TMP::MakeSequence<size_t, Size>,									\
+				Epic::TMP::Sequence<size_t, Is...>>									\
+			::Apply([&](size_t iThis, size_t iOther)								\
 			{																				\
 				Values[iThis] Op vec.m_Values[iOther];										\
 			});																				\
@@ -498,7 +498,7 @@ public:
 	Type& operator Op (const T& value) noexcept												\
 	{																						\
 		if constexpr (std::is_integral<T>::value)											\
-			ForEach([&](std::size_t index) { Values[index] Op value; });					\
+			ForEach([&](size_t index) { Values[index] Op value; });					\
 		else																				\
 			assert(false && "Operation unavailable for non-integral types");				\
 		return *this;																		\
@@ -534,7 +534,7 @@ public:
 		return result;																				\
 	}																								\
 																									\
-	template<class U, std::size_t Sz>																\
+	template<class U, size_t Sz>																\
 	Type operator Op (const Vector<U, Sz>& vec) const noexcept										\
 	{																								\
 		Type result{ *this };																		\
@@ -542,7 +542,7 @@ public:
 		return result;																				\
 	}																								\
 																									\
-	template<class U, std::size_t US, std::size_t... Is>											\
+	template<class U, size_t US, size_t... Is>											\
 	Type operator Op (const Swizzler<U, US, Is...>& vec) const noexcept						\
 	{																								\
 		Type result{ *this };																		\
@@ -588,40 +588,40 @@ private:
 	void ForEach(Function fn) noexcept
 	{
 		if constexpr (Size == 1) { fn(0); }
-		if constexpr (Size == 2) { fn(0); fn(1); }
-		if constexpr (Size == 3) { fn(0); fn(1); fn(2); }
-		if constexpr (Size == 4) { fn(0); fn(1); fn(2); fn(3); }
-		if constexpr (Size > 4) { Epic::TMP::ForEach<Epic::TMP::MakeSequence<std::size_t, Size>>::Apply(fn); }
+		else if constexpr (Size == 2) { fn(0); fn(1); }
+		else if constexpr (Size == 3) { fn(0); fn(1); fn(2); }
+		else if constexpr (Size == 4) { fn(0); fn(1); fn(2); fn(3); }
+		else { Epic::TMP::ForEachN<Size>::Apply(fn); }
 	}
 
 	template<class Function>
 	void ForEach(Function fn) const noexcept
 	{
 		if constexpr (Size == 1) { fn(0); }
-		if constexpr (Size == 2) { fn(0); fn(1); }
-		if constexpr (Size == 3) { fn(0); fn(1); fn(2); }
-		if constexpr (Size == 4) { fn(0); fn(1); fn(2); fn(3); }
-		if constexpr (Size > 4) Epic::TMP::ForEach<Epic::TMP::MakeSequence<std::size_t, Size>>::Apply(fn);
+		else if constexpr (Size == 2) { fn(0); fn(1); }
+		else if constexpr (Size == 3) { fn(0); fn(1); fn(2); }
+		else if constexpr (Size == 4) { fn(0); fn(1); fn(2); fn(3); }
+		else { Epic::TMP::ForEachN<Size>::Apply(fn); }
 	}
 
-	template<std::size_t N, class Function>
+	template<size_t N, class Function>
 	void ForEachN(Function fn) noexcept
 	{
 		if constexpr (N == 1) { fn(0); }
-		if constexpr (N == 2) { fn(0); fn(1); }
-		if constexpr (N == 3) { fn(0); fn(1); fn(2); }
-		if constexpr (N == 4) { fn(0); fn(1); fn(2); fn(3); }
-		if constexpr (N > 4) Epic::TMP::ForEach<Epic::TMP::MakeSequence<std::size_t, N>>::Apply(fn);
+		else if constexpr (N == 2) { fn(0); fn(1); }
+		else if constexpr (N == 3) { fn(0); fn(1); fn(2); }
+		else if constexpr (N == 4) { fn(0); fn(1); fn(2); fn(3); }
+		else { Epic::TMP::ForEachN<N>::Apply(fn); }
 	}
 
-	template<std::size_t N, class Function>
+	template<size_t N, class Function>
 	void ForEachN(Function fn) const noexcept
 	{
 		if constexpr (N == 1) { fn(0); }
-		if constexpr (N == 2) { fn(0); fn(1); }
-		if constexpr (N == 3) { fn(0); fn(1); fn(2); }
-		if constexpr (N == 4) { fn(0); fn(1); fn(2); fn(3); }
-		if constexpr (N > 4) Epic::TMP::ForEach<Epic::TMP::MakeSequence<std::size_t, N>>::Apply(fn);
+		else if constexpr (N == 2) { fn(0); fn(1); }
+		else if constexpr (N == 3) { fn(0); fn(1); fn(2); }
+		else if constexpr (N == 4) { fn(0); fn(1); fn(2); fn(3); }
+		else { Epic::TMP::ForEachN<N>::Apply(fn); }
 	}
 
 	#pragma endregion
@@ -634,44 +634,44 @@ private:
 		ConstructAt(0, vals...);
 	}
 
-	void ConstructAt(std::size_t) noexcept
+	void ConstructAt(size_t) noexcept
 	{ 
 		/* Do Nothing */
 	}
 
 	template<class Val, class... Vals>
-	void ConstructAt(std::size_t offset, const Val& value, const Vals&... values) noexcept
+	void ConstructAt(size_t offset, const Val& value, const Vals&... values) noexcept
 	{
 		PlaceAt(offset, value);
-		ConstructAt(offset + Epic::detail::Span<Val>::Value, values...);
+		ConstructAt(offset + Epic::detail::Span<Val>::value, values...);
 	}
 
-	template<class U, std::size_t Sz, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
-	void PlaceAt(std::size_t offset, const Vector<U, Sz>& value) noexcept
+	template<class U, size_t Sz, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
+	void PlaceAt(size_t offset, const Vector<U, Sz>& value) noexcept
 	{
-		ForEachN<Sz>([&](std::size_t n) { Values[offset++] = static_cast<T>(value[n]); });
+		ForEachN<Sz>([&](size_t n) { Values[offset++] = static_cast<T>(value[n]); });
 	}
 
-	template<class U, std::size_t US, std::size_t... Is>
-	void PlaceAt(std::size_t offset, const Swizzler<U, US, Is...>& value) noexcept
+	template<class U, size_t US, size_t... Is>
+	void PlaceAt(size_t offset, const Swizzler<U, US, Is...>& value) noexcept
 	{
 		PlaceAt(offset, value.ToVector());
 	}
 
-	template<class U, std::size_t N, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
-	void PlaceAt(std::size_t offset, const U(&value)[N]) noexcept
+	template<class U, size_t N, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
+	void PlaceAt(size_t offset, const U(&value)[N]) noexcept
 	{
-		ForEachN<N>([&](std::size_t n) { Values[offset++] = static_cast<T>(value[n]); });
+		ForEachN<N>([&](size_t n) { Values[offset++] = static_cast<T>(value[n]); });
 	}
 
-	template<class U, std::size_t Sz, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
-	void PlaceAt(std::size_t offset, const std::array<U, Sz>& value) noexcept
+	template<class U, size_t Sz, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
+	void PlaceAt(size_t offset, const std::array<U, Sz>& value) noexcept
 	{
-		ForEachN<Sz>([&](std::size_t n) { Values[offset++] = static_cast<T>(value[n]); });
+		ForEachN<Sz>([&](size_t n) { Values[offset++] = static_cast<T>(value[n]); });
 	}
 
 	template<class Val, typename = std::enable_if_t<std::is_convertible_v<Val, T>>>
-	void PlaceAt(std::size_t offset, const Val& value) noexcept
+	void PlaceAt(size_t offset, const Val& value) noexcept
 	{
 		Values[offset] = static_cast<T>(value);
 	}
@@ -679,22 +679,22 @@ private:
 	#pragma endregion
 
 public:
-	template<class U, std::size_t Sz>
+	template<class U, size_t Sz>
 	friend bool operator == (const Vector<U, Sz>& vecA, const Vector<U, Sz>& vecB) noexcept;
 
-	template<class U, std::size_t Sz>
+	template<class U, size_t Sz>
 	friend bool operator != (const Vector<U, Sz>& vecA, const Vector<U, Sz>& vecB) noexcept;
 
-	template<class U, std::size_t Sz>
+	template<class U, size_t Sz>
 	friend std::ostream& operator << (std::ostream& stream, const Vector<U, Sz>& vec);
 
-	template<class U, std::size_t Sz>
+	template<class U, size_t Sz>
 	friend std::wostream& operator << (std::wostream& stream, const Vector<U, Sz>& vec);
 
-	template<class U, std::size_t Sz>
+	template<class U, size_t Sz>
 	friend std::istream& operator >> (std::istream& stream, Vector<U, Sz>& vec);
 
-	template<class U, std::size_t Sz>
+	template<class U, size_t Sz>
 	friend std::wistream& operator >> (std::wistream& stream, Vector<U, Sz>& vec);
 };
 
@@ -703,7 +703,7 @@ public:
 // Implementation
 namespace Epic
 {
-	template<class T, std::size_t S>
+	template<class T, size_t S>
 	Vector<T, S> Vector<T, S>::Project(const Type& axis) const noexcept
 	{
 		Type result(axis);
@@ -711,7 +711,7 @@ namespace Epic
 		return result;
 	}
 
-	template<class T, std::size_t S>
+	template<class T, size_t S>
 	Vector<T, S> Vector<T, S>::ProjectN(const Type& axis) const noexcept
 	{
 		Type result = Type::NormalOf(axis);
@@ -719,7 +719,7 @@ namespace Epic
 		return result;
 	}
 
-	template<class T, std::size_t S>
+	template<class T, size_t S>
 	Vector<T, S> Vector<T, S>::Reflect(const Type& normal) const noexcept
 	{
 		Type n = normal;
@@ -731,7 +731,7 @@ namespace Epic
 		return result;
 	}
 
-	template<class T, std::size_t S>
+	template<class T, size_t S>
 	Vector<T, S> Vector<T, S>::Refract(const Type& normal, const T eta) const noexcept
 	{
 		Type I = Vector::NormalOf(*this);
@@ -756,33 +756,33 @@ namespace Epic
 // Friend Operators
 namespace Epic
 {
-	template<class U, std::size_t Sz>
+	template<class U, size_t Sz>
 	inline bool operator == (const Vector<U, Sz>& vecA, const Vector<U, Sz>& vecB) noexcept
 	{
 		bool result = true;
 
-		for (std::size_t i = 0; i < Sz; ++i)
+		for (size_t i = 0; i < Sz; ++i)
 			result &= (vecA[i] == vecB[i]);
 
 		return result;
 	}
 
-	template<class U, std::size_t Sz>
+	template<class U, size_t Sz>
 	inline bool operator != (const Vector<U, Sz>& vecA, const Vector<U, Sz>& vecB) noexcept
 	{
 		bool result = true;
 
-		for (std::size_t i = 0; i < Sz; ++i)
+		for (size_t i = 0; i < Sz; ++i)
 			result &= (vecA[i] != vecB[i]);
 
 		return result;
 	}
 
-	template<class U, std::size_t Sz>
+	template<class U, size_t Sz>
 	inline std::ostream& operator << (std::ostream& stream, const Vector<U, Sz>& vec)
 	{
 		stream << '[';
-		vec.ForEach([&](std::size_t n) 
+		vec.ForEach([&](size_t n) 
 		{ 
 			if (n > 0) 
 				stream << ", "; 
@@ -793,11 +793,11 @@ namespace Epic
 		return stream;
 	}
 
-	template<class U, std::size_t Sz>
+	template<class U, size_t Sz>
 	inline std::wostream& operator << (std::wostream& stream, const Vector<U, Sz>& vec)
 	{
 		stream << L'[';
-		vec.ForEach([&](std::size_t n) 
+		vec.ForEach([&](size_t n) 
 		{ 
 			if (n > 0)
 				stream << L", ";
@@ -808,13 +808,13 @@ namespace Epic
 		return stream;
 	}
 
-	template<class U, std::size_t Sz>
+	template<class U, size_t Sz>
 	inline std::istream& operator >> (std::istream& stream, Vector<U, Sz>& vec)
 	{
 		if (stream.peek() == '[')
 			stream.ignore(1);
 
-		vec.ForEach([&](std::size_t n) 
+		vec.ForEach([&](size_t n) 
 		{ 
 			if (n > 0 && stream.peek() == ',')
 				stream.ignore(1);
@@ -827,13 +827,13 @@ namespace Epic
 		return stream;
 	}
 
-	template<class U, std::size_t Sz>
+	template<class U, size_t Sz>
 	inline std::wistream& operator >> (std::wistream& stream, Vector<U, Sz>& vec)
 	{
 		if (stream.peek() == L'[')
 			stream.ignore(1);
 
-		vec.ForEach([&](std::size_t n) 
+		vec.ForEach([&](size_t n) 
 		{ 
 			if (n > 0 && stream.peek() == L',')
 				stream.ignore(1);

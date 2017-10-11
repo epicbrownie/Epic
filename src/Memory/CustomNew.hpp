@@ -45,15 +45,15 @@ public:
 protected:
 	using AllocatorType = Epic::STLAllocatorAdapted<Epic::DefaultAllocatorFor<CRTP, eAllocatorFor::New>>;
 
-	static constexpr bool IsAligned = !detail::CanAllocate<AllocatorType>::value ||
-									  (AllocatorType::Alignment % detail::AlignOf<CRTP>::value) != 0;
-
 private:
 	inline static void* _Allocate(size_t sz)
 	{
 		Blk blk;
 		AllocatorType allocator;
 		size_t alignment;
+
+		constexpr bool IsAligned = !detail::CanAllocate<AllocatorType>::value ||
+								   (AllocatorType::Alignment % detail::AlignOf<CRTP>::value) != 0;
 
 		if constexpr (IsAligned)
 		{
@@ -95,7 +95,10 @@ private:
 		// The AffixAllocator doesn't need to know a block's size to calculate the 
 		// prefix object from a pointer.  A temporary block will be used.
 		Blk blk{ p, 1 };
-		
+	
+		constexpr bool IsAligned = !detail::CanAllocate<AllocatorType>::value ||
+								   (AllocatorType::Alignment % detail::AlignOf<CRTP>::value) != 0;
+
 		if constexpr (IsAligned && detail::CanDeallocateAligned<AllocatorType>::value)
 		{
 			// AllocateAligned was used
