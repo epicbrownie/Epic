@@ -79,6 +79,16 @@ struct Epic::EON::detail::Assign
 	}
 };
 
+template<class U, size_t N>
+struct Epic::EON::detail::Assign<U[N], U[N]>
+{
+	bool operator() (U(&to)[N], const U(&from)[N])
+	{
+		std::copy(std::begin(from), std::end(from), std::begin(to));
+		return true;
+	}
+};
+
 template<class F, class T>
 struct Epic::EON::detail::CastConvert
 {

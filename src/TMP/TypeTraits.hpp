@@ -133,8 +133,8 @@ namespace Epic::TMP
 		template<class C>
 		using CanCStrImpl = decltype(std::declval<const C>().c_str());
 
-		template<class C, class I, class V>
-		using IsIndexableImpl = decltype(std::declval<C>()[std::declval<I>()] = std::declval<V>());
+		template<class C, class I>
+		using IsIndexableImpl = decltype(std::declval<C>()[std::declval<I>()] = std::declval<typename C::value_type>());
 
 		template<class C>
 		using HasKeyMemberImpl = typename C::key_type;
@@ -198,12 +198,14 @@ namespace Epic::TMP
 			std::is_same_v<C::traits_type::char_type, C::value_type> && IsDetected<detail::CanCStrImpl, C>::value;
 	};
 
-	template<class C, class I = std::size_t, bool Enabled = HasValueMember<C>>
-	struct IsIndexable : std::false_type { };
-
-	template<class C, class I>
-	struct IsIndexable<C, I, true>
+	template<class C, class I = size_t>
+	struct IsIndexable
 	{
-		static constexpr bool value = IsDetected<detail::IsIndexableImpl, C, I, C::value_type>::value;
+		static constexpr bool value =
+			std::disjunction_v<
+				std::is_array<C>,
+				std::conjunction<
+					IsDetected<detail::HasValueMemberImpl, C>,
+					IsDetected<detail::IsIndexableImpl, C, I>>>;
 	};
 }
