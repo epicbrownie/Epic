@@ -557,8 +557,8 @@
     <ClInclude Include="src\Math.hpp">
       <Filter>Import</Filter>
     </ClInclude>
-    <ClInclude Include="src\ShaderMath.hpp">
-      <Filter>Import</Filter>
+    <ClInclude Include="src\Math\detail\SVectorFwd.hpp">
+      <Filter>Math\detail</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
