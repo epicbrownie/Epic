@@ -100,6 +100,18 @@ namespace Epic
 			return result;
 		}
 
+		// Clamp the values of a Vector using 'comp' to compare elements
+		template<class U, class T, size_t Size, class Compare = std::less<T>>
+		inline auto Clamp(const Vector<T, Size>& vec, U&& low, U&& high, Compare comp = Compare()) noexcept
+		{
+			return Clamp<T, Size, Compare>
+			(
+				vec, 
+				Vector<T, Size>(std::forward<U>(low)), 
+				Vector<T, Size>(std::forward<U>(high))
+			);
+		}
+
 		template<class T, class F, typename EnabledForFloatingPoint = std::enable_if_t<std::is_floating_point<F>::value>>
 		inline auto Lerp(const T& from, const T& to, const F t) noexcept
 		{
@@ -171,9 +183,9 @@ namespace Epic
 		}
 
 		// Calculate the square root of 'value' ('value' must be a power of 2)
-		inline uint64_t SqrtPow2(const uint64_t value) noexcept
+		constexpr uint64_t SqrtPow2(const uint64_t value) noexcept
 		{
-			static const uint64_t lookup[] = 
+			constexpr uint64_t lookup[] = 
 			{ 
 				0xAAAAAAAAAAAAAAAA, 
 				0xCCCCCCCCCCCCCCCC, 
@@ -183,20 +195,20 @@ namespace Epic
 				0xFFFFFFFF00000000 
 			};
 
-			uint64_t result = (value & lookup[0]) != 0 ? uint64_t(1) : uint64_t(0);
+			const uint64_t result =
+				  ((uint64_t)((value & lookup[0]) != 0) << 0)
+				| ((uint64_t)((value & lookup[1]) != 0) << 1)
+				| ((uint64_t)((value & lookup[2]) != 0) << 2)
+				| ((uint64_t)((value & lookup[3]) != 0) << 3)
+				| ((uint64_t)((value & lookup[4]) != 0) << 4)
+				| ((uint64_t)((value & lookup[5]) != 0) << 5);
 
-			result |= ((value & lookup[5]) != 0 ? uint64_t(1) : uint64_t(0)) << 5;
-			result |= ((value & lookup[4]) != 0 ? uint64_t(1) : uint64_t(0)) << 4;
-			result |= ((value & lookup[3]) != 0 ? uint64_t(1) : uint64_t(0)) << 3;
-			result |= ((value & lookup[2]) != 0 ? uint64_t(1) : uint64_t(0)) << 2;
-			result |= ((value & lookup[1]) != 0 ? uint64_t(1) : uint64_t(0)) << 1;
-
-			return (uint64_t(1) << (result >> 1));
+			return uint64_t(1) << (result >> 1);
 		}
 
-		inline uint32_t SqrtPow2(const uint32_t value) noexcept
+		constexpr uint32_t SqrtPow2(const uint32_t value) noexcept
 		{
-			static const uint32_t lookup[] = 
+			constexpr uint32_t lookup[] = 
 			{ 
 				0xAAAAAAAA, 
 				0xCCCCCCCC, 
@@ -205,19 +217,19 @@ namespace Epic
 				0xFFFF0000 
 			};
 
-			uint32_t result = (value & lookup[0]) != 0 ? uint32_t(1) : uint32_t(0);
+			const uint32_t result = 
+				((uint32_t)((value & lookup[0]) != 0) << 0)
+			  | ((uint32_t)((value & lookup[1]) != 0) << 1)
+			  | ((uint32_t)((value & lookup[2]) != 0) << 2)
+			  | ((uint32_t)((value & lookup[3]) != 0) << 3)
+			  | ((uint32_t)((value & lookup[4]) != 0) << 4);
 
-			result |= ((value & lookup[4]) != 0 ? uint32_t(1) : uint32_t(0)) << 4;
-			result |= ((value & lookup[3]) != 0 ? uint32_t(1) : uint32_t(0)) << 3;
-			result |= ((value & lookup[2]) != 0 ? uint32_t(1) : uint32_t(0)) << 2;
-			result |= ((value & lookup[1]) != 0 ? uint32_t(1) : uint32_t(0)) << 1;
-
-			return (uint32_t(1) << (result >> 1));
+			return uint32_t(1) << (result >> 1);
 		}
 
-		inline uint16_t SqrtPow2(const uint16_t value) noexcept
+		constexpr uint16_t SqrtPow2(const uint16_t value) noexcept
 		{
-			static const uint16_t lookup[] = 
+			constexpr uint16_t lookup[] = 
 			{ 
 				0xAAAA, 
 				0xCCCC, 
@@ -225,30 +237,30 @@ namespace Epic
 				0xFF00 
 			};
 
-			uint16_t result = (value & lookup[0]) != 0 ? uint16_t(1) : uint16_t(0);
+			const uint16_t result = 
+				((uint16_t)((value & lookup[0]) != 0) << 0)
+			  | ((uint16_t)((value & lookup[1]) != 0) << 1)
+			  | ((uint16_t)((value & lookup[2]) != 0) << 2)
+			  | ((uint16_t)((value & lookup[3]) != 0) << 3);
 
-			result |= ((value & lookup[3]) != 0 ? uint16_t(1) : uint16_t(0)) << 3;
-			result |= ((value & lookup[2]) != 0 ? uint16_t(1) : uint16_t(0)) << 2;
-			result |= ((value & lookup[1]) != 0 ? uint16_t(1) : uint16_t(0)) << 1;
-
-			return (uint16_t(1) << (result >> 1));
+			return uint16_t(1) << (result >> 1);
 		}
 
-		inline uint8_t SqrtPow2(const uint8_t value) noexcept
+		constexpr uint8_t SqrtPow2(const uint8_t value) noexcept
 		{
-			static const uint8_t lookup[] = 
+			constexpr uint8_t lookup[] = 
 			{ 
 				0xAA, 
 				0xCC, 
 				0xF0 
 			};
 			
-			uint8_t result = (value & lookup[0]) != 0 ? uint8_t(1) : uint8_t(0);
+			uint8_t result = 
+				((uint8_t)((value & lookup[0]) != 0) << 0)
+			  | ((uint8_t)((value & lookup[1]) != 0) << 1)
+			  | ((uint8_t)((value & lookup[2]) != 0) << 2);
 
-			result |= ((value & lookup[2]) != 0 ? uint8_t(1) : uint8_t(0)) << 2;
-			result |= ((value & lookup[1]) != 0 ? uint8_t(1) : uint8_t(0)) << 1;
-
-			return (uint8_t(1) << (result >> 1));
+			return uint8_t(1) << (result >> 1);
 		}
 
 		// Calculate whether or not 'value' is a power of 2
@@ -267,7 +279,7 @@ namespace Epic
 
 		// Calculate the next greater 'value' that is a power of 2
 		template<class T, typename = std::enable_if_t<std::is_unsigned<T>::value>>
-		inline T NextPower2(const T value) noexcept
+		constexpr T NextPower2(const T value) noexcept
 		{
 			T result = T(1);
 			while (result < value) result <<= 1;
@@ -370,5 +382,14 @@ namespace std
 					  Compare comp = Compare()) noexcept
 	{
 		return Epic::Clamp(vec, low, high, comp);
+	}
+
+	// Clamp the values of a Vector using 'comp' to compare elements
+	template<class U, class T, size_t Size, class Compare = std::less<T>>
+	inline auto clamp(const Epic::Vector<T, Size>& vec, 
+					  U&& low = T(0), U&& high = T(1), 
+					  Compare comp = Compare()) noexcept
+	{
+		return Epic::Clamp<T, Size, Compare>(vec, std::forward<U>(low), std::forward<U>(high), comp);
 	}
 }
