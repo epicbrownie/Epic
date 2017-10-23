@@ -554,8 +554,8 @@
     <ClInclude Include="src\Math.hpp">
       <Filter>Import</Filter>
     </ClInclude>
-    <ClInclude Include="src\Memory\SegBucket.hpp">
-      <Filter>Memory</Filter>
+    <ClInclude Include="src\Math\detail\SVectorFwd.hpp">
+      <Filter>Math\detail</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

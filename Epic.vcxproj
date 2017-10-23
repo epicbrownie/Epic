@@ -101,6 +101,7 @@
     <ClInclude Include="src\Math\detail\MathHelpers.hpp" />
     <ClInclude Include="src\Math\detail\QuaternionBase.hpp" />
     <ClInclude Include="src\Math\detail\QuaternionFwd.hpp" />
+    <ClInclude Include="src\Math\detail\SVectorFwd.hpp" />
     <ClInclude Include="src\Math\detail\VectorBase.hpp" />
     <ClInclude Include="src\Math\detail\VectorHelpers.hpp" />
     <ClInclude Include="src\Math\detail\VectorFwd.hpp" />
