@@ -16,6 +16,7 @@
 #include <Epic/TMP/Sequence.hpp>
 #include <Epic/Math/detail/VectorBase.hpp>
 #include <Epic/Math/detail/VectorFwd.hpp>
+#include <Epic/Math/detail/SVectorFwd.hpp>
 #include <Epic/Math/detail/SwizzlerFwd.hpp>
 #include <array>
 #include <type_traits>
