@@ -39,11 +39,11 @@ private:
 	static constexpr size_t ParentVectorSize = VS;
 	
 	static constexpr bool IsAssignableLValue = 
-		Epic::TMP::IsSequenceUnique<Epic::TMP::Sequence<size_t, Indices...>>::value;
+		TMP::IsSequenceUnique<TMP::Sequence<size_t, Indices...>>::value;
 		
-	using TArray = typename Epic::detail::SVectorHelper<ScalarType, ParentVectorSize>::TArray;
-	using IndexSeq = Epic::TMP::Sequence<size_t, Indices...>;
-	using VectorSeq = Epic::TMP::MakeSequence<size_t, Size>;
+	using TArray = typename detail::SVectorHelper<ScalarType, ParentVectorSize>::TArray;
+	using IndexSeq = TMP::Sequence<size_t, Indices...>;
+	using VectorSeq = TMP::MakeSequence<size_t, Size>;
 
 private:
 	TArray m_Values;
@@ -56,8 +56,7 @@ public:
 	{
 		VectorType result;
 
-		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t dest, size_t src)
-		{
+		TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t dest, size_t src) {
 			result[dest] = m_Values[src];
 		});
 
@@ -73,197 +72,317 @@ public:
 public:
 	#pragma region Assignment Operators
 
-	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator = (const T& value) noexcept
 	{
-		Epic::TMP::ForEach<IndexSeq>::Apply([&] (size_t i) { m_Values[i] = value; });
+		if constexpr (!IsAssignableLValue)
+			static_assert(false, "All swizzled indices must be unique to be used as an L-value.");
+		
+		TMP::ForEach<IndexSeq>::Apply([&] (size_t i) {
+			m_Values[i] = value; 
+		});
+
 		return *this;
 	}
 
-	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator += (const T& value) noexcept
 	{
-		Epic::TMP::ForEach<IndexSeq>::Apply([&] (size_t i) { m_Values[i] += value; });
+		if constexpr (!IsAssignableLValue)
+			static_assert(false, "All swizzled indices must be unique to be used as an L-value.");
+
+		TMP::ForEach<IndexSeq>::Apply([&] (size_t i) { 
+			m_Values[i] += value; 
+		});
+
 		return *this;
 	}
 
-	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator -= (const T& value) noexcept
 	{
-		Epic::TMP::ForEach<IndexSeq>::Apply([&] (size_t i) { m_Values[i] -= value; });
+		if constexpr (!IsAssignableLValue)
+			static_assert(false, "All swizzled indices must be unique to be used as an L-value.");
+
+		TMP::ForEach<IndexSeq>::Apply([&] (size_t i) { 
+			m_Values[i] -= value; 
+		});
+
 		return *this;
 	}
 
-	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator *= (const T& value) noexcept
 	{
-		Epic::TMP::ForEach<IndexSeq>::Apply([&] (size_t i) { m_Values[i] *= value; });
+		if constexpr (!IsAssignableLValue)
+			static_assert(false, "All swizzled indices must be unique to be used as an L-value.");
+
+		TMP::ForEach<IndexSeq>::Apply([&] (size_t i) { 
+			m_Values[i] *= value; 
+		});
+
 		return *this;
 	}
 
-	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator /= (const T& value) noexcept
 	{
-		Epic::TMP::ForEach<IndexSeq>::Apply([&] (size_t i) { m_Values[i] /= value; });
+		if constexpr (!IsAssignableLValue)
+			static_assert(false, "All swizzled indices must be unique to be used as an L-value.");
+
+		TMP::ForEach<IndexSeq>::Apply([&] (size_t i) { 
+			m_Values[i] /= value;
+		});
+
 		return *this;
 	}
 
-	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator = (const Type& other) noexcept
 	{
-		Epic::TMP::ForEach<IndexSeq>::Apply([&] (size_t i) { m_Values[i] = other.m_Values[i]; });
+		if constexpr (!IsAssignableLValue)
+			static_assert(false, "All swizzled indices must be unique to be used as an L-value.");
+
+		TMP::ForEach<IndexSeq>::Apply([&] (size_t i) { 
+			m_Values[i] = other.m_Values[i];
+		});
+
 		return *this;
 	}
 
-	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator += (const Type& other) noexcept
 	{
-		Epic::TMP::ForEach<IndexSeq>::Apply([&] (size_t i) { m_Values[i] += other.m_Values[i]; });
+		if constexpr (!IsAssignableLValue)
+			static_assert(false, "All swizzled indices must be unique to be used as an L-value.");
+
+		TMP::ForEach<IndexSeq>::Apply([&] (size_t i) { 
+			m_Values[i] += other.m_Values[i]; 
+		});
+
 		return *this;
 	}
 
-	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator -= (const Type& other) noexcept
 	{
-		Epic::TMP::ForEach<IndexSeq>::Apply([&] (size_t i) { m_Values[i] -= other.m_Values[i]; });
+		if constexpr (!IsAssignableLValue)
+			static_assert(false, "All swizzled indices must be unique to be used as an L-value.");
+
+		TMP::ForEach<IndexSeq>::Apply([&] (size_t i) {
+			m_Values[i] -= other.m_Values[i]; 
+		});
+
 		return *this;
 	}
 
-	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator *= (const Type& other) noexcept
 	{
-		Epic::TMP::ForEach<IndexSeq>::Apply([&] (size_t i) { m_Values[i] *= other.m_Values[i]; });
+		if constexpr (!IsAssignableLValue)
+			static_assert(false, "All swizzled indices must be unique to be used as an L-value.");
+
+		TMP::ForEach<IndexSeq>::Apply([&] (size_t i) {
+			m_Values[i] *= other.m_Values[i];
+		});
+
 		return *this;
 	}
 
-	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator /= (const Type& other) noexcept
 	{
-		Epic::TMP::ForEach<IndexSeq>::Apply([&] (size_t i) { m_Values[i] /= other.m_Values[i]; });
+		if constexpr (!IsAssignableLValue)
+			static_assert(false, "All swizzled indices must be unique to be used as an L-value.");
+
+		TMP::ForEach<IndexSeq>::Apply([&] (size_t i) {
+			m_Values[i] /= other.m_Values[i];
+		});
+
 		return *this;
 	}
 
-	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator = (const T(&values)[Size]) noexcept
 	{
-		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t i, size_t j) { m_Values[i] = values[j]; });
+		if constexpr (!IsAssignableLValue)
+			static_assert(false, "All swizzled indices must be unique to be used as an L-value.");
+
+		TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t i, size_t j) {
+			m_Values[i] = values[j]; 
+		});
+
 		return *this;
 	}
 
-	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator += (const T(&values)[Size]) noexcept
 	{
-		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t i, size_t j) { m_Values[i] += values[j]; });
+		if constexpr (!IsAssignableLValue)
+			static_assert(false, "All swizzled indices must be unique to be used as an L-value.");
+
+		TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t i, size_t j) {
+			m_Values[i] += values[j]; 
+		});
+
 		return *this;
 	}
 
-	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator -= (const T(&values)[Size]) noexcept
 	{
-		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t i, size_t j) { m_Values[i] -= values[j]; });
+		if constexpr (!IsAssignableLValue)
+			static_assert(false, "All swizzled indices must be unique to be used as an L-value.");
+
+		TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t i, size_t j) {
+			m_Values[i] -= values[j]; 
+		});
+
 		return *this;
 	}
 
-	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator *= (const T(&values)[Size]) noexcept
 	{
-		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t i, size_t j) { m_Values[i] *= values[j]; });
+		if constexpr (!IsAssignableLValue)
+			static_assert(false, "All swizzled indices must be unique to be used as an L-value.");
+
+		TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t i, size_t j) {
+			m_Values[i] *= values[j]; 
+		});
+
 		return *this;
 	}
 
-	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator /= (const T(&values)[Size]) noexcept
 	{
-		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t i, size_t j) { m_Values[i] /= values[j]; });
+		if constexpr (!IsAssignableLValue)
+			static_assert(false, "All swizzled indices must be unique to be used as an L-value.");
+
+		TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t i, size_t j) {
+			m_Values[i] /= values[j]; 
+		});
+
 		return *this;
 	}
 
-	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator = (const VectorType& vec) noexcept
 	{
-		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t i, size_t j) { m_Values[i] = vec[j]; });
+		if constexpr (!IsAssignableLValue)
+			static_assert(false, "All swizzled indices must be unique to be used as an L-value.");
+
+		TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t i, size_t j) {
+			m_Values[i] = vec[j]; 
+		});
+
 		return *this;
 	}
 
-	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator += (const VectorType& vec) noexcept
 	{
-		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t i, size_t j) { m_Values[i] += vec[j]; });
+		if constexpr (!IsAssignableLValue)
+			static_assert(false, "All swizzled indices must be unique to be used as an L-value.");
+
+		TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t i, size_t j) {
+			m_Values[i] += vec[j]; 
+		});
+
 		return *this;
 	}
 
-	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator -= (const VectorType& vec) noexcept
 	{
-		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t i, size_t j) { m_Values[i] -= vec[j]; });
+		if constexpr (!IsAssignableLValue)
+			static_assert(false, "All swizzled indices must be unique to be used as an L-value.");
+
+		TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t i, size_t j) {
+			m_Values[i] -= vec[j]; 
+		});
+
 		return *this;
 	}
 
-	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator *= (const VectorType& vec) noexcept
 	{
-		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t i, size_t j) { m_Values[i] *= vec[j]; });
+		if constexpr (!IsAssignableLValue)
+			static_assert(false, "All swizzled indices must be unique to be used as an L-value.");
+
+		TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t i, size_t j) { 
+			m_Values[i] *= vec[j]; 
+		});
+
 		return *this;
 	}
 
-	template<typename = std::enable_if_t<IsAssignableLValue>>
 	Type& operator /= (const VectorType& vec) noexcept
 	{
-		Epic::TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t i, size_t j) { m_Values[i] /= vec[j]; });
+		if constexpr (!IsAssignableLValue)
+			static_assert(false, "All swizzled indices must be unique to be used as an L-value.");
+
+		TMP::ForEach2<VectorSeq, IndexSeq>::Apply([&] (size_t i, size_t j) {
+			m_Values[i] /= vec[j]; 
+		});
+
 		return *this;
 	}
 
-	template<size_t TS, size_t... Is, typename = std::enable_if_t<IsAssignableLValue>>
+	template<size_t TS, size_t... Is>
 	Type& operator = (const Swizzler<T, TS, Is...>& vec) noexcept
 	{
-		using IndexSeq2 = Epic::TMP::Sequence<size_t, Is...>;
+		if constexpr (!IsAssignableLValue)
+			static_assert(false, "All swizzled indices must be unique to be used as an L-value.");
 
-		Epic::TMP::ForEach2<IndexSeq, IndexSeq2>::Apply(
-			[&] (size_t i, size_t j) { m_Values[i] = vec.m_Values[j]; });
+		using IndexSeq2 = TMP::Sequence<size_t, Is...>;
+
+		TMP::ForEach2<IndexSeq, IndexSeq2>::Apply([&] (size_t i, size_t j) {
+			m_Values[i] = vec.m_Values[j];
+		});
 
 		return *this;
 	}
 
-	template<size_t TS, size_t... Is, typename = std::enable_if_t<IsAssignableLValue>>
+	template<size_t TS, size_t... Is>
 	Type& operator += (const Swizzler<T, TS, Is...>& vec) noexcept
 	{
-		using IndexSeq2 = Epic::TMP::Sequence<size_t, Is...>;
+		if constexpr (!IsAssignableLValue)
+			static_assert(false, "All swizzled indices must be unique to be used as an L-value.");
 
-		Epic::TMP::ForEach2<IndexSeq, IndexSeq2>::Apply(
-			[&] (size_t i, size_t j) { m_Values[i] += vec.m_Values[j]; });
+		using IndexSeq2 = TMP::Sequence<size_t, Is...>;
+
+		TMP::ForEach2<IndexSeq, IndexSeq2>::Apply([&] (size_t i, size_t j) { 
+			m_Values[i] += vec.m_Values[j]; 
+		});
 
 		return *this;
 	}
 
-	template<size_t TS, size_t... Is, typename = std::enable_if_t<IsAssignableLValue>>
+	template<size_t TS, size_t... Is>
 	Type& operator -= (const Swizzler<T, TS, Is...>& vec) noexcept
 	{
-		using IndexSeq2 = Epic::TMP::Sequence<size_t, Is...>;
+		if constexpr (!IsAssignableLValue)
+			static_assert(false, "All swizzled indices must be unique to be used as an L-value.");
 
-		Epic::TMP::ForEach2<IndexSeq, IndexSeq2>::Apply(
-			[&] (size_t i, size_t j) { m_Values[i] -= vec.m_Values[j]; });
+		using IndexSeq2 = TMP::Sequence<size_t, Is...>;
+
+		TMP::ForEach2<IndexSeq, IndexSeq2>::Apply([&] (size_t i, size_t j) {
+			m_Values[i] -= vec.m_Values[j]; 
+		});
 
 		return *this;
 	}
 
-	template<size_t TS, size_t... Is, typename = std::enable_if_t<IsAssignableLValue>>
+	template<size_t TS, size_t... Is>
 	Type& operator *= (const Swizzler<T, TS, Is...>& vec) noexcept
 	{
-		using IndexSeq2 = Epic::TMP::Sequence<size_t, Is...>;
+		if constexpr (!IsAssignableLValue)
+			static_assert(false, "All swizzled indices must be unique to be used as an L-value.");
 
-		Epic::TMP::ForEach2<IndexSeq, IndexSeq2>::Apply(
-			[&] (size_t i, size_t j) { m_Values[i] *= vec.m_Values[j]; });
+		using IndexSeq2 = TMP::Sequence<size_t, Is...>;
+
+		TMP::ForEach2<IndexSeq, IndexSeq2>::Apply([&] (size_t i, size_t j) { 
+			m_Values[i] *= vec.m_Values[j]; 
+		});
 
 		return *this;
 	}
 
-	template<size_t TS, size_t... Is, typename = std::enable_if_t<IsAssignableLValue>>
+	template<size_t TS, size_t... Is>
 	Type& operator /= (const Swizzler<T, TS, Is...>& vec) noexcept
 	{
-		using IndexSeq2 = Epic::TMP::Sequence<size_t, Is...>;
+		if constexpr (!IsAssignableLValue)
+			static_assert(false, "All swizzled indices must be unique to be used as an L-value.");
 
-		Epic::TMP::ForEach2<IndexSeq, IndexSeq2>::Apply(
-			[&] (size_t i, size_t j) { m_Values[i] /= vec.m_Values[j]; });
+		using IndexSeq2 = TMP::Sequence<size_t, Is...>;
+
+		TMP::ForEach2<IndexSeq, IndexSeq2>::Apply([&] (size_t i, size_t j) {
+			m_Values[i] /= vec.m_Values[j]; 
+		});
 
 		return *this;
 	}
