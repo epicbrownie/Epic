@@ -19,7 +19,6 @@
 #include <Epic/Math/Angle.hpp>
 #include <Epic/Math/Constants.hpp>
 #include <Epic/Math/Vector.hpp>
-#include <Epic/TMP/Sequence.hpp>
 #include <algorithm>
 #include <cassert>
 #include <cmath>
@@ -70,7 +69,7 @@ public:
 		Values[3] = static_cast<T>(quat[3]);
 	}
 
-	// Constructs a quaternion from a list of values.
+	// Constructs a quaternion from a list of convertible values.
 	template<class U, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
 	Quaternion(const U(&values)[4]) noexcept
 	{ 
@@ -81,12 +80,12 @@ public:
 	}
 
 	// Constructs with explicit values
-	Quaternion(const T xv, const T yv, const T zv, const T wv) noexcept
+	Quaternion(T xv, T yv, T zv, T wv) noexcept
 	{
-		Values[0] = xv;
-		Values[1] = yv;
-		Values[2] = zv;
-		Values[3] = wv;
+		Values[0] = std::move(xv);
+		Values[1] = std::move(yv);
+		Values[2] = std::move(zv);
+		Values[3] = std::move(wv);
 	}
 
 	// Constructs an identity quaternion
@@ -96,45 +95,45 @@ public:
 	}
 
 	// Constructs an X-axis rotation quaternion
-	Quaternion(const XRotationTag&, const Radian<T>& phi) noexcept
+	Quaternion(const XRotationTag&, Radian<T> phi) noexcept
 	{
-		MakeXRotation(phi);
+		MakeXRotation(std::move(phi));
 	}
 
 	// Constructs a Y-axis rotation quaternion
-	Quaternion(const YRotationTag&, const Radian<T>& theta) noexcept
+	Quaternion(const YRotationTag&, Radian<T> theta) noexcept
 	{
-		MakeYRotation(theta);
+		MakeYRotation(std::move(theta));
 	}
 
 	// Constructs a Z-axis rotation quaternion
-	Quaternion(const ZRotationTag&, const Radian<T>& psi) noexcept
+	Quaternion(const ZRotationTag&, Radian<T> psi) noexcept
 	{
-		MakeZRotation(psi);
+		MakeZRotation(std::move(psi));
 	}
 
 	// Constructs a rotation quaternion from euler heading, pitch, and roll angles
-	Quaternion(const Radian<T>& pitch, const Radian<T>& heading, const Radian<T>& roll) noexcept
+	Quaternion(Radian<T> pitch, Radian<T> heading, Radian<T> roll) noexcept
 	{
-		MakeRotation(pitch, heading, roll);
+		MakeRotation(std::move(pitch), std::move(heading), std::move(roll));
 	}
 
 	// Constructs a rotation quaternion from an axis and angle
-	Quaternion(const T& xv, const T& yv, const T& zv, const Radian<T>& angle) noexcept
+	Quaternion(T xv, T yv, T zv, Radian<T> angle) noexcept
 	{
-		MakeRotation(xv, yv, zv, angle);
+		MakeRotation(std::move(xv), std::move(yv), std::move(zv), std::move(angle));
 	}
 
 	// Constructs a rotation quaternion from an axis and angle
-	Quaternion(const Vector<T, 3>& axis, const Radian<T>& angle) noexcept
+	Quaternion(Vector<T, 3> axis, Radian<T> angle) noexcept
 	{
-		MakeRotation(axis[0], axis[1], axis[2], angle);
+		MakeRotation(std::move(axis[0]), std::move(axis[1]), std::move(axis[2]), std::move(angle));
 	}
 
 	// Constructs a rotation quaternion from an axis and angle
-	Quaternion(const Vector<T, 4>& axis, const Radian<T>& angle) noexcept
+	Quaternion(Vector<T, 4> axis, Radian<T> angle) noexcept
 	{
-		MakeRotation(axis[0], axis[1], axis[2], angle);
+		MakeRotation(std::move(axis[0]), std::move(axis[1]), std::move(axis[2]), std::move(angle));
 	}
 
 	#pragma endregion
@@ -168,7 +167,7 @@ public:
 	}
 
 	// Accesses the element at 'index'
-	const T& at(size_t index) const noexcept
+	T at(size_t index) const noexcept
 	{
 		assert(index >= 0 && index < Size);
 		return Values[index];
@@ -182,7 +181,7 @@ public:
 	}
 
 	// Accesses the element at 'index'
-	const T& operator[] (size_t index) const noexcept
+	T operator[] (size_t index) const noexcept
 	{
 		assert(index >= 0 && index < Size);
 		return Values[index];
@@ -248,9 +247,9 @@ public:
 
 public:
 	// Sets values explicitly
-	Type& Reset(const T& xv, const T& yv, const T& zv, const T& wv) noexcept
+	Type& Reset(T xv, T yv, T zv, T wv) noexcept
 	{
-		return *this = { xv, yv, zv, wv };
+		return *this = { std::move(xv), std::move(yv), std::move(zv), std::move(wv) };
 	}
 
 	// Sets this quaternion to an identity quaternion
@@ -261,28 +260,28 @@ public:
 	}
 
 	// Sets this quaternion to an X-axis rotation quaternion
-	Type& MakeXRotation(const Radian<T>& phi) noexcept
+	Type& MakeXRotation(Radian<T> phi) noexcept
 	{
 		const auto[sPhi, cPhi] = (phi / T(2)).SinCos();
 		return *this = { sPhi, T(0), T(0), cPhi };
 	}
 
 	// Sets this quaternion to a Y-axis rotation quaternion
-	Type& MakeYRotation(const Radian<T>& theta) noexcept
+	Type& MakeYRotation(Radian<T> theta) noexcept
 	{
 		const auto[sTheta, cTheta] = (theta / T(2)).SinCos();
 		return *this = { T(0), sTheta, T(0), cTheta };
 	}
 
 	// Sets this quaternion to a Z-axis rotation quaternion
-	Type& MakeZRotation(const Radian<T>& psi) noexcept
+	Type& MakeZRotation(Radian<T> psi) noexcept
 	{
 		const auto[sPsi, cPsi] = (psi / T(2)).SinCos();
 		return *this = { T(0), T(0), sPsi, cPsi };
 	}
 
 	// Sets this quaternion to a rotation quaternion using euler pitch, heading, and roll angles
-	Type& MakeRotation(const Radian<T>& pitch, const Radian<T>& heading, const Radian<T>& roll) noexcept
+	Type& MakeRotation(Radian<T> pitch, Radian<T> heading, Radian<T> roll) noexcept
 	{
 		const auto[sp, cp] = (pitch / T(2)).SinCos();
 		const auto[sh, ch] = (heading / T(2)).SinCos();
@@ -298,7 +297,7 @@ public:
 	}
 
 	// Sets this quaternion to a rotation quaternion using an axis and an angle
-	Type& MakeRotation(const T& xv, const T& yv, const T& zv, const Radian<T>& angle) noexcept
+	Type& MakeRotation(T xv, T yv, T zv, Radian<T> angle) noexcept
 	{
 		auto t = xv * xv + yv * yv + zv * zv;
 		if (t == T(0))
@@ -311,20 +310,20 @@ public:
 	}
 
 	// Sets this quaternion to a rotation quaternion using an axis and an angle
-	Type& MakeRotation(const Vector<T, 3>& axis, const Radian<T>& angle) noexcept
+	Type& MakeRotation(Vector<T, 3> axis, Radian<T> angle) noexcept
 	{
-		return MakeRotation(axis[0], axis[1], axis[2], angle);
+		return MakeRotation(axis[0], axis[1], axis[2], std::move(angle));
 	}
 
 	// Sets this quaternion to a rotation quaternion using an axis and an angle
-	Type& MakeRotation(const Vector<T, 4>& axis, const Radian<T>& angle) noexcept
+	Type& MakeRotation(Vector<T, 4> axis, Radian<T> angle) noexcept
 	{
-		return MakeRotation(axis[0], axis[1], axis[2], angle);
+		return MakeRotation(axis[0], axis[1], axis[2], std::move(angle));
 	}
 
 public:
 	// Calculates the dot product of this quaternion and 'quat'
-	constexpr T Dot(const Quaternion& quat) const noexcept
+	constexpr T Dot(Quaternion quat) const noexcept
 	{
 		return (Values[0] * quat[0]) + 
 			   (Values[1] * quat[1]) + 
@@ -359,7 +358,7 @@ public:
 	}
 
 	// Multiplies this quaternion with another. (Q' = Q * quat)
-	Type& Concatenate(const Quaternion& quat) noexcept
+	Type& Concatenate(Type quat) noexcept
 	{
 		const auto tx = Values[0];
 		const auto ty = Values[1];
@@ -537,54 +536,54 @@ public:
 
 public:
 	// Calculates the normalized quaternion of 'quat'
-	static Type NormalOf(const Type& quat) noexcept
+	static Type NormalOf(Type quat) noexcept
 	{
-		return Type(quat).Normalize();
+		return quat.Normalize();
 	}
 
 	// Calculates the normalized quaternion of 'quat'
 	// Returns a copy of 'quat' if magnitude is 0
-	static Type SafeNormalOf(const Type& quat) noexcept
+	static Type SafeNormalOf(Type quat) noexcept
 	{
-		return Type(quat).NormalizeSafe();
+		return quat.NormalizeSafe();
 	}
 
 	// Calculates the concatenation of 'q' and 'r'
-	static Type ConcatenationOf(const Type& q, const Type& r) noexcept
+	static Type ConcatenationOf(Type q, Type r) noexcept
 	{
-		return Type(q).Concatenate(r);
+		return q.Concatenate(std::move(r));
 	}
 
 	// Calculates the conjugate of 'quat'
-	static Type ConjugateOf(const Type& quat) noexcept
+	static Type ConjugateOf(Type quat) noexcept
 	{
-		return Type(quat).Conjugate();
+		return quat.Conjugate();
 	}
 
 	// Calculates the inverse of 'quat'
-	static Type InverseOf(const Type& quat) noexcept
+	static Type InverseOf(Type quat) noexcept
 	{
-		return Type(quat).Invert();
+		return quat.Invert();
 	}
 
 public:
 	// Calculates the linear interpolation of normalized quaternions 'from' and 'to'
-	static auto Lerp(const Type& from, const Type& to, const T& t) noexcept
+	static auto Lerp(Type from, Type to, T t) noexcept
 	{
 		if constexpr (std::is_floating_point_v<T>::value)
-			return NormalOf((from * (T(1) - t)) + (to * t));
+			return NormalOf((std::move(from) * (T(1) - t)) + (std::move(to) * t));
 		else
 			static_assert(false, "Cannot interpolate non-floating-point Quaternion types.");
 	}
 
 	// Calculates the spherical linear interpolation of normalized quaternions 'from' and 'to'.
 	// Reduces spinning by checking if 'from' and 'to' are more than 90 deg apart.
-	static auto SlerpSR(const Type& from, const Type& to, const T& t) noexcept
+	static auto SlerpSR(Type from, Type to, T t) noexcept
 	{
 		if constexpr (std::is_floating_point_v<T>::value)
 		{
-			Type qt = to;
-			auto dot = from.Dot(to);
+			Type qt = std::move(to);
+			auto dot = from.Dot(qt);
 
 			// When from and to > 90 deg apart, perform spin reduction
 			if (dot < T(0))
@@ -595,21 +594,21 @@ public:
 
 			// Use linear interpolation when sin(acos(dot)) close to 0
 			if (dot > T(1) - Epsilon<T>)
-				return Lerp(from, to, t);
+				return Lerp(std::move(from), std::move(to), std::move(t));
 
 			// Spherical interpolation
 			Radian<T> theta = static_cast<T>(acos(dot));
 			Radian<T> thetaFrom = theta.Value() * (T(1) - t);
 			Radian<T> thetaTo = theta.Value() * t;
 
-			return ((from * thetaFrom.Sin()) + (qt * thetaTo.Sin())) / theta.Sin();
+			return ((std::move(from) * thetaFrom.Sin()) + (std::move(qt) * thetaTo.Sin())) / theta.Sin();
 		}
 		else
 			static_assert(false, "Cannot interpolate non-floating-point Quaternion types.");
 	}
 
 	// Calculates the spherical linear interpolation of normalized quaternions 'from' and 'to'
-	static auto Slerp(const Type& from, const Type& to, const T& t) noexcept
+	static auto Slerp(Type from, Type to, T t) noexcept
 	{
 		if constexpr (std::is_floating_point_v<T>::value)
 		{
@@ -617,22 +616,22 @@ public:
 
 			// Use linear interpolation when sin(acos(dot)) close to 0
 			if (dot > T(1) - Epsilon<T>)
-				return Lerp(from, to, t);
+				return Lerp(std::move(from), std::move(to), std::move(t));
 
 			Radian<T> theta = acos(dot);
 			Radian<T> thetaFrom = theta.Value() * (T(1) - t);
 			Radian<T> thetaTo = theta.Value() * t;
 
-			return ((from * thetaFrom.Sin()) + (to * thetaTo.Sin())) / theta.Sin();
+			return ((std::move(from) * thetaFrom.Sin()) + (std::move(to) * thetaTo.Sin())) / theta.Sin();
 		}
 		else
 			static_assert(false, "Cannot interpolate non-floating-point Quaternion types.");
 	}
 
 	// Calculates the spherical cubic interpolation of normalized quaternions 'from', 'to', 'a', and 'b'
-	static auto Squad(const Type& from, const Type& to, const Type& a, const Type& b, const T& t) noexcept
+	static auto Squad(Type from, Type to, Type a, Type b, T t) noexcept
 	{
-		return Slerp(Slerp(from, to, t), Slerp(a, b, t), T(2) * t * (T(1) - t));
+		return Slerp(Slerp(std::move(from), std::move(to), t), Slerp(std::move(a), std::move(b), t), T(2) * t * (T(1) - t));
 	}
 
 public:
@@ -658,13 +657,13 @@ public:
 	}
 
 	// Concatenates this quaternion with 'quat'
-	Type& operator *= (const Type& quat) noexcept
+	Type& operator *= (Type quat) noexcept
 	{
-		return Concatenate(quat);
+		return Concatenate(std::move(quat));
 	}
 
 	// Concatenates this quaternion with the inverse of 'quat'
-	Type& operator /= (const Type& quat) noexcept
+	Type& operator /= (Type quat) noexcept
 	{
 		// Concatenate(Type::InverseOf(quat))
 
@@ -686,15 +685,19 @@ public:
 
 	//////
 
-	Type& operator *= (const T& value) noexcept
+	Type& operator *= (T value) noexcept
 	{
-		TMP::ForEachN<Size>::Apply([&](size_t index) { Values[index] *= value; });
+		for (size_t i = 0; i < Size; ++i)
+			Values[i] *= value;
+
 		return *this;
 	}
 
-	Type& operator /= (const T& value) noexcept
+	Type& operator /= (T value) noexcept
 	{
-		TMP::ForEachN<Size>::Apply([&](size_t index) { Values[index] /= value; });
+		for (size_t i = 0; i < Size; ++i)
+			Values[i] /= value;
+
 		return *this;
 	}
 
@@ -703,39 +706,51 @@ public:
 	template<class U, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
 	Type& operator = (const U(&values)[Size]) noexcept
 	{
-		TMP::ForEachN<Size>::Apply([&](size_t index) { Values[index] = values[index]; });
+		for (size_t i = 0; i < Size; ++i)
+			Values[i] = static_cast<T>(values[i]);
+
 		return *this;
 	}
 
 	template<class U, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
 	Type& operator += (const U(&values)[Size]) noexcept
 	{
-		TMP::ForEachN<Size>::Apply([&](size_t index) { Values[index] += values[index]; });
+		for (size_t i = 0; i < Size; ++i)
+			Values[i] += static_cast<T>(values[i]);
+
 		return *this;
 	}
 
 	template<class U, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
 	Type& operator -= (const U(&values)[Size]) noexcept
 	{
-		TMP::ForEachN<Size>::Apply([&](size_t index) { Values[index] -= values[index]; });
+		for (size_t i = 0; i < Size; ++i)
+			Values[i] -= static_cast<T>(values[i]);
+
 		return *this;
 	}
 
-	Type& operator = (const Type& quat) noexcept
+	Type& operator = (Type quat) noexcept
 	{
-		TMP::ForEachN<Size>::Apply([&](size_t index) { Values[index] = quat[index]; });
+		for (size_t i = 0; i < Size; ++i)
+			Values[i] = quat[i];
+
 		return *this;
 	}
 
-	Type& operator += (const Type& quat) noexcept
+	Type& operator += (Type quat) noexcept
 	{
-		TMP::ForEachN<Size>::Apply([&](size_t index) { Values[index] += quat[index]; });
+		for (size_t i = 0; i < Size; ++i)
+			Values[i] += quat[i];
+
 		return *this;
 	}
 
-	Type& operator -= (const Type& quat) noexcept
+	Type& operator -= (Type quat) noexcept
 	{
-		TMP::ForEachN<Size>::Apply([&](size_t index) { Values[index] -= quat[index]; });
+		for (size_t i = 0; i < Size; ++i)
+			Values[i] -= quat[i];
+
 		return *this;
 	}
 	
@@ -745,27 +760,27 @@ public:
 	#pragma region Arithmetic Operators
 
 	// Returns the concatenation of this quaternion and 'quat'
-	Type operator * (const Type& quat) const noexcept
+	Type operator * (Type quat) const noexcept
 	{
-		return Type(*this) *= quat;
+		return Type(*this) *= std::move(quat);
 	}
 
 	// Returns the concatenation of this quaternion and the inverse of 'quat'
-	Type operator / (const Type& quat) const noexcept
+	Type operator / (Type quat) const noexcept
 	{
-		return Type(*this) /= quat;
+		return Type(*this) /= std::move(quat);
 	}
 
 	//////
 
-	Type operator * (const T& value) const noexcept
+	Type operator * (T value) const noexcept
 	{
-		return Type(*this) *= value;
+		return Type(*this) *= std::move(value);
 	}
 
-	Type operator / (const T& value) const noexcept
+	Type operator / (T value) const noexcept
 	{
-		return Type(*this) /= value;
+		return Type(*this) /= std::move(value);
 	}
 
 	//////
@@ -782,14 +797,14 @@ public:
 		return Type(*this) -= values;
 	}
 
-	Type operator + (const Type& quat) const noexcept
+	Type operator + (Type quat) const noexcept
 	{
-		return Type(*this) += quat;
+		return Type(*this) += std::move(quat);
 	}
 
-	Type operator - (const Type& quat) const noexcept
+	Type operator - (Type quat) const noexcept
 	{
-		return Type(*this) -= quat;
+		return Type(*this) -= std::move(quat);
 	}
 
 	#pragma endregion
@@ -885,7 +900,7 @@ namespace Epic
 namespace Epic
 {
 	template<class T, size_t S>
-	inline Vector<T, S>& Epic::Vector<T, S>::operator *= (const Epic::Quaternion<T>& quat) noexcept
+	inline Vector<T, S>& Epic::Vector<T, S>::operator *= (const Quaternion<T>& quat) noexcept
 	{
 		if constexpr (S == 3 || S == 4)
 			quat.Transform(*this);
@@ -896,11 +911,11 @@ namespace Epic
 	}
 
 	template<class T, size_t S>
-	inline auto operator * (const Vector<T, S>& vec, const Quaternion<T>& quat) noexcept
+	inline Vector<T, S> operator * (Vector<T, S> vec, const Quaternion<T>& quat) noexcept
 	{
 		if constexpr (S == 3 || S == 4)
 		{
-			auto result = vec;
+			auto result = std::move(vec);
 			quat.Transform(result);
 			return result;
 		}
