@@ -42,39 +42,46 @@ public:
 public:
 	CustomNew() = default;
 
+protected:
+	using AllocatorType = Epic::STLAllocatorAdapted<Epic::DefaultAllocatorFor<CRTP, eAllocatorFor::New>>;
+
+	static constexpr bool IsAligned = !detail::CanAllocate<AllocatorType>::value ||
+									  (AllocatorType::Alignment % detail::AlignOf<CRTP>::value) != 0;
+
 private:
-	inline static void* _Allocate(const size_t sz)
+	inline static void* _Allocate(size_t sz)
 	{
-		using AllocatorType = Epic::STLAllocatorAdapted<Epic::DefaultAllocatorFor<CRTP, eAllocatorFor::New>>;
-
-		const bool aligned = !detail::CanAllocate<AllocatorType>::value || 
-							 (AllocatorType::Alignment % Epic::detail::AlignOf<CRTP>::value) != 0;
-
 		Blk blk;
-		size_t alignment;
 		AllocatorType allocator;
+		size_t alignment;
 
-		if (aligned)
+		if constexpr (IsAligned)
 		{
 			// Attempt to allocate aligned memory via AllocateAligned()
-			assert(detail::CanAllocateAligned<AllocatorType>::value &&
-				"CustomNew::_Allocate - This type requires an allocator that is capable of "
-				"performing allocations aligned to CRTP");
+			static_assert(detail::CanAllocateAligned<AllocatorType>::value,
+				"CustomNew::_Allocate() - This type requires an allocator that is capable of "
+				"performing allocations aligned to <CRTP>");
 
-			alignment = Epic::detail::AlignOf<CRTP>::value;
-			blk = detail::AllocateAlignedIf<AllocatorType>::apply(allocator, sz, alignment);
+			alignment = detail::AlignOf<CRTP>::value;
+			blk = allocator.AllocateAligned(sz, alignment);
 		}
+		
 		else
 		{
 			// Attempt to allocate memory via Allocate()
+			static_assert(detail::CanAllocate<AllocatorType>::value,
+				"CustomNew::_Allocate() - This type requires an allocator that is capable of "
+				"performing allocations");
+
 			alignment = AllocatorType::Alignment;
-			blk = detail::AllocateIf<AllocatorType>::apply(allocator, sz);
+			blk = allocator.Allocate(sz);
 		}
 
 		// Ensure memory was acquired
-		if (!blk) throw std::bad_alloc{};
+		if (!blk) 
+			throw std::bad_alloc{};
 
-		// Store size in prefix object
+		// Store block size in prefix object
 		auto pPrefix = allocator.Allocator().GetPrefixObject(blk, alignment);
 		pPrefix->Size = blk.Size;
 
@@ -83,32 +90,27 @@ private:
 
 	inline static void _Deallocate(void* __restrict p)
 	{
-		using AllocatorType = Epic::STLAllocatorAdapted<Epic::DefaultAllocatorFor<CRTP, eAllocatorFor::New>>;
-
-		const bool aligned = !detail::CanAllocate<AllocatorType>::value || 
-							 (AllocatorType::Alignment % Epic::detail::AlignOf<CRTP>::value) != 0;
-
 		AllocatorType allocator;
 
 		// The AffixAllocator doesn't need to know a block's size to calculate the 
 		// prefix object from a pointer.  A temporary block will be used.
 		Blk blk{ p, 1 };
 		
-		if (aligned)
+		if constexpr (IsAligned && detail::CanDeallocateAligned<AllocatorType>::value)
 		{
 			// AllocateAligned was used
-			const auto pPrefix = allocator.Allocator().GetPrefixObject(blk, Epic::detail::AlignOf<CRTP>::value);
+			const auto pPrefix = allocator.Allocator().GetPrefixObject(blk, detail::AlignOf<CRTP>::value);
 			blk.Size = pPrefix->Size;
 
-			detail::DeallocateAlignedIf<AllocatorType>::apply(allocator, blk);
+			allocator.DeallocateAligned(blk);
 		}
-		else
+		else if constexpr (!IsAligned && detail::CanDeallocate<AllocatorType>::value)
 		{
 			// Allocate was used
 			const auto pPrefix = allocator.Allocator().GetPrefixObject(blk);
 			blk.Size = pPrefix->Size;
 
-			detail::DeallocateIf<AllocatorType>::apply(allocator, blk);
+			allocator.Deallocate(blk);
 		}
 	}
 

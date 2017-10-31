@@ -14,6 +14,7 @@
 #pragma once
 
 #include <cassert>
+#include <climits>
 #include <cstdint>
 
 //////////////////////////////////////////////////////////////////////////////
@@ -88,30 +89,30 @@ struct Epic::detail::HeapBitmap
 	StorageType Blocks[BlockCount];
 
 	// Reset all bits to 0
-	inline void Reset() noexcept
+	constexpr void Reset() noexcept
 	{
 		for (size_t i = 0; i < BlockCount; ++i)
 			Blocks[i] = AllZero;
 	}
 
 	// Set bit at location to 0
-	inline void Unset(const size_t location) noexcept
+	void Unset(size_t location) noexcept
 	{
 		Set(location, false);
 	}
 
 	// Set bits from start to start+count to 0
-	inline void Unset(const size_t start, const size_t count) noexcept
+	void Unset(size_t start, size_t count) noexcept
 	{
 		Set(start, count, false);
 	}
 
 	// Set bit at location to value
-	void Set(const size_t location, const bool value = true) noexcept
+	void Set(size_t location, bool value = true) noexcept
 	{
-		const size_t block = start / BitsPerBlock;
-		const size_t lrem = start % BitsPerBlock;
-		const size_t urem = (start + count) % BitsPerBlock;
+		const size_t block = location / BitsPerBlock;
+		const size_t lrem = location % BitsPerBlock;
+		const size_t urem = (location + 1) % BitsPerBlock;
 
 		assert(block < BlockCount);
 		
@@ -122,7 +123,7 @@ struct Epic::detail::HeapBitmap
 	}
 
 	// Set bits from start to start+count to value
-	void Set(const size_t start, const size_t count, const bool value = true) noexcept
+	void Set(size_t start, size_t count, bool value = true) noexcept
 	{
 		const size_t lbound = start / BitsPerBlock;
 		const size_t ubound = (start + count) / BitsPerBlock;
@@ -163,7 +164,7 @@ struct Epic::detail::HeapBitmap
 	}
 
 	// Find the first bit where 'length' bits are contiguously free.
-	size_t FindAvailable(const size_t length) const noexcept
+	size_t FindAvailable(size_t length) const noexcept
 	{
 		size_t LBlock = 0;
 		size_t UBlock = length / BitsPerBlock;
@@ -225,7 +226,7 @@ struct Epic::detail::HeapBitmap
 	}
 
 	// Test whether or not 'count' bits are contiguously free from location 'start'
-	bool HasAvailable(const size_t start, const size_t count) const noexcept
+	bool HasAvailable(size_t start, size_t count) const noexcept
 	{
 		const size_t lbound = start / BitsPerBlock;
 		const size_t ubound = (start + count) / BitsPerBlock;

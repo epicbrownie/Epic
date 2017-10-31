@@ -28,15 +28,17 @@ struct Epic::detail::ForceAlignSuffix
 {
 	Epic::MemoryBlock::SizeType AlignPad;
 
-	static inline void Set(const Blk& blk, const Epic::MemoryBlock::SizeType& value) noexcept
+	static void Set(const Blk& blk, Epic::MemoryBlock::SizeType value) noexcept
 	{
-		auto pSuffix = reinterpret_cast<ForceAlignSuffix*>(reinterpret_cast<char*>(blk.Ptr) + blk.Size - sizeof(ForceAlignSuffix));
-		pSuffix->AlignPad = value;
+		reinterpret_cast<ForceAlignSuffix*>(
+			reinterpret_cast<unsigned char*>(blk.Ptr) + blk.Size - sizeof(ForceAlignSuffix)
+		)->AlignPad = value;
 	}
 
-	static inline auto Get(const Blk& blk) noexcept
+	static auto Get(const Blk& blk) noexcept
 	{
-		const auto pSuffix = reinterpret_cast<const ForceAlignSuffix*>(reinterpret_cast<const char*>(blk.Ptr) + blk.Size);
-		return pSuffix->AlignPad;
+		return reinterpret_cast<const ForceAlignSuffix*>(
+			reinterpret_cast<const unsigned char*>(blk.Ptr) + blk.Size
+		)->AlignPad;
 	}
 };

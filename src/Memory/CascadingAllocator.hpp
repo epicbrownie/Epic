@@ -56,7 +56,7 @@ struct Epic::detail::CascadingAllocatorNode
 		: m_Allocator{ }, m_pNext{ nullptr }, m_AllocatedSize{ 0 } 
 	{ }
 
-	explicit CascadingAllocatorNode(const size_t sz)
+	explicit CascadingAllocatorNode(size_t sz)
 		noexcept(std::is_nothrow_default_constructible<Allocator>::value)
 		: m_Allocator{ }, m_pNext{ nullptr }, m_AllocatedSize{ sz }
 	{ }
@@ -108,7 +108,6 @@ protected:
 	using NodePtr = std::conditional_t<IsShared, std::atomic<NodeType*>, Epic::NullAtomic<NodeType*>>;
 
 private:
-	static constexpr bool UseAllocate = CanAllocate<NodeA>::value;
 	static constexpr size_t NodeSize = CalcCascadingAllocatorNodeSize<A>::value;
 	
 	static_assert(NodeSize <= NodeA::MaxAllocSize, "This node allocator's maximum allocation size is too low to hold the allocator nodes.");
@@ -169,10 +168,10 @@ protected:
 		Blk blk;
 
 		// Allocate a block to place the new node		
-		if (UseAllocate)
-			blk = AllocateIf<NodeA>::apply(m_NodeAllocator, NodeSize);
-		else
-			blk = AllocateAlignedIf<NodeA>::apply(m_NodeAllocator, NodeSize, NodeA::Alignment);
+		if constexpr (CanAllocate<NodeA>::value)
+			blk = m_NodeAllocator.Allocate(NodeSize);
+		else if constexpr (CanAllocateAligned<NodeA>::value)
+			blk = m_NodeAllocator.AllocateAligned(NodeSize, NodeA::Alignment);
 
 		// Verify the block
 		if (!blk) 
@@ -204,30 +203,29 @@ protected:
 
 			pNode->~CascadingAllocatorNode();
 
-			if (!CanDeallocateAll<NodeA>::value)
+			if constexpr (!CanDeallocateAll<NodeA>::value)
 			{
 				Blk blk{ pNode, nodesz };
 
-				if (UseAllocate)
-					DeallocateIf<NodeA>::apply(m_NodeAllocator, blk);
+				if constexpr (CanAllocate<NodeA>::value)
+					m_NodeAllocator.Deallocate(blk);
 				else
-					DeallocateAlignedIf<NodeA>::apply(m_NodeAllocator, blk);
+					m_NodeAllocator.DeallocateAligned(blk);
 			}
 
 			m_pAllocNodes.store(pNextNode, std::memory_order_release);
 		}
 
-		DeallocateAllIf<NodeA>::apply(m_NodeAllocator);
+		if constexpr (CanDeallocateAll<NodeA>::value)
+			m_NodeAllocator.DeallocateAll();
 	}
 
 	void DeallocateAllInNodes() noexcept
 	{
-		auto pNode = GetNodeList();
-
-		while (pNode)
+		if constexpr (CanDeallocateAll<A>::value)
 		{
-			DeallocateAllIf<A>::apply(pNode->m_Allocator);
-			pNode = pNode->m_pNext;
+			for (auto pNode = GetNodeList(); pNode; pNode = pNode->m_pNext)
+				pNode->m_Allocator.DeallocateAll();
 		}
 	}
 };
@@ -248,7 +246,6 @@ protected:
 	using NodePtr = std::conditional_t<IsShared, std::atomic<NodeType*>, Epic::NullAtomic<NodeType*>>;
 
 private:
-	static constexpr bool UseAllocate = CanAllocate<A>::value;
 	static constexpr size_t NodeSize = CalcCascadingAllocatorNodeSize<A>::value;
 	
 	static_assert(NodeSize <= A::MaxAllocSize, "This allocator's maximum allocation size is too low to hold the allocator nodes.");
@@ -308,13 +305,14 @@ protected:
 		NodeType node;
 		Blk blk;
 
-		if (UseAllocate)
-			blk = AllocateIf<A>::apply(node.m_Allocator, NodeSize);
-		else
-			blk = AllocateAlignedIf<A>::apply(node.m_Allocator, NodeSize, A::Alignment);
-
+		if constexpr (CanAllocate<A>::value)
+			blk = node.m_Allocator.Allocate(NodeSize);
+		else if constexpr (CanAllocateAligned<A>::value)
+			blk = node.m_Allocator.AllocateAligned(NodeSize, A::Alignment);
+		
 		// Verify the block
-		if (!blk) return nullptr;
+		if (!blk) 
+			return nullptr;
 
 		// Prepare the node for transfer
 		node.m_AllocatedSize = blk.Size;
@@ -346,10 +344,10 @@ protected:
 			Blk blk{ pNode, node.m_AllocatedSize };
 			pNode->~CascadingAllocatorNode();
 
-			if (UseAllocate)
-				DeallocateIf<A>::apply(node.m_Allocator, blk);
+			if constexpr (CanAllocate<NodeA>::value)
+				node.m_Allocator.Deallocate(blk);
 			else
-				DeallocateAlignedIf<A>::apply(node.m_Allocator, blk);
+				node.m_Allocator.DeallocateAligned(blk);
 
 			m_pAllocNodes.store(pNextNode, std::memory_order_release);
 		}
@@ -357,12 +355,10 @@ protected:
 
 	void DeallocateAllInNodes() noexcept
 	{
-		auto pNode = GetNodeList();
-
-		while (pNode)
+		if constexpr (CanDeallocateAll<A>::value)
 		{
-			DeallocateAllIf<A>::apply(pNode->m_Allocator);
-			pNode = pNode->m_pNext;
+			for (auto pNode = GetNodeList(); pNode; pNode = pNode->m_pNext)
+				pNode->m_Allocator.DeallocateAll();
 		}
 	}
 };
@@ -404,39 +400,29 @@ public:
 	CascadingAllocatorImpl& operator = (Type&& obj) = delete;
 	
 private:
-	Blk TryAllocate(const size_t sz) noexcept
+	Blk TryAllocate(size_t sz) noexcept
 	{
-		if (!detail::CanAllocate<A>::value)
-			return{ nullptr, 0 };
-
-		Blk result;
-		auto pNode = GetNodeList();
-
-		while (pNode)
+		if constexpr (detail::CanAllocate<A>::value)
 		{
-			if (result = detail::AllocateIf<A>::apply(pNode->m_Allocator, sz))
-				return result;
-
-			pNode = pNode->m_pNext;
+			for (auto pNode = GetNodeList(); pNode; pNode = pNode->m_pNext)
+			{
+				if (Blk result = pNode->m_Allocator.Allocate(sz); result)
+					return result;
+			}
 		}
 
 		return{ nullptr, 0 };
 	}
 
-	Blk TryAllocateAligned(const size_t sz, const size_t alignment) noexcept
+	Blk TryAllocateAligned(size_t sz, size_t alignment) noexcept
 	{
-		if (!detail::CanAllocateAligned<A>::value)
-			return{ nullptr, 0 };
-
-		Blk result;
-		auto pNode = GetNodeList();
-
-		while (pNode)
+		if constexpr (detail::CanAllocateAligned<A>::value)
 		{
-			if (result = detail::AllocateAlignedIf<A>::apply(pNode->m_Allocator, sz, alignment))
-				return result;
-
-			pNode = pNode->m_pNext;
+			for (auto pNode = GetNodeList(); pNode; pNode = pNode->m_pNext)
+			{
+				if (Blk result = pNode->m_Allocator.AllocateAligned(sz, alignment); result)
+					return result;
+			}
 		}
 
 		return{ nullptr, 0 };
@@ -452,7 +438,7 @@ public:
 public:
 	/* Returns a block of uninitialized memory. */
 	template<typename = std::enable_if_t<detail::CanAllocate<A>::value>>
-	Blk Allocate(const size_t sz) noexcept
+	Blk Allocate(size_t sz) noexcept
 	{
 		// Verify that the requested size is within our allowed bounds
 		if (sz == 0 || sz < MinAllocSize || sz > MaxAllocSize)
@@ -472,7 +458,7 @@ public:
 
 	/* Returns a block of uninitialized memory (aligned to alignment). */
 	template<typename = std::enable_if_t<detail::CanAllocateAligned<A>::value>>
-	Blk AllocateAligned(const size_t sz, const size_t alignment = Alignment) noexcept
+	Blk AllocateAligned(size_t sz, size_t alignment = Alignment) noexcept
 	{
 		// Verify that the alignment is acceptable
 		if (!Epic::detail::IsGoodAlignment(alignment))
@@ -496,25 +482,23 @@ public:
 
 	/* Attempts to reallocate the memory of blk to the new size sz. */
 	template<typename = std::enable_if_t<detail::CanAllocate<A>::value>>
-	bool Reallocate(Blk& blk, const size_t sz)
+	bool Reallocate(Blk& blk, size_t sz)
 	{
 		// If the block isn't valid, delegate to Allocate
 		if (!blk)
 		{
-			blk = detail::AllocateIf<Type>::apply(*this, sz);
-			return (bool)blk;
+			if constexpr (detail::CanAllocate<Type>::value)
+				return (bool)(blk = Allocate(sz));
 		}
 
 		// If the requested size is zero, delegate to Deallocate
 		if (sz == 0)
 		{
-			if (detail::CanDeallocate<Type>::value)
-			{
-				detail::DeallocateIf<Type>::apply(*this, blk);
-				blk = { nullptr, 0 };
-			}
+			if constexpr (detail::CanDeallocate<Type>::value)
+				Deallocate(blk);
 
-			return detail::CanDeallocate<Type>::value;
+			blk = { nullptr, 0 };
+			return true;
 		}
 
 		// Verify that the requested size is within our allowed bounds
@@ -522,12 +506,12 @@ public:
 			return false;
 
 		// First, attempt to reallocate it via the owning allocator
-		if (detail::CanReallocate<A>::value)
+		if constexpr (detail::CanReallocate<A>::value)
 		{
 			auto pNode = FindOwner(blk);
 			assert(pNode && "CascadingAllocator::Reallocate - Attempted to reallocate a block that was not allocated through this allocator");
 
-			if (detail::ReallocateIf<A>::apply(pNode->m_Allocator, blk, sz))
+			if (pNode->m_Allocator.Reallocate(blk, sz))
 				return true;
 		}
 
@@ -538,7 +522,7 @@ public:
 
 	/* Attempts to reallocate the memory of blk (aligned to alignment) to the new size sz. */
 	template<typename = std::enable_if_t<detail::CanAllocateAligned<A>::value>>
-	bool ReallocateAligned(Blk& blk, const size_t sz, const size_t alignment = A::Alignment)
+	bool ReallocateAligned(Blk& blk, size_t sz, size_t alignment = A::Alignment)
 	{
 		// Verify that the alignment is acceptable
 		if (!Epic::detail::IsGoodAlignment(alignment))
@@ -547,20 +531,18 @@ public:
 		// If the block isn't valid, delegate to AllocateAligned
 		if (!blk)
 		{
-			blk = detail::AllocateAlignedIf<Type>::apply(*this, sz, alignment);
-			return (bool)blk;
+			if constexpr (detail::CanAllocateAligned<Type>::value)
+				return (bool)(blk = AllocateAligned(sz, alignment));
 		}
 
 		// If the requested size is zero, delegate to DeallocateAligned
 		if (sz == 0)
 		{
-			if (detail::CanDeallocateAligned<Type>::value)
-			{
-				detail::DeallocateAlignedIf<Type>::apply(*this, blk);
-				blk = { nullptr, 0 };
-			}
+			if constexpr (detail::CanDeallocateAligned<Type>::value)
+				DeallocateAligned(blk);
 
-			return detail::CanDeallocateAligned<Type>::value;
+			blk = { nullptr, 0 };
+			return true;
 		}
 
 		// Verify that the requested size is within our allowed bounds
@@ -568,18 +550,18 @@ public:
 			return false;
 
 		// First, attempt to reallocate it via the owning allocator
-		if (detail::CanReallocateAligned<A>::value)
+		if constexpr (detail::CanReallocateAligned<A>::value)
 		{
 			auto pNode = FindOwner(blk);
 			assert(pNode && "CascadingAllocator::ReallocateAligned - Attempted to reallocate a block that was not allocated through this allocator");
 
-			if (detail::ReallocateAlignedIf<A>::apply(pNode->m_Allocator, blk, sz, alignment))
+			if (pNode->m_Allocator.ReallocateAligned(blk, sz, alignment))
 				return true;
 		}
 
 		// Now attempt to reallocate using a helper.
 		// This could result in the allocation being moved to another node.
-		return detail::AlignedReallocator<Type>::ReallocateViaCopy(*this, blk, sz, alignment);
+		return detail::AlignedReallocator<Type>::ReallocateAlignedViaCopy(*this, blk, sz, alignment);
 	}
 
 public:
