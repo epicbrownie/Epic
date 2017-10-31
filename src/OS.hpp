@@ -15,71 +15,67 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-// Detect current Operating System target amongst supported systems
-#ifndef WindowsOS
-	#if defined(_WIN64)
-		#define _Win64									// Windows 64-bit
-		#define WindowsOS
-	#elif defined(_WIN32)
-		#define _Win32									// Windows 32-bit
-		#define WindowsOS
-	#elif defined(WIN32)
-		#define _Win32									// Windows 32-bit
-		#define WindowsOS
-	#elif defined(__WIN32__)							// Windows 32-bit
-		#define _Win32
-		#define WindowsOS
-	#elif defined(__Win32__)							// Windows 32-bit
-		#define _Win32
-		#define WindowsOS
-	#elif defined(_WINDOWS)								// Windows
-		#define WindowsOS
-	#elif defined(__INTEL__) && defined(__MWERKS__)		// Windows 32-bit
-		// Metrowerks CodeWarrior doesn't build anything other than Win32 on INTEL, no DOS
-		#define WindowsOS
-		#define _Win32
-	#endif
-#else
-	#if defined __Win32__ || defined _WIN32
-		#ifndef _Win32
-			#define _Win32
-		#endif
-	#endif
-#endif
-
-// If not a DOS machine by now, may be Mac or Unix
-// cope with Metrowerks and Symantec (and MPW?)
-#ifndef MacOS
-	#ifdef macintosh
-		#define _Macintosh
-		static_assert(false, "Mac is not supported at this time.");
-	#endif
-#endif
-
-// Assume a unix system
-#if !defined(MacOS) && !defined(WindowsOS)
-	#define _Unix
-	static_assert(false, "Unix is not supported at this time.");
-#endif
+namespace Epic
+{
+	enum class eOS { Windows, Linux, Mac };
+	enum class eArchitecture { x86, x64 };
+}
 
 //////////////////////////////////////////////////////////////////////////////
 
-// Operating system consts
-#ifdef WindowsOS
-	static constexpr bool _IsWindows = true;
-	static constexpr bool _IsUnix = false;
-	static constexpr bool _IsMac = false;
-#elif defined(MacOS)
-	static_assert(false, "Dont forget to define _DEBUG in debug builds");
-	static constexpr bool _IsWindows = false;
-	static constexpr bool _IsUnix = false;
-	static constexpr bool _IsMac = true;
-#else
-	static_assert(false, "Dont forget to define _DEBUG in debug builds");
-	static constexpr bool _IsWindows = false;
-	static constexpr bool _IsUnix = true;
-	static constexpr bool _IsMac = false;
-#endif
+// Detect current Operating System target amongst supported systems
+namespace Epic
+{
+	#if defined(_WIN64)
+		constexpr eOS OS = eOS::Windows;
+		constexpr eArchitecture Architecture = eArchitecture::x64;
+		#define WindowsOS
+	#elif defined(_WIN32)
+		constexpr eOS OS = eOS::Windows;
+		constexpr eArchitecture Architecture = eArchitecture::x86;
+		#define WindowsOS
+	#elif defined(WIN32)
+		constexpr eOS OS = eOS::Windows;
+		constexpr eArchitecture Architecture = eArchitecture::x86;
+		#define WindowsOS
+	#elif defined(__WIN32__)
+		constexpr eOS OS = eOS::Windows;
+		constexpr eArchitecture Architecture = eArchitecture::x86;
+		#define WindowsOS
+	#elif defined(__Win32__)
+		constexpr eOS OS = eOS::Windows;
+		constexpr eArchitecture Architecture = eArchitecture::x86;
+		#define WindowsOS
+	#elif defined(_WINDOWS)
+		constexpr eOS OS = eOS::Windows;
+		constexpr eArchitecture Architecture = eArchitecture::x86;
+		#define WindowsOS
+	#elif defined(__INTEL__) && defined(__MWERKS__)		// Windows 32-bit
+		// Metrowerks CodeWarrior doesn't build anything other than Win32 on INTEL, no DOS
+		constexpr eOS OS = eOS::Windows;
+		constexpr eArchitecture Architecture = eArchitecture::x86;
+		#define WindowsOS
+	#endif
+
+	// If not a DOS machine by now, may be Mac or Unix
+	// cope with Metrowerks and Symantec (and MPW?)
+	#ifndef MacOS
+		#ifdef macintosh
+			constexpr eOS OS = eOS::Mac;
+			constexpr eArchitecture Architecture = eArchitecture::x86; // Unknown
+			#define MacOS
+			static_assert(false, "Mac is not supported at this time.");
+		#endif
+	#endif
+
+	// Assume a unix system
+	#if !defined(MacOS) && !defined(WindowsOS)
+		constexpr eOS OS = eOS::Linux;
+		constexpr eArchitecture Architecture = eArchitecture::x86; // Unknown
+		#define LinuxOS
+		static_assert(false, "Unix is not supported at this time.");
+	#endif
+}
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -108,6 +104,6 @@
 	#include <objbase.h>
 
 	#ifndef RI_MOUSE_HORIZONTAL_WHEEL
-	#define RI_MOUSE_HORIZONTAL_WHEEL 0x0800
+		#define RI_MOUSE_HORIZONTAL_WHEEL 0x0800
 	#endif
 #endif

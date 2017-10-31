@@ -311,9 +311,6 @@
     <ClInclude Include="src\Event.hpp">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="src\OS.h">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="src\Specs.hpp">
       <Filter>Core</Filter>
     </ClInclude>
@@ -559,6 +556,9 @@
     </ClInclude>
     <ClInclude Include="src\Memory\SegBucket.hpp">
       <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="src\OS.hpp">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

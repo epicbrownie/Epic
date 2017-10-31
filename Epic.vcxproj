@@ -142,7 +142,7 @@
     <ClInclude Include="src\NullAtomic.hpp" />
     <ClInclude Include="src\NullMutex.hpp" />
     <ClInclude Include="src\NumericalResolver.hpp" />
-    <ClInclude Include="src\OS.h" />
+    <ClInclude Include="src\OS.hpp" />
     <ClInclude Include="src\Singleton.hpp" />
     <ClInclude Include="src\Sound.hpp" />
     <ClInclude Include="src\Specs.hpp" />

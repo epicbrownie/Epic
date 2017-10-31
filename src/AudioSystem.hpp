@@ -16,7 +16,7 @@
 #include <Epic/AudioTypes.hpp>
 #include <Epic/AudioBus.hpp>
 #include <Epic/Event.hpp>
-#include <Epic/OS.h>
+#include <Epic/OS.hpp>
 #include <Epic/Sound.hpp>
 #include <Epic/VolumeControl.hpp>
 #include <Epic/StringHash.hpp>
@@ -125,16 +125,16 @@ private:
 public:
 	AudioSystem() noexcept
 	{
-#ifdef WindowsOS
-		::CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
-#endif
+		#ifdef WindowsOS
+			::CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+		#endif
 	}
 
 	~AudioSystem() noexcept
 	{
-#ifdef WindowsOS
-		::CoUninitialize();
-#endif
+		#ifdef WindowsOS
+			::CoUninitialize();
+		#endif
 	}
 
 public:
