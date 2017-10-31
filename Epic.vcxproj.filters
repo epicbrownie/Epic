@@ -557,6 +557,9 @@
     <ClInclude Include="src\Math\detail\SVectorFwd.hpp">
       <Filter>Math\detail</Filter>
     </ClInclude>
+    <ClInclude Include="src\Memory\SegBucket.hpp">
+      <Filter>Memory</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Memory\NullAllocator.cpp">

@@ -93,7 +93,7 @@ public:
 		{
 			// 'mat' is the same size as this matrix
 			for (size_t n = 0; n < Size; ++n)
-				Values[n] = static_cast<T>(mat[n]);
+				Values[n] = static_cast<T>(mat.Values[n]);
 		}
 	}
 
@@ -346,10 +346,10 @@ public:
 
 		Values =
 		{
-			dot - light[0] * ground[0], -light[0] * ground[1], -light[0] * ground[2], -light[0] * ground[3],
-			-light[1] * ground[0], dot - light[1] * ground[1], -light[1] * ground[2], -light[1] * ground[3],
-			-light[2] * ground[0], -light[2] * ground[1], dot - light[2] * ground[2], -light[2] * ground[3],
-			-light[3] * ground[0], -light[3] * ground[1], -light[3] * ground[2], dot - light[3] * ground[3]
+			dot - light.x * ground.x, -light.x * ground.y, -light.x * ground.z, -light.x * ground.w,
+			-light.y * ground.x, dot - light.y * ground.y, -light.y * ground.z, -light.y * ground.w,
+			-light.z * ground.x, -light.z * ground.y, dot - light.z * ground.z, -light.z * ground.w,
+			-light.w * ground.x, -light.w * ground.y, -light.w * ground.z, dot - light.w * ground.w
 		};
 	}
 
@@ -432,10 +432,10 @@ public:
 
 		for (size_t i = 0; i < ColumnCount; ++i)
 		{
-			vec[i] = src[0] * Values[i];
+			vec.Values[i] = src.Values[0] * Values[i];
 
 			for (size_t j = 1; j < ColumnCount; ++j)
-				vec[i] += src[j] * Values[(ColumnType::Size * j) + i];
+				vec.Values[i] += src.Values[j] * Values[(ColumnType::Size * j) + i];
 		}
 	}
 
@@ -447,12 +447,12 @@ public:
 
 		for (size_t i = 0; i < ColumnCount - 1; ++i)
 		{
-			vec[i] = src[0] * Values[i];
+			vec.Values[i] = src.Values[0] * Values[i];
 
 			for (size_t j = 1; j < (ColumnCount - 1); ++j)
-				vec[i] += src[j] * Values[(ColumnType::Size * j) + i];
+				vec.Values[i] += src.Values[j] * Values[(ColumnType::Size * j) + i];
 
-			vec[i] += Values[(ColumnType::Size * (ColumnCount - 1)) + i];
+			vec.Values[i] += Values[(ColumnType::Size * (ColumnCount - 1)) + i];
 		}
 	}
 
@@ -463,10 +463,10 @@ public:
 
 		for (size_t i = 0; i < ColumnType::Size; ++i)
 		{
-			vec[i] = src[0] * Values[ColumnCount * i];
+			vec.Values[i] = src.Values[0] * Values[ColumnCount * i];
 
 			for (size_t j = 1; j < ColumnType::Size; ++j)
-				vec[i] += src[j] * Values[(ColumnCount * i) + j];
+				vec.Values[i] += src.Values[j] * Values[(ColumnCount * i) + j];
 		}
 	}
 
@@ -478,12 +478,12 @@ public:
 
 		for (size_t i = 0; i < ColumnType::Size; ++i)
 		{
-			vec[i] = src[0] * Values[ColumnCount * i];
+			vec.Values[i] = src.Values[0] * Values[ColumnCount * i];
 
 			for (size_t j = 1; j < (ColumnType::Size - 1); ++j)
-				vec[i] += src[j] * Values[(ColumnCount * i) + j];
+				vec.Values[i] += src.Values[j] * Values[(ColumnCount * i) + j];
 
-			vec[i] += Values[(ColumnCount * i) + ColumnType::Size - 1];
+			vec.Values[i] += Values[(ColumnCount * i) + ColumnType::Size - 1];
 		}
 	}
 
@@ -561,7 +561,7 @@ public:
 
 		Vector<T, SpanV> values{ arg, args... };
 		for (size_t n = 0; n < SpanV; ++n)
-			Values[DestN + n] = values[n];
+			Values[DestN + n] = values.Values[n];
 
 		return *this;
 	}
@@ -577,7 +577,7 @@ public:
 
 		Vector<T, SpanV> values{ arg, args... };
 		for (size_t n = 0; n < SpanV; ++n)
-			Values[ColumnCount * n + n] = values[n];
+			Values[ColumnCount * n + n] = values.Values[n];
 
 		return *this;
 	}
@@ -659,16 +659,16 @@ public:
 		const auto[sinx, cosx] = angle.SinCos();
 		const T cos1x = T(1) - cosx;
 
-		const T cxx = cos1x * axis[0] * axis[0];
-		const T cyy = cos1x * axis[1] * axis[1];
-		const T czz = cos1x * axis[2] * axis[2];
-		const T cxy = cos1x * axis[0] * axis[1];
-		const T cxz = cos1x * axis[0] * axis[2];
-		const T cyz = cos1x * axis[1] * axis[2];
+		const T cxx = cos1x * axis.Values[0] * axis.Values[0];
+		const T cyy = cos1x * axis.Values[1] * axis.Values[1];
+		const T czz = cos1x * axis.Values[2] * axis.Values[2];
+		const T cxy = cos1x * axis.Values[0] * axis.Values[1];
+		const T cxz = cos1x * axis.Values[0] * axis.Values[2];
+		const T cyz = cos1x * axis.Values[1] * axis.Values[2];
 
-		const T sx = sinx * axis[0];
-		const T sy = sinx * axis[1];
-		const T sz = sinx * axis[2];
+		const T sx = sinx * axis.Values[0];
+		const T sy = sinx * axis.Values[1];
+		const T sz = sinx * axis.Values[2];
 
 		Values[0 * ColumnType::Size + 0] = cxx + cosx;
 		Values[0 * ColumnType::Size + 1] = cxy + sz;
@@ -758,46 +758,46 @@ public:
 			
 			return
 			{
-				(Columns[1][2] - Columns[2][1]) / sqt,
-				(Columns[2][0] - Columns[0][2]) / sqt,
-				(Columns[0][1] - Columns[1][0]) / sqt,
+				(Columns[1].Values[2] - Columns[2].Values[1]) / sqt,
+				(Columns[2].Values[0] - Columns[0].Values[2]) / sqt,
+				(Columns[0].Values[1] - Columns[1].Values[0]) / sqt,
 				sqt / T(4)
 			};
 		}
-		else if(Columns[0][0] > Columns[1][1] && Columns[0][0] > Columns[2][2])
+		else if(Columns[0].Values[0] > Columns[1].Values[1] && Columns[0].Values[0] > Columns[2].Values[2])
 		{
-			const auto sqt = std::sqrt(T(1) + Columns[0][0] - Columns[1][1] - Columns[2][2]) * T(2);
+			const auto sqt = std::sqrt(T(1) + Columns[0].Values[0] - Columns[1].Values[1] - Columns[2].Values[2]) * T(2);
 			
 			return
 			{
 				sqt / T(4),
-				(Columns[0][1] + Columns[1][0]) / sqt,
-				(Columns[2][0] + Columns[0][2]) / sqt,
-				(Columns[1][2] + Columns[2][1]) / sqt
+				(Columns[0].Values[1] + Columns[1].Values[0]) / sqt,
+				(Columns[2].Values[0] + Columns[0].Values[2]) / sqt,
+				(Columns[1].Values[2] + Columns[2].Values[1]) / sqt
 			};
 		}
-		else if(Columns[1][1] > Columns[2][2])
+		else if(Columns[1].Values[1] > Columns[2].Values[2])
 		{
-			const auto sqt = std::sqrt(T(1) + Columns[1][1] - Columns[0][0] - Columns[2][2]) * T(2);
+			const auto sqt = std::sqrt(T(1) + Columns[1].Values[1] - Columns[0].Values[0] - Columns[2].Values[2]) * T(2);
 			
 			return
 			{
-				(Columns[0][1] + Columns[1][0]) / sqt,
+				(Columns[0].Values[1] + Columns[1].Values[0]) / sqt,
 				sqt / T(4),
-				(Columns[1][2] + Columns[2][1]) / sqt,
-				(Columns[2][0] + Columns[0][2]) / sqt
+				(Columns[1].Values[2] + Columns[2].Values[1]) / sqt,
+				(Columns[2].Values[0] + Columns[0].Values[2]) / sqt
 			};
 		}
 		else
 		{
-			const auto sqt = std::sqrt(T(1) + Columns[2][2] - Columns[0][0] - Columns[1][1]) * T(2);
+			const auto sqt = std::sqrt(T(1) + Columns[2].Values[2] - Columns[0].Values[0] - Columns[1].Values[1]) * T(2);
 			
 			return
 			{
-				(Columns[2][0] + Columns[0][2]) / sqt,
-				(Columns[1][2] + Columns[2][1]) / sqt,
+				(Columns[2].Values[0] + Columns[0].Values[2]) / sqt,
+				(Columns[1].Values[2] + Columns[2].Values[1]) / sqt,
 				sqt / T(4),
-				(Columns[0][1] + Columns[1][0]) / sqt
+				(Columns[0].Values[1] + Columns[1].Values[0]) / sqt
 			};
 		}
 	}
@@ -828,7 +828,7 @@ public:
 		for (size_t i = 0; i < ColumnCount; ++i)
 		{
 			for (size_t j = 0; j < ColumnType::Size; ++j)
-				result[i] += Columns[j] * mat.Columns[i][j];
+				result.Columns[i] += Columns[j] * mat.Columns[i].Values[j];
 		}
 
 		return (*this = result);
@@ -921,26 +921,26 @@ public:
 
 				if (column != i)
 				{
-					auto cv = upper[column];
-					upper[column] = upper[i];
-					upper[i] = cv;
+					auto cv = upper.Columns[column];
+					upper.Columns[column] = upper.Columns[i];
+					upper.Columns[i] = cv;
 
-					cv = lower[column];
-					lower[column] = lower[i];
-					lower[i] = cv;
+					cv = lower.Columns[column];
+					lower.Columns[column] = lower.Columns[i];
+					lower.Columns[i] = cv;
 				}
 
 				// Reduce the diagonal (Column multiplication ERO)
 				const T tc = T(1) / upper.Values[(i * ColumnType::Size) + i];
-				lower[i] *= tc;
-				upper[i] *= tc;
+				lower.Columns[i] *= tc;
+				upper.Columns[i] *= tc;
 
 				// Zero the column i at column > i (Column addition ERO)
 				for (size_t j = i + 1; j < ColumnCount; ++j)
 				{
 					const T t = upper.Values[(j * ColumnType::Size) + i];
-					upper[j] -= upper[i] * t;
-					lower[j] -= lower[i] * t;
+					upper.Columns[j] -= upper.Columns[i] * t;
+					lower.Columns[j] -= lower.Columns[i] * t;
 
 					upper.Values[(j * ColumnType::Size) + i] = T(0);
 				}
@@ -953,8 +953,8 @@ public:
 					size_t js = static_cast<size_t>(j);
 
 					const T t = upper.Values[(js * ColumnType::Size) + i];
-					lower[js] -= lower[i] * t;
-					upper[js] -= upper[i] * t;
+					lower.Columns[js] -= lower.Columns[i] * t;
+					upper.Columns[js] -= upper.Columns[i] * t;
 				}
 			}
 
@@ -971,7 +971,7 @@ public:
 			Columns[i][ColumnType::Size - 1] = -Columns[i].Dot(Columns[ColumnCount - 1]);
 
 		Columns[ColumnCount - 1] = T(0);
-		Columns[ColumnCount - 1][ColumnType::Size - 1] = T(1);
+		Columns[ColumnCount - 1].Values[ColumnType::Size - 1] = T(1);
 
 		// NOTE: *this is now equal to the transposed inverse
 
@@ -1152,7 +1152,7 @@ public:
 		Type result;
 
 		for (size_t n = 0; n < Size; ++n)
-			result[n] = -Values[n];
+			result.Values[n] = -Values[n];
 
 		return result;
 	}
@@ -1199,23 +1199,24 @@ public:
 
 	//////
 
-	#define CREATE_SCALAR_ASSIGNMENT_OPERATOR(Op)			\
-															\
-	Type& operator Op (T value) noexcept					\
-	{														\
-		for (size_t n = 0; n < Size; ++n)					\
-			Values[n] Op value;								\
-															\
-		return *this;										\
-	}														\
-															\
-	template<class U>										\
-	Type& operator Op (const U(&values)[Size]) noexcept		\
-	{														\
-		for (size_t n = 0; n < Size; ++n)					\
-			Values[n] Op values[n];							\
-															\
-		return *this;										\
+	#define CREATE_SCALAR_ASSIGNMENT_OPERATOR(Op)					\
+																	\
+	Type& operator Op (T value) noexcept							\
+	{																\
+		for (size_t n = 0; n < Size; ++n)							\
+			Values[n] Op value;										\
+																	\
+		return *this;												\
+	}																\
+																	\
+	template<class U,												\
+		typename = std::enable_if_t<std::is_convertible_v<U, T>>>	\
+	Type& operator Op (const U(&values)[Size]) noexcept				\
+	{																\
+		for (size_t n = 0; n < Size; ++n)							\
+			Values[n] Op static_cast<T>(values[n]);					\
+																	\
+		return *this;												\
 	}
 
 	CREATE_SCALAR_ASSIGNMENT_OPERATOR(= );
@@ -1238,7 +1239,8 @@ public:
 		return *this;												\
 	}																\
 																	\
-	template<class U>												\
+	template<class U,												\
+		typename = std::enable_if_t<std::is_convertible_v<U, T>>>	\
 	Type& operator Op (const Matrix<U, S>& mat) noexcept			\
 	{																\
 		for (size_t n = 0; n < Size; ++n)							\
@@ -1269,13 +1271,14 @@ public:
 		return *this;													\
 	}																	\
 																		\
-	template<class U>													\
+	template<class U,													\
+		typename = std::enable_if_t<std::is_convertible_v<U, T>>>		\
 	Type& operator Op (const U(&values)[Size]) noexcept					\
 	{																	\
 		if constexpr (std::is_integral_v<T> && std::is_integral_v<U>)	\
 		{																\
 			for (size_t n = 0; n < Size; ++n)							\
-				Values[n] Op values[n];									\
+				Values[n] Op static_cast<T>(values[n]);					\
 		}																\
 		else static_assert(false,										\
 			"Logical operators are only valid for integral types.");	\
@@ -1308,7 +1311,8 @@ public:
 		return *this;													\
 	}																	\
 																		\
-	template<class U>													\
+	template<class U,													\
+		typename = std::enable_if_t<std::is_convertible_v<U, T>>>		\
 	Type& operator Op (const Matrix<U, S>& mat) noexcept				\
 	{																	\
 		if constexpr (std::is_integral_v<T> && std::is_integral_v<U>)	\
@@ -1356,7 +1360,8 @@ public:
 		return Type(mat) Op= std::move(value);							\
 	}																	\
 																		\
-	template<class U>													\
+	template<class U,													\
+		typename = std::enable_if_t<std::is_convertible_v<U, T>>>		\
 	Type operator Op (const U(&values)[Size]) const	noexcept			\
 	{																	\
 		return Type(*this) Op= values;									\
@@ -1386,7 +1391,8 @@ public:
 		return Type(*this) Op= mat;									\
 	}																\
 																	\
-	template<class U>												\
+	template<class U,												\
+		typename = std::enable_if_t<std::is_convertible_v<U, T>>>	\
 	Type operator Op (const Matrix<U, S>& mat) const noexcept		\
 	{																\
 		return Type(*this) Op= mat;									\
@@ -1429,10 +1435,10 @@ private:
 	}
 
 	template<class U, size_t Sz>
-	void PlaceAt(size_t offset, const Vector<U, Sz>& value) noexcept
+	void PlaceAt(size_t offset, const Vector<U, Sz>& vec) noexcept
 	{
 		for (size_t n = 0; n < Sz; ++n)
-			Values[offset++] = static_cast<T>(value[n]);
+			Values[offset++] = static_cast<T>(vec.Values[n]);
 	}
 
 	template<class VectorT, size_t TS, size_t... Is>
@@ -1442,23 +1448,23 @@ private:
 	}
 
 	template<class U, size_t N>
-	void PlaceAt(size_t offset, const U(&value)[N]) noexcept
+	void PlaceAt(size_t offset, const U(&values)[N]) noexcept
 	{
 		for (size_t n = 0; n < N; ++n)
-			Values[offset++] = static_cast<T>(value[n]);
+			Values[offset++] = static_cast<T>(values[n]);
 	}
 
 	template<class U, size_t Sz>
-	void PlaceAt(size_t offset, const std::array<U, Sz>& value) noexcept
+	void PlaceAt(size_t offset, const std::array<U, Sz>& values) noexcept
 	{
 		for (size_t n = 0; n < Sz; ++n)
-			Values[offset++] = static_cast<T>(value[n]);
+			Values[offset++] = static_cast<T>(values[n]);
 	}
 
 	template<class Val>
-	void PlaceAt(size_t offset, const Val& value) noexcept
+	void PlaceAt(size_t offset, Val value) noexcept
 	{
-		Values[offset] = static_cast<T>(value);
+		Values[offset] = std::move(static_cast<T>(value));
 	}
 
 	#pragma endregion
@@ -1496,7 +1502,7 @@ private:
 
 			// Transform it into a cofactor vector
 			for (size_t i = 1; i < N; i += 2)
-				minors[i] = -minors[i];
+				minors.Values[i] = -minors.Values[i];
 
 			// Calculate the determinant
 			return minors.Dot(Columns[0]);
@@ -1524,7 +1530,7 @@ private:
 			}
 
 			// Set this minors value to the minor's determinant
-			minors[c] = minor.DeterminantHelper<N - 1>();
+			minors.Values[c] = minor.DeterminantHelper<N - 1>();
 		}
 
 		return minors;

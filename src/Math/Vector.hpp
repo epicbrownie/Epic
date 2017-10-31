@@ -43,7 +43,7 @@ public:
 	using value_type = T;
 	constexpr static size_t Size = S;
 
-private:
+public:
 	using Base::Values;
 
 public:
@@ -63,7 +63,7 @@ public:
 	explicit Vector(const Vector<U, Size>& vec) noexcept
 	{
 		for (size_t n = 0; n < Size; ++n)
-			Values[n] = static_cast<T>(vec[n]);
+			Values[n] = static_cast<T>(vec.Values[n]);
 	}
 
 	// Constructs a vector from a list of values.
@@ -229,22 +229,22 @@ public:
 			static_assert(false, "Cannot compute the cross product of a Vector of size 1.")
 
 		else if constexpr (Size == 2)
-			return T{ Values[0] * vec[1] - Values[1] * vec[0] };
+			return T{ Values[0] * vec.Values[1] - Values[1] * vec.Values[0] };
 
 		else if constexpr (Size == 3)
 			return Type
 			{
-				Values[1] * vec[2] - Values[2] * vec[1],
-				Values[2] * vec[0] - Values[0] * vec[2],
-				Values[0] * vec[1] - Values[1] * vec[0]
+				Values[1] * vec.Values[2] - Values[2] * vec.Values[1],
+				Values[2] * vec.Values[0] - Values[0] * vec.Values[2],
+				Values[0] * vec.Values[1] - Values[1] * vec.Values[0]
 			};
 
 		else if constexpr (Size > 3)
 		{
 			Type result;
-			result[0] = Values[1] * vec[2] - Values[2] * vec[1];
-			result[1] = Values[2] * vec[0] - Values[0] * vec[2];
-			result[2] = Values[0] * vec[1] - Values[1] * vec[0];
+			result.Values[0] = Values[1] * vec.Values[2] - Values[2] * vec.Values[1];
+			result.Values[1] = Values[2] * vec.Values[0] - Values[0] * vec.Values[2];
+			result.Values[2] = Values[0] * vec.Values[1] - Values[1] * vec.Values[0];
 			return result;
 		}
 	}
@@ -253,23 +253,29 @@ public:
 	constexpr T Dot(Type vec) const noexcept
 	{
 		if constexpr (Size == 1)
-			return Values[0] * vec[0];
+			return Values[0] * vec.Values[0];
 
 		else if constexpr (Size == 2)
-			return Values[0] * vec[0] + Values[1] * vec[1];
+			return Values[0] * vec.Values[0] + 
+				   Values[1] * vec.Values[1];
 
 		else if constexpr (Size == 3)
-			return Values[0] * vec[0] + Values[1] * vec[1] + Values[2] * vec[2];
+			return Values[0] * vec.Values[0] + 
+				   Values[1] * vec.Values[1] + 
+				   Values[2] * vec.Values[2];
 
 		else if constexpr (Size == 4)
-			return Values[0] * vec[0] + Values[1] * vec[1] + Values[2] * vec[2] + Values[3] * vec[3];
+			return Values[0] * vec.Values[0] + 
+				   Values[1] * vec.Values[1] + 
+				   Values[2] * vec.Values[2] + 
+				   Values[3] * vec.Values[3];
 
 		else if constexpr (Size > 4)
 		{
 			T result = T(0);
 
 			for (size_t n = 0; n < Size; ++n)
-				result += Values[n] * vec[n];
+				result += Values[n] * vec.Values[n];
 
 			return result;
 		}
@@ -320,7 +326,7 @@ public:
 	Type& Power(Type exp) noexcept
 	{
 		for (size_t n = 0; n < Size; ++n)
-			Values[n] = static_cast<T>(std::pow(Values[n], exp[n]));
+			Values[n] = static_cast<T>(std::pow(Values[n], exp.Values[n]));
 	}
 
 	// Calculates the projection of this vector onto unit vector 'axis'
@@ -344,16 +350,16 @@ public:
 	}
 
 	// Calculates the normalized vector of 'vec'
-	static Type NormalOf(const Type& vec) noexcept
+	static Type NormalOf(Type vec) noexcept
 	{
-		return Type(vec).Normalize();
+		return vec.Normalize();
 	}
 
 	// Calculates the normalized vector of 'vec'
 	// Returns a copy of 'vec' if magnitude is 0
-	static Type SafeNormalOf(const Type& vec) noexcept
+	static Type SafeNormalOf(Type vec) noexcept
 	{
-		return Type(vec).NormalizeSafe();
+		return vec.NormalizeSafe();
 	}
 
 	// Calculates the orthonormalized vector of 'vecA' and 'vecB'
@@ -409,34 +415,37 @@ public:
 
 	#define CREATE_ASSIGNMENT_OPERATOR(Op)	\
 																		\
-	template<class U>													\
+	template<class U,													\
+		typename = std::enable_if_t<std::is_convertible_v<U, T>>>		\
 	Type& operator Op (const U(&values)[Size]) noexcept					\
 	{																	\
 		for (size_t n = 0; n < Size; ++n)								\
-			Values[n] Op values[n];										\
+			Values[n] Op static_cast<T>(values[n]);						\
 																		\
 		return *this;													\
 	}																	\
 																		\
-	Type& operator Op (Type vec) noexcept								\
+	Type& operator Op (const Type& vec) noexcept						\
 	{																	\
 		for (size_t n = 0; n < Size; ++n)								\
-			Values[n] Op vec[n];										\
+			Values[n] Op vec.Values[n];									\
 																		\
 		return *this;													\
 	}																	\
 																		\
-	template<class U, size_t Sz>										\
+	template<class U, size_t Sz,										\
+		typename = std::enable_if_t<std::is_convertible_v<U, T>>>		\
 	Type& operator Op (const Vector<U, Sz>& vec) noexcept				\
 	{																	\
 		for (size_t n = 0; n < std::min(Size, Sz); ++n)					\
-			Values[n] Op values[n];										\
+			Values[n] Op static_cast<T>(vec.Values[n]);					\
 																		\
 		return *this;													\
 	}																	\
 																		\
 	template<class U, size_t US, size_t... Is,							\
-		typename = std::enable_if_t<(sizeof...(Is) == Size)>>			\
+		typename = std::enable_if_t<std::is_convertible_v<U, T> &&		\
+									(sizeof...(Is) == Size)>>			\
 	Type& operator Op (const Swizzler<U, US, Is...>& vec) noexcept		\
 	{																	\
 		TMP::ForEach2<													\
@@ -444,7 +453,7 @@ public:
 			TMP::Sequence<size_t, Is...>>								\
 		::Apply([&](size_t iThis, size_t iOther)						\
 		{																\
-			Values[iThis] Op vec.m_Values[iOther];						\
+			Values[iThis] Op static_cast<T>(vec.m_Values[iOther]);		\
 		});																\
 																		\
 		return *this;													\
@@ -470,7 +479,8 @@ public:
 
 	#define CREATE_LOGIC_ASSIGNMENT_OPERATOR(Op)	\
 																			\
-	template<class U>														\
+	template<class U,														\
+		typename = std::enable_if_t<std::is_convertible_v<U, T>>>			\
 	Type& operator Op (const U(&values)[Size]) noexcept						\
 	{																		\
 		if constexpr (std::is_integral_v<T> && std::is_integral_v<U>)		\
@@ -483,25 +493,26 @@ public:
 		return *this;														\
 	}																		\
 																			\
-	Type& operator Op (Type vec) noexcept									\
+	Type& operator Op (const Type& vec) noexcept							\
 	{																		\
 		if constexpr (std::is_integral_v<T>)								\
 		{																	\
 			for (size_t n = 0; n < Size; ++n)								\
-				Values[n] Op vec[n];										\
+				Values[n] Op vec.Values[n];									\
 		}																	\
 		else static_assert(false,											\
 			"Operation unavailable for non-integral types");				\
 		return *this;														\
 	}																		\
 																			\
-	template<class U>														\
+	template<class U,														\
+		typename = std::enable_if_t<std::is_convertible_v<U, T>>>			\
 	Type& operator Op (const Vector<U, Size>& vec) noexcept					\
 	{																		\
 		if constexpr (std::is_integral_v<T> && std::is_integral_v<U>)		\
 		{																	\
 			for (size_t n = 0; n < Size; ++n)								\
-				Values[n] Op vec[n];										\
+				Values[n] Op vec.Values[n];									\
 		}																	\
 		else static_assert(false,											\
 			"Operation unavailable for non-integral types");				\
@@ -510,7 +521,8 @@ public:
 	}																		\
 																			\
 	template<class U, size_t US, size_t... Is,								\
-		typename = std::enable_if_t<(sizeof...(Is) == Size)>>				\
+		typename = std::enable_if_t<std::is_convertible_v<U, T> &&			\
+									(sizeof...(Is) == Size)>>				\
 	Type& operator Op (const Swizzler<U, US, Is...>& vec) noexcept			\
 	{																		\
 		if constexpr (std::is_integral_v<T> && std::is_integral_v<U>)		\
@@ -520,7 +532,7 @@ public:
 				TMP::Sequence<size_t, Is...>>								\
 			::Apply([&](size_t iThis, size_t iOther)						\
 			{																\
-				Values[iThis] Op vec.m_Values[iOther];						\
+				Values[iThis] Op static_cast<T>(vec.m_Values[iOther]);		\
 			});																\
 		}																	\
 		else static_assert(false,											\
@@ -556,37 +568,41 @@ public:
 
 	#define CREATE_ARITHMETIC_OPERATOR(Op) 	\
 																			\
-	template<class U>														\
+	template<class U,														\
+		typename = std::enable_if_t<std::is_convertible_v<U, T>>>			\
 	Type operator Op (const U(&values)[Size]) const	noexcept				\
 	{																		\
 		return Type(*this) Op= values;										\
 	}																		\
 																			\
-	Type operator Op (const Type& vec) const noexcept						\
+	Type operator Op (Type vec) const noexcept								\
 	{																		\
-		return Type(*this) Op= vec;											\
+		return Type(*this) Op= std::move(vec);								\
 	}																		\
 																			\
-	template<class U, size_t Sz>											\
-	Type operator Op (const Vector<U, Sz>& vec) const noexcept				\
+	template<class U, size_t Sz,											\
+		typename = std::enable_if_t<std::is_convertible_v<U, T>>>			\
+	Type operator Op (Vector<U, Sz> vec) const noexcept						\
 	{																		\
-		return Type(*this) Op= vec;											\
+		return Type(*this) Op= std::move(vec);								\
 	}																		\
 																			\
-	template<class U, size_t US, size_t... Is>								\
+	template<class U, size_t US, size_t... Is,								\
+		typename = std::enable_if_t<std::is_convertible_v<U, T> &&			\
+									(sizeof...(Is) == Size)>>				\
 	Type operator Op (const Swizzler<U, US, Is...>& vec) const noexcept		\
 	{																		\
 		return Type(*this) Op= vec;											\
 	}																		\
 																			\
-	Type operator Op (const T& value) const noexcept						\
+	Type operator Op (T value) const noexcept								\
 	{																		\
-		return Type(*this) Op= value;										\
+		return Type(*this) Op= std::move(value);							\
 	}																		\
 																			\
-	friend Type operator Op (const T& value, const Type& vec) noexcept		\
+	friend Type operator Op (T value, Type vec) noexcept					\
 	{																		\
-		return Type(value) Op= vec;											\
+		return Type(std::move(value)) Op= std::move(vec);					\
 	}
 
 	CREATE_ARITHMETIC_OPERATOR(+);
@@ -628,36 +644,36 @@ private:
 	}
 
 	template<class U, size_t Sz, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
-	void PlaceAt(size_t offset, const Vector<U, Sz>& value) noexcept
+	void PlaceAt(size_t offset, const Vector<U, Sz>& vec) noexcept
 	{
 		for (size_t n = 0; n < Sz; ++n)
-			Values[offset++] = static_cast<T>(value[n]);
+			Values[offset++] = static_cast<T>(vec.Values[n]);
 	}
 
 	template<class U, size_t US, size_t... Is>
-	void PlaceAt(size_t offset, const Swizzler<U, US, Is...>& value) noexcept
+	void PlaceAt(size_t offset, const Swizzler<U, US, Is...>& vec) noexcept
 	{
-		PlaceAt(offset, value.ToVector());
+		PlaceAt(offset, vec.ToVector());
 	}
 
 	template<class U, size_t N, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
-	void PlaceAt(size_t offset, const U(&value)[N]) noexcept
+	void PlaceAt(size_t offset, const U(&values)[N]) noexcept
 	{
 		for (size_t n = 0; n < N; ++n)
-			Values[offset++] = static_cast<T>(value[n]);
+			Values[offset++] = static_cast<T>(values[n]);
 	}
 
 	template<class U, size_t Sz, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
-	void PlaceAt(size_t offset, const std::array<U, Sz>& value) noexcept
+	void PlaceAt(size_t offset, const std::array<U, Sz>& values) noexcept
 	{
 		for (size_t n = 0; n < Sz; ++n)
-			Values[offset++] = static_cast<T>(value[n]);
+			Values[offset++] = static_cast<T>(values[n]);
 	}
 
 	template<class Val, typename = std::enable_if_t<std::is_convertible_v<Val, T>>>
-	void PlaceAt(size_t offset, const Val& value) noexcept
+	void PlaceAt(size_t offset, Val value) noexcept
 	{
-		Values[offset] = static_cast<T>(value);
+		Values[offset] = std::move(static_cast<T>(value));
 	}
 
 	#pragma endregion
@@ -671,29 +687,20 @@ namespace Epic
 	template<class T, size_t S>
 	Vector<T, S> Vector<T, S>::Project(Type axis) const noexcept
 	{
-		Type result(axis);
-		result *= ProjectionMagnitude(axis);
-		return result;
+		return axis *= ProjectionMagnitude(axis);
 	}
 
 	template<class T, size_t S>
 	Vector<T, S> Vector<T, S>::ProjectN(Type axis) const noexcept
 	{
-		Type result = Type::NormalOf(axis);
-		result *= Dot(result);
-		return result;
+		axis.Normalize();
+		return axis * Dot(axis);
 	}
 
 	template<class T, size_t S>
 	Vector<T, S> Vector<T, S>::Reflect(Type normal) const noexcept
 	{
-		Type n = normal;
-		Type result(*this);
-
-		n *= T(2) * result.Dot(n);
-		result -= n;
-
-		return result;
+		return Type(*this) - (normal * T(2) * Dot(normal));
 	}
 
 	template<class T, size_t S>

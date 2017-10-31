@@ -63,20 +63,16 @@ public:
 	template<class U, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
 	Quaternion(const Quaternion<U>& quat) noexcept
 	{ 
-		Values[0] = static_cast<T>(quat[0]);
-		Values[1] = static_cast<T>(quat[1]);
-		Values[2] = static_cast<T>(quat[2]);
-		Values[3] = static_cast<T>(quat[3]);
+		for (size_t i = 0; i < Size; ++i)
+			Values[i] = static_cast<T>(quat.Values[i]);
 	}
 
 	// Constructs a quaternion from a list of convertible values.
 	template<class U, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
-	Quaternion(const U(&values)[4]) noexcept
+	Quaternion(const U(&values)[Size]) noexcept
 	{ 
-		Values[0] = static_cast<T>(values[0]);
-		Values[1] = static_cast<T>(values[1]);
-		Values[2] = static_cast<T>(values[2]);
-		Values[3] = static_cast<T>(values[3]);
+		for (size_t i = 0; i < Size; ++i)
+			Values[i] = static_cast<T>(values[i]);
 	}
 
 	// Constructs with explicit values
@@ -127,13 +123,13 @@ public:
 	// Constructs a rotation quaternion from an axis and angle
 	Quaternion(Vector<T, 3> axis, Radian<T> angle) noexcept
 	{
-		MakeRotation(std::move(axis[0]), std::move(axis[1]), std::move(axis[2]), std::move(angle));
+		MakeRotation(std::move(axis.x), std::move(axis.y), std::move(axis.z), std::move(angle));
 	}
 
 	// Constructs a rotation quaternion from an axis and angle
 	Quaternion(Vector<T, 4> axis, Radian<T> angle) noexcept
 	{
-		MakeRotation(std::move(axis[0]), std::move(axis[1]), std::move(axis[2]), std::move(angle));
+		MakeRotation(std::move(axis.x), std::move(axis.y), std::move(axis.z), std::move(angle));
 	}
 
 	#pragma endregion
@@ -227,9 +223,9 @@ private:
 		const auto t12 = Values[3] * t3;
 		const auto s = vec;
 
-		vec[0] = (T(1) - (t5 + t6)) * s[0] + (t7 - t12) * s[1] + (t8 + t11) * s[2];
-		vec[1] = (t7 + t12) * s[0] + (T(1) - (t4 + t6)) * s[1] + (t9 - t10) * s[2];
-		vec[2] = (t8 - t11) * s[0] + (t9 + t10) * s[1] + (T(1) - (t4 + t5)) * s[2];
+		vec.x = (T(1) - (t5 + t6)) * s.x + (t7 - t12) * s.y + (t8 + t11) * s.z;
+		vec.y = (t7 + t12) * s.x + (T(1) - (t4 + t6)) * s.y + (t9 - t10) * s.z;
+		vec.z = (t8 - t11) * s.x + (t9 + t10) * s.y + (T(1) - (t4 + t5)) * s.z;
 	}
 
 public:
@@ -312,23 +308,23 @@ public:
 	// Sets this quaternion to a rotation quaternion using an axis and an angle
 	Type& MakeRotation(Vector<T, 3> axis, Radian<T> angle) noexcept
 	{
-		return MakeRotation(axis[0], axis[1], axis[2], std::move(angle));
+		return MakeRotation(std::move(axis.x), std::move(axis.y), std::move(axis.z), std::move(angle));
 	}
 
 	// Sets this quaternion to a rotation quaternion using an axis and an angle
 	Type& MakeRotation(Vector<T, 4> axis, Radian<T> angle) noexcept
 	{
-		return MakeRotation(axis[0], axis[1], axis[2], std::move(angle));
+		return MakeRotation(std::move(axis.x), std::move(axis.y), std::move(axis.z), std::move(angle));
 	}
 
 public:
 	// Calculates the dot product of this quaternion and 'quat'
 	constexpr T Dot(Quaternion quat) const noexcept
 	{
-		return (Values[0] * quat[0]) + 
-			   (Values[1] * quat[1]) + 
-			   (Values[2] * quat[2]) +
-			   (Values[3] * quat[3]);
+		return (Values[0] * quat.Values[0]) + 
+			   (Values[1] * quat.Values[1]) + 
+			   (Values[2] * quat.Values[2]) +
+			   (Values[3] * quat.Values[3]);
 	}
 
 	// Calculates the squared length of this quaternion
@@ -364,10 +360,10 @@ public:
 		const auto ty = Values[1];
 		const auto tz = Values[2];
 		
-		Values[0] = (ty * quat[2]) - (tz * quat[1]) + (Values[3] * quat[0]) + (tx * quat[3]);
-		Values[1] = (tz * quat[0]) - (tx * quat[2]) + (Values[3] * quat[1]) + (ty * quat[3]);
-		Values[2] = (tx * quat[1]) - (ty * quat[0]) + (Values[3] * quat[2]) + (tz * quat[3]);
-		Values[3] = (Values[3] * quat[3]) - ((tx * quat[0]) + (ty * quat[1]) + (tz * quat[2]));
+		Values[0] = (ty * quat.Values[2]) - (tz * quat.Values[1]) + (Values[3] * quat.Values[0]) + (tx * quat.Values[3]);
+		Values[1] = (tz * quat.Values[0]) - (tx * quat.Values[2]) + (Values[3] * quat.Values[1]) + (ty * quat.Values[3]);
+		Values[2] = (tx * quat.Values[1]) - (ty * quat.Values[0]) + (Values[3] * quat.Values[2]) + (tz * quat.Values[3]);
+		Values[3] = (Values[3] * quat.Values[3]) - ((tx * quat.Values[0]) + (ty * quat.Values[1]) + (tz * quat.Values[2]));
 
 		return *this;
 	}
@@ -400,9 +396,9 @@ public:
 
 		if (sina > z)
 		{
-			result[0] = a * Values[0] / sina;
-			result[1] = a * Values[1] / sina;
-			result[2] = a * Values[2] / sina;
+			result.Values[0] = a * Values[0] / sina;
+			result.Values[1] = a * Values[1] / sina;
+			result.Values[2] = a * Values[2] / sina;
 		}
 
 		return result;
@@ -424,9 +420,9 @@ public:
 
 		if (a > z)
 		{
-			result[0] = sina * Values[0] / a;
-			result[1] = sina * Values[1] / a;
-			result[2] = sina * Values[2] / a;
+			result.Values[0] = sina * Values[0] / a;
+			result.Values[1] = sina * Values[1] / a;
+			result.Values[2] = sina * Values[2] / a;
 		}
 
 		return result;
@@ -669,10 +665,10 @@ public:
 
 		const auto invMag = T(1) / quat.MagnitudeSq();
 
-		const auto tqx = -quat[0] * invMag;
-		const auto tqy = -quat[1] * invMag;
-		const auto tqz = -quat[2] * invMag;
-		const auto tqw = quat[3] * invMag;
+		const auto tqx = -quat.Values[0] * invMag;
+		const auto tqy = -quat.Values[1] * invMag;
+		const auto tqz = -quat.Values[2] * invMag;
+		const auto tqw = quat.Values[3] * invMag;
 
 		return *this =
 		{
@@ -733,7 +729,7 @@ public:
 	Type& operator = (Type quat) noexcept
 	{
 		for (size_t i = 0; i < Size; ++i)
-			Values[i] = quat[i];
+			Values[i] = quat.Values[i];
 
 		return *this;
 	}
@@ -741,7 +737,7 @@ public:
 	Type& operator += (Type quat) noexcept
 	{
 		for (size_t i = 0; i < Size; ++i)
-			Values[i] += quat[i];
+			Values[i] += quat.Values[i];
 
 		return *this;
 	}
@@ -749,7 +745,7 @@ public:
 	Type& operator -= (Type quat) noexcept
 	{
 		for (size_t i = 0; i < Size; ++i)
-			Values[i] -= quat[i];
+			Values[i] -= quat.Values[i];
 
 		return *this;
 	}
