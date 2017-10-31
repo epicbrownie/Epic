@@ -53,12 +53,12 @@ struct Epic::StringHashAlgorithm<C, Epic::StringHashAlgorithms::PaulLarson>
 	static constexpr Epic::StringHashAlgorithms Algorithm = Epic::StringHashAlgorithms::PaulLarson;
 	static constexpr HashType DefaultSeed{ 2166136261 };
 
-	static constexpr HashType Hash(const HashType seed = DefaultSeed) noexcept
+	static constexpr HashType Hash(HashType seed = DefaultSeed) noexcept
 	{
 		return seed;
 	}
 
-	static constexpr HashType Hash(const CharType* __restrict str, const size_t length, const HashType seed = DefaultSeed) noexcept
+	static constexpr HashType Hash(const CharType* const __restrict str, size_t length, HashType seed = DefaultSeed) noexcept
 	{
 		HashType hash = seed;
 
@@ -69,7 +69,7 @@ struct Epic::StringHashAlgorithm<C, Epic::StringHashAlgorithms::PaulLarson>
 	}
 
 	template<size_t N, typename = std::enable_if_t<(N > 0)>>
-	static constexpr HashType Hash(const CharType(&str)[N], const HashType seed = DefaultSeed) noexcept
+	static constexpr HashType Hash(const CharType(&str)[N], HashType seed = DefaultSeed) noexcept
 	{
 		HashType hash = seed;
 
@@ -93,12 +93,12 @@ struct Epic::StringHashAlgorithm<C, Epic::StringHashAlgorithms::FNV1a>
 	static constexpr HashType DefaultSeed{ 2166136261 };
 	static constexpr HashType DefaultPrime{ 16777619 };
 
-	static constexpr HashType Hash(const HashType seed = DefaultSeed)
+	static constexpr HashType Hash(HashType seed = DefaultSeed)
 	{
 		return seed;
 	}
 
-	static constexpr HashType Hash(const CharType* __restrict str, const size_t length, const HashType seed = DefaultSeed, const HashType prime = DefaultPrime) noexcept
+	static constexpr HashType Hash(const CharType* const __restrict str, size_t length, HashType seed = DefaultSeed, HashType prime = DefaultPrime) noexcept
 	{
 		HashType hash = seed;
 		
@@ -109,7 +109,7 @@ struct Epic::StringHashAlgorithm<C, Epic::StringHashAlgorithms::FNV1a>
 	}
 
 	template<size_t N, typename = std::enable_if_t<(N > 0)>>
-	static constexpr HashType Hash(const char(&str)[N], const HashType seed = DefaultSeed, const HashType prime = DefaultPrime) noexcept
+	static constexpr HashType Hash(const char(&str)[N], HashType seed = DefaultSeed, HashType prime = DefaultPrime) noexcept
 	{
 		HashType hash = seed;
 

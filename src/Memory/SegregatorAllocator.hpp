@@ -61,19 +61,19 @@ public:
 	constexpr SegregatorAllocator()
 		noexcept(std::is_nothrow_default_constructible<S>::value && std::is_nothrow_default_constructible<L>::value) = default;
 
-	template<typename = std::enable_if_t<std::is_copy_constructible<S>::value && std::is_copy_constructible<L>::value>>
+	template<typename = std::enable_if_t<std::conjunction_v<std::is_copy_constructible<S>, std::is_copy_constructible<L>>>>
 	constexpr SegregatorAllocator(const Type& obj)
 		noexcept(std::is_nothrow_copy_constructible<S>::value && std::is_nothrow_copy_constructible<L>::value)
 		: m_SAllocator{ obj.m_SAllocator }, L{ obj.m_LAllocator }
 	{ }
 
-	template<typename = std::enable_if_t<std::is_move_constructible<S>::value && std::is_move_constructible<L>::value>>
+	template<typename = std::enable_if_t<std::conjunction_v<std::is_move_constructible<S>, std::is_move_constructible<L>>>>
 	constexpr SegregatorAllocator(Type&& obj)
 		noexcept(std::is_nothrow_move_constructible<S>::value && std::is_nothrow_move_constructible<L>::value)
 		: m_SAllocator{ std::move(obj.m_SAllocator) }, m_LAllocator{ std::move(obj.m_LAllocator) }
 	{ }
 
-	template<typename = std::enable_if_t<std::is_copy_assignable<S>::value && std::is_copy_assignable<L>::value>>
+	template<typename = std::enable_if_t<std::conjunction_v<std::is_copy_assignable<S>, std::is_copy_assignable<L>>>>
 	SegregatorAllocator& operator = (const Type& obj)
 		noexcept(std::is_nothrow_copy_assignable<S>::value && std::is_nothrow_copy_assignable<L>::value)
 	{
@@ -83,7 +83,7 @@ public:
 		return *this;
 	}
 
-	template<typename = std::enable_if_t<std::is_move_assignable<S>::value && std::is_move_assignable<L>::value>>
+	template<typename = std::enable_if_t<std::conjunction_v<std::is_move_assignable<S>, std::is_move_assignable<L>>>>
 	SegregatorAllocator& operator = (Type&& obj)
 		noexcept(std::is_nothrow_move_assignable<S>::value && std::is_nothrow_move_assignable<L>::value)
 	{
@@ -104,50 +104,90 @@ public:
 	/* Returns a block of uninitialized memory.
 	   The small allocator is used if sz is less than the threshold.
 	   Otherwise, the large allocator is used. */
-	template<typename = std::enable_if_t<detail::CanAllocate<S>::value || detail::CanAllocate<L>::value>>
-	Blk Allocate(const size_t sz) noexcept
+	template<typename = std::enable_if_t<std::disjunction_v<detail::CanAllocate<S>, detail::CanAllocate<L>>>>
+	Blk Allocate(size_t sz) noexcept
 	{
-		return (sz < T) ? 
-			detail::AllocateIf<S>::apply(m_SAllocator, sz) : 
-			detail::AllocateIf<L>::apply(m_LAllocator, sz);
+		if constexpr (detail::CanAllocate<S>::value && detail::CanAllocate<L>::value)
+		{
+			return (sz < T)
+				? m_SAllocator.Allocate(sz)
+				: m_LAllocator.Allocate(sz);
+		}
+
+		else if constexpr (detail::CanAllocate<S>::value)
+		{
+			return (sz < T) ? m_SAllocator.Allocate(sz) : Blk{};
+		}
+
+		else /* if constexpr (detail::CanAllocate<L>::value) */
+		{
+			return (sz < T) ? Blk{} : m_LAllocator.Allocate(sz);
+		}
 	}
 
 	/* Returns a block of uninitialized memory (aligned to alignment).
 	   The small allocator is used if sz is less than the threshold.
 	   Otherwise, the large allocator is used. */
-	template<typename = std::enable_if_t<detail::CanAllocateAligned<S>::value || detail::CanAllocateAligned<L>::value>>
-	Blk AllocateAligned(const size_t sz, const size_t alignment = 0) noexcept
+	template<typename = std::enable_if_t<std::disjunction_v<detail::CanAllocateAligned<S>, detail::CanAllocateAligned<L>>>>
+	Blk AllocateAligned(size_t sz, size_t alignment = 0) noexcept
 	{
-		if (sz < T)
-			return detail::AllocateAlignedIf<S>::apply(m_SAllocator, sz, (alignment == 0) ? S::Alignment : alignment);
-		else
-			return detail::AllocateAlignedIf<L>::apply(m_LAllocator, sz, (alignment == 0) ? L::Alignment : alignment);
+		if constexpr (detail::CanAllocateAligned<S>::value && detail::CanAllocateAligned<L>::value)
+		{
+			return (sz < T) 
+				? m_SAllocator.AllocateAligned(sz, (alignment == 0) ? S::Alignment : alignment)
+				: m_LAllocator.AllocateAligned(sz, (alignment == 0) ? L::Alignment : alignment);
+		}
+
+		else if constexpr (detail::CanAllocateAligned<S>::value)
+		{
+			return (sz < T)
+				? m_SAllocator.AllocateAligned(sz, (alignment == 0) ? S::Alignment : alignment)
+				: Blk{};
+		}
+
+		else /* if constexpr (detail::CanAllocateAligned<L>::value) */
+		{
+			return (sz < T)
+				? Blk{}
+				: m_LAllocator.AllocateAligned(sz, (alignment == 0) ? L::Alignment : alignment);
+		}
 	}
 
 	/* Attempts to reallocate the memory of blk to the new size sz.
 	   This might result in a change of allocator for blk. */
-	bool Reallocate(Blk& blk, const size_t sz)
+	bool Reallocate(Blk& blk, size_t sz)
 	{
 		if (sz < T)
 		{
 			if (blk.Size < T)
 			{
 				// Old Block: S, New Block: S
-				return detail::ReallocateIf<S>::apply(m_SAllocator, blk, sz);
+				if constexpr (detail::CanReallocate<S>::value)
+					return m_SAllocator.Reallocate(blk, sz);
+				else
+					return false;
 			}
 			else
 			{
 				// Old Block: L, New Block: S
-				auto newblk = detail::AllocateIf<S>::apply(m_SAllocator, sz);
-				if (!newblk.Ptr) return false;
-
-				if (blk)
+				if constexpr (detail::CanAllocate<S>::value)
 				{
-					std::memcpy(newblk.Ptr, blk.Ptr, sz);
-					detail::DeallocateIf<L>::apply(m_LAllocator, blk);
-				}
+					auto newblk = m_SAllocator.Allocate(sz);
+					if (!newblk.Ptr) return false;
 
-				blk = newblk;
+					if (blk)
+					{
+						std::memcpy(newblk.Ptr, blk.Ptr, sz);
+
+						if constexpr (detail::CanDeallocate<L>::value)
+							m_LAllocator.Deallocate(blk);
+					}
+
+					blk = newblk;
+					return true;
+				}
+				else
+					return false;
 			}
 		}
 		else
@@ -155,51 +195,71 @@ public:
 			if (blk.Size >= T)
 			{
 				// Old Block: L, New Block: L
-				return detail::ReallocateIf<L>::apply(m_LAllocator, blk, sz);
+				if constexpr (detail::CanReallocate<L>::value)
+					return m_LAllocator.Reallocate(blk, sz);
+				else
+					return false;
 			}
 			else
 			{
 				// Old Block: S, New Block: L
-				auto newblk = detail::AllocateIf<L>::apply(m_LAllocator, sz);
-				if (!newblk.Ptr) return false;
-
-				if (blk)
+				if constexpr (detail::CanAllocate<L>::value)
 				{
-					std::memcpy(newblk.Ptr, blk.Ptr, blk.Size);
-					detail::DeallocateIf<S>::apply(m_SAllocator, blk);
-				}
+					auto newblk = m_LAllocator.Allocate(sz);
+					if (!newblk.Ptr) return false;
 
-				blk = newblk;
+					if (blk)
+					{
+						std::memcpy(newblk.Ptr, blk.Ptr, blk.Size);
+						
+						if constexpr (detail::CanDeallocate<S>::value)
+							m_SAllocator.Deallocate(blk);
+					}
+
+					blk = newblk;
+					return true;
+				}
+				else
+					return false;
 			}
 		}
-
-		return true;
 	}
 
 	/* Attempts to reallocate the memory of blk (aligned to alignment) to the new size sz. 
 	   This might result in a change of allocator for blk. */
-	bool ReallocateAligned(Blk& blk, const size_t sz, const size_t alignment = 0)
+	bool ReallocateAligned(Blk& blk, size_t sz, size_t alignment = 0)
 	{
 		if (sz < T)
 		{
 			if (blk.Size < T)
 			{
 				// Old Block: S, New Block: S
-				return detail::ReallocateAlignedIf<S>::apply(m_SAllocator, blk, sz, (alignment == 0) ? S::Alignment : alignment);
+				if constexpr (detail::CanReallocateAligned<S>::value)
+					return m_SAllocator.ReallocateAligned(blk, sz, (alignment == 0) ? S::Alignment : alignment);
+				else
+					return false;
 			}
 			else
 			{
 				// Old Block: L, New Block: S
-				auto newblk = detail::AllocateAlignedIf<S>::apply(m_SAllocator, sz, (alignment == 0) ? S::Alignment : alignment);
-				if (!newblk.Ptr) return false;
-
-				if (blk)
+				if constexpr (detail::CanAllocateAligned<S>::value)
 				{
-					std::memcpy(newblk.Ptr, blk.Ptr, sz);
-					detail::DeallocateAlignedIf<L>::apply(m_LAllocator, blk);
-				}
+					auto newblk = m_SAllocator.AllocateAligned(sz, (alignment == 0) ? S::Alignment : alignment);
+					if (!newblk.Ptr) return false;
 
-				blk = newblk;
+					if (blk)
+					{
+						std::memcpy(newblk.Ptr, blk.Ptr, sz);
+
+						if constexpr (detail::CanDeallocateAligned<L>::value)
+							m_LAllocator.DeallocateAligned(blk);
+					}
+
+					blk = newblk;
+					return true;
+				}
+				else
+					return false;
 			}
 		}
 		else
@@ -207,21 +267,32 @@ public:
 			if (blk.Size >= T)
 			{
 				// Old Block: L, New Block: L
-				return detail::ReallocateAlignedIf<L>::apply(m_LAllocator, blk, sz, (alignment == 0) ? L::Alignment : alignment);
+				if constexpr (detail::CanReallocateAligned<L>::value)
+					return m_LAllocator.ReallocateAligned(blk, sz, (alignment == 0) ? L::Alignment : alignment);
+				else
+					return false;
 			}
 			else
 			{
 				// Old Block: S, New Block: L
-				auto newblk = detail::AllocateAlignedIf<L>::apply(m_LAllocator, sz, (alignment == 0) ? L::Alignment : alignment);
-				if (!newblk.Ptr) return false;
-
-				if (blk)
+				if constexpr (detail::CanAllocateAligned<L>::value)
 				{
-					std::memcpy(newblk.Ptr, blk.Ptr, blk.Size);
-					detail::DeallocateAlignedIf<S>::apply(m_SAllocator, blk);
-				}
+					auto newblk = m_LAllocator.AllocateAligned(sz, (alignment == 0) ? L::Alignment : alignment);
+					if (!newblk.Ptr) return false;
 
-				blk = newblk;
+					if (blk)
+					{
+						std::memcpy(newblk.Ptr, blk.Ptr, sz);
+
+						if constexpr (detail::CanDeallocateAligned<S>::value)
+							m_SAllocator.DeallocateAligned(blk);
+					}
+
+					blk = newblk;
+					return true;
+				}
+				else
+					return false;
 			}
 		}
 
@@ -230,27 +301,39 @@ public:
 
 public:
 	/* Frees the memory for blk. */
-	template<typename = std::enable_if_t<detail::CanDeallocate<S>::value || detail::CanDeallocate<L>::value>>
+	template<typename = std::enable_if_t<std::disjunction_v<detail::CanDeallocate<S>, detail::CanDeallocate<L>>>>
 	void Deallocate(const Blk& blk)
 	{
 		if (blk.Size < T)
-			detail::DeallocateIf<S>::apply(m_SAllocator, blk);
+		{
+			if constexpr (detail::CanDeallocate<S>::value)
+				m_SAllocator.Deallocate(blk);
+		}
 		else
-			detail::DeallocateIf<L>::apply(m_LAllocator, blk);
+		{
+			if constexpr (detail::CanDeallocate<L>::value)
+				m_LAllocator.Deallocate(blk);
+		}
 	}
 
 	/* Frees the memory for blk (blk needs to have been allocated with AllocateAligned) */
-	template<typename = std::enable_if_t<detail::CanDeallocateAligned<S>::value || detail::CanDeallocateAligned<L>::value>>
+	template<typename = std::enable_if_t<std::disjunction_v<detail::CanDeallocateAligned<S>, detail::CanDeallocateAligned<L>>>>
 	void DeallocateAligned(const Blk& blk)
 	{
 		if (blk.Size < T)
-			detail::DeallocateAlignedIf<S>::apply(m_SAllocator, blk);
+		{
+			if constexpr (detail::CanDeallocateAligned<S>::value)
+				m_SAllocator.DeallocateAligned(blk);
+		}
 		else
-			detail::DeallocateAlignedIf<L>::apply(m_LAllocator, blk);
+		{
+			if constexpr (detail::CanDeallocateAligned<L>::value)
+				m_LAllocator.DeallocateAligned(blk);
+		}
 	}
 
 	/* Frees all of the memory of both allocators. */
-	template<typename = std::enable_if_t<detail::CanDeallocateAll<S>::value && detail::CanDeallocateAll<L>::value>>
+	template<typename = std::enable_if_t<std::conjunction_v<detail::CanDeallocateAll<S>, detail::CanDeallocateAll<L>>>>
 	void DeallocateAll() noexcept
 	{
 		m_SAllocator.DeallocateAll();

@@ -28,7 +28,7 @@ namespace Epic
 		struct IsGlobal;
 
 		template<class A> 
-		struct UnwrapGlobalAllocator;
+		struct UnwrapGlobal;
 	}
 }
 
@@ -51,13 +51,13 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 
 template<class A>
-struct Epic::detail::UnwrapGlobalAllocator
+struct Epic::detail::UnwrapGlobal
 {
 	using Type = A;
 };
 
 template<class A, class Tag>
-struct Epic::detail::UnwrapGlobalAllocator<Epic::GlobalAllocatorImpl<A, Tag>>
+struct Epic::detail::UnwrapGlobal<Epic::GlobalAllocatorImpl<A, Tag>>
 {
-	using Type = typename UnwrapGlobalAllocator<A>::Type;
+	using Type = typename UnwrapGlobal<A>::Type;
 };

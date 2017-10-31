@@ -64,14 +64,16 @@ namespace Epic::detail
 
 		void __stdcall AudioFree(void* p, FMOD_MEMORY_TYPE /*type*/, const char* /* srcStr */)
 		{
-			Epic::detail::AudioAllocator<Epic::AudioSystem> allocator;
+			using Allocator = Epic::detail::AudioAllocator<Epic::AudioSystem>;
+			Allocator allocator;
 
 			Blk blk{ p, 1 };
 
 			const auto pPrefix = allocator.Allocator().GetPrefixObject(blk, Epic::detail::AudioAlignment);
 			blk.Size = pPrefix->Size;
 
-			detail::DeallocateIf<decltype(allocator)>::apply(allocator, blk);
+			if constexpr (detail::CanDeallocate<Allocator>::value)
+				allocator.Deallocate(blk);
 		}
 	}
 }

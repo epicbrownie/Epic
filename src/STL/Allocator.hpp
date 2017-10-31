@@ -114,26 +114,33 @@ public:
 	{
 		Blk blk;
 
-		if (!detail::CanAllocate<AllocatorType>::value || (AllocatorType::Alignment % Epic::detail::AlignOf<T>::value) != 0)
+		constexpr bool IsAligned = !detail::CanAllocate<AllocatorType>::value ||
+								   (AllocatorType::Alignment % AlignOf<T>::value) != 0;
+
+		if constexpr (IsAligned)
 		{
-			assert(detail::CanAllocateAligned<AllocatorType>::value &&
+			static_assert(detail::CanAllocateAligned<AllocatorType>::value,
 				"STLAllocator::Allocate() - This type requires an allocator that is capable of "
 				"performing arbitrarily aligned allocations");
 
 			// Attempt to allocate aligned memory via AllocateAligned()
-			blk = detail::AllocateAlignedIf<AllocatorType>::apply(m_Allocator, sizeof(T) * n, Epic::detail::AlignOf<T>::value);
+			blk = m_Allocator.AllocateAligned(sizeof(T) * n, AlignOf<T>::value);
 
 			// Ensure memory was acquired
 			if (!blk) throw std::bad_alloc{};
 
 			// Store size in prefix object
-			auto pPrefix = m_Allocator.Allocator().GetPrefixObject(blk, Epic::detail::AlignOf<T>::value);
+			auto pPrefix = m_Allocator.Allocator().GetPrefixObject(blk, AlignOf<T>::value);
 			pPrefix->Size = blk.Size;
 		}
 		else
 		{
+			static_assert(detail::CanAllocate<AllocatorType>::value,
+				"STLAllocator::Allocate() - This type requires an allocator that is capable of "
+				"performing unaligned allocations");
+
 			// Attempt to allocate memory via Allocate()
-			blk = detail::AllocateIf<AllocatorType>::apply(m_Allocator, sizeof(T) * n);
+			blk = m_Allocator.Allocate(sizeof(T) * n);
 
 			// Ensure memory was acquired
 			if (!blk) throw std::bad_alloc{};
@@ -157,13 +164,17 @@ public:
 		// prefix object from a pointer.  A temporary block will be used.
 		Blk blk{ p, 1 };
 
-		if (!detail::CanAllocate<AllocatorType>::value || (AllocatorType::Alignment % Epic::detail::AlignOf<T>::value) != 0)
+		constexpr bool IsAligned = !detail::CanAllocate<AllocatorType>::value ||
+								   (AllocatorType::Alignment % AlignOf<T>::value) != 0;
+
+		if constexpr (IsAligned)
 		{
 			// AllocateAligned was used
-			const auto pPrefix = m_Allocator.Allocator().GetPrefixObject(blk, Epic::detail::AlignOf<T>::value);
+			const auto pPrefix = m_Allocator.Allocator().GetPrefixObject(blk, std::alignment_of_v<T>);
 			blk.Size = pPrefix->Size;
 
-			detail::DeallocateAlignedIf<AllocatorType>::apply(m_Allocator, blk);
+			if constexpr (detail::CanDeallocateAligned<AllocatorType>::value)
+				m_Allocator.DeallocateAligned(blk);
 		}
 		else
 		{
@@ -171,7 +182,8 @@ public:
 			const auto pPrefix = m_Allocator.Allocator().GetPrefixObject(blk);
 			blk.Size = pPrefix->Size;
 
-			detail::DeallocateIf<AllocatorType>::apply(m_Allocator, blk);
+			if constexpr (detail::CanDeallocate<AllocatorType>::value)
+				m_Allocator.Deallocate(blk);
 		}
 	}
 
@@ -330,7 +342,7 @@ struct Epic::detail::AllocA
 template<class A, class Tag, class OldTag>
 struct Epic::detail::AllocA<Epic::detail::GlobalAllocatorImpl<A, OldTag>, Tag>
 {
-	using _unwrapped = typename detail::UnwrapGlobalAllocator<A>::Type;
+	using _unwrapped = typename detail::UnwrapGlobal<A>::Type;
 	using _affixed = Epic::AffixAllocator<_unwrapped, Epic::detail::AllocPre>;
 
 	using Type = Epic::GlobalAllocator<_affixed, OldTag>;

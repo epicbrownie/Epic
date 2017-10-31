@@ -100,7 +100,7 @@ public:
 public:
 	/* Returns a block of uninitialized memory at least as big as sz. */
 	template<typename = std::enable_if_t<detail::CanAllocate<PolicyType>::value>>
-	Blk Allocate(const size_t sz) noexcept
+	Blk Allocate(size_t sz) noexcept
 	{
 		// Verify that the requested size is within our allowed bounds
 		if (sz == 0 || sz < MinAllocSize || sz > MaxAllocSize)
@@ -111,25 +111,23 @@ public:
 
 	/* Attempts to reallocate the memory of blk to the new size sz. */
 	template<typename = std::enable_if_t<detail::CanReallocate<PolicyType>::value>>
-	bool Reallocate(Blk& blk, const size_t sz)
+	bool Reallocate(Blk& blk, size_t sz)
 	{
 		// If the block isn't valid, delegate to Allocate
 		if (!blk)
 		{
-			blk = detail::AllocateIf<Type>::apply(*this, sz);
-			return (bool)blk;
+			if constexpr (detail::CanAllocate<Type>::value)
+				return (bool)(blk = Allocate(sz));
 		}
 
 		// If the requested size is zero, delegate to Deallocate
 		if (sz == 0)
 		{
-			if (detail::CanDeallocate<Type>::value)
-			{
-				detail::DeallocateIf<Type>::apply(*this, blk);
-				blk = { nullptr, 0 };
-			}
+			if constexpr (detail::CanDeallocate<Type>::value)
+				Deallocate(blk);
 
-			return detail::CanDeallocate<Type>::value;
+			blk = { nullptr, 0 };
+			return true;
 		}
 
 		// Verify that the new requested size is within our allowed bounds
@@ -238,10 +236,11 @@ private:
 	void AllocateHeap() noexcept
 	{
 		// Create the heap
-		if (IsAligned)
-			m_Heap = detail::AllocateAlignedIf<A>::apply(m_Allocator, BlkSz * BlkCnt, Alignment);
-		else
-			m_Heap = detail::AllocateIf<A>::apply(m_Allocator, BlkSz * BlkCnt);
+		if constexpr (IsAligned && detail::CanAllocateAligned<A>::value)
+			m_Heap = m_Allocator.AllocateAligned(BlkSz * BlkCnt, Alignment);
+
+		else if constexpr (!IsAligned && detail::CanAllocate<A>::value)
+			m_Heap = m_Allocator.Allocate(BlkSz * BlkCnt);
 
 		// Set the number of available blocks
 		if(m_Heap)
@@ -256,10 +255,11 @@ private:
 		m_BlocksAvailable.store(0, std::memory_order_release);
 
 		// Free the heap
-		if (IsAligned)
-			detail::DeallocateAlignedIf<A>::apply(m_Allocator, m_Heap);
-		else
-			detail::DeallocateIf<A>::apply(m_Allocator, m_Heap);
+		if constexpr (IsAligned && detail::CanDeallocateAligned<A>::value)
+			m_Allocator.DeallocateAligned(m_Heap);
+
+		else if constexpr (!IsAligned && detail::CanDeallocate<A>::value)
+			m_Allocator.Deallocate(m_Heap);
 
 		m_Heap = Blk{};
 	}
@@ -269,24 +269,24 @@ private:
 		return GetBlockPointer(m_BlocksAvailable.load(std::memory_order_acquire));
 	}
 
-	void* GetBlockPointer(const size_t freeBlocks) const noexcept
+	void* GetBlockPointer(size_t freeBlocks) const noexcept
 	{
 		const size_t used = BlkCnt - freeBlocks;
 
-		return static_cast<void*>(reinterpret_cast<char*>(m_Heap.Ptr) + (BlkSz * used));
+		return static_cast<void*>(reinterpret_cast<unsigned char*>(m_Heap.Ptr) + (BlkSz * used));
 	}
 
 public:
-	const bool Owns(const Blk& blk) const noexcept
+	bool Owns(const Blk& blk) const noexcept
 	{
-		const char* pBlk = reinterpret_cast<const char*>(blk.Ptr);
-		const char* pHeapStart = reinterpret_cast<const char*>(m_Heap.Ptr);
-		const char* pHeapEnd = reinterpret_cast<const char*>(GetBlockPointer(0));
+		const char* pBlk = reinterpret_cast<const unsigned char*>(blk.Ptr);
+		const char* pHeapStart = reinterpret_cast<const unsigned char*>(m_Heap.Ptr);
+		const char* pHeapEnd = reinterpret_cast<const unsigned char*>(GetBlockPointer(0));
 
 		return (pBlk >= pHeapStart) && (pBlk < pHeapEnd);
 	}
 
-	Blk Allocate(const size_t sz) noexcept
+	Blk Allocate(size_t sz) noexcept
 	{
 		// Attempt to reserve memory
 		const size_t blocksReq = (sz + BlkSz - 1) / BlkSz;
@@ -378,15 +378,16 @@ protected:
 	void AllocateHeap(A& allocator) noexcept
 	{
 		// Allocate heap space
-		if (IsAligned)
-			m_Heap = detail::AllocateAlignedIf<A>::apply(allocator, BlkSz * BlkCnt, Alignment);
-		else
-			m_Heap = detail::AllocateIf<A>::apply(allocator, BlkSz * BlkCnt);
+		if constexpr (IsAligned && detail::CanAllocateAligned<A>::value)
+			m_Heap = allocator.AllocateAligned(BlkSz * BlkCnt, Alignment);
+
+		else if constexpr (!IsAligned && detail::CanAllocate<A>::value)
+			m_Heap = allocator.Allocate(BlkSz * BlkCnt);
 
 		// Use some of the heap space to hold a new bitmap (always at block 0)
 		if (m_Heap)
 		{
-			size_t blocksReq = (BitmapSize + BlkSz - 1) / BlkSz;
+			constexpr size_t blocksReq = (BitmapSize + BlkSz - 1) / BlkSz;
 
 			auto pBitmap = ::new (GetBitmapPointer()) BitmapType{};
 			pBitmap->Reset();
@@ -399,10 +400,11 @@ protected:
 		if (m_Heap)
 			GetBitmapPointer()->~BitmapType();
 
-		if (IsAligned)
-			detail::DeallocateAlignedIf<A>::apply(allocator, m_Heap);
-		else
-			detail::DeallocateIf<A>::apply(allocator, m_Heap);
+		if constexpr (IsAligned && detail::CanDeallocateAligned<A>::value)
+			allocator.DeallocateAligned(m_Heap);
+		
+		else if constexpr (!IsAligned && detail::CanDeallocate<A>::value)
+			allocator.Deallocate(m_Heap);
 
 		m_Heap = Blk{};
 	}
@@ -461,10 +463,11 @@ protected:
 		Blk blk;
 		size_t sz = (BlkSz * BlkCnt) + BitmapSize;
 
-		if (IsAligned)
-			blk = detail::AllocateAlignedIf<A>::apply(allocator, sz, Alignment);
-		else
-			blk = detail::AllocateIf<A>::apply(allocator, sz);
+		if constexpr (IsAligned && detail::CanAllocateAligned<A>::value)
+			blk = allocator.AllocateAligned(sz, Alignment);
+
+		else if constexpr (!IsAligned && detail::CanAllocate<A>::value)
+			blk = allocator.Allocate(sz);
 
 		// Use some of the space to hold a new bitmap (after heap data)
 		if (blk)
@@ -480,17 +483,18 @@ protected:
 		if (m_Heap)
 			GetBitmapPointer()->~BitmapType();
 
-		if (IsAligned)
-			detail::DeallocateAlignedIf<A>::apply(allocator, { m_Heap.Ptr, m_Heap.Size + BitmapSize });
-		else
-			detail::DeallocateIf<A>::apply(allocator, { m_Heap.Ptr, m_Heap.Size + BitmapSize });
+		if constexpr (IsAligned && detail::CanDeallocateAligned<A>::value)
+			allocator.DeallocateAligned({ m_Heap.Ptr, m_Heap.Size + BitmapSize });
+
+		else if constexpr (!IsAligned && detail::CanDeallocate<A>::value)
+			allocator.Deallocate({ m_Heap.Ptr, m_Heap.Size + BitmapSize });
 
 		m_Heap = Blk{};
 	}
 
 	constexpr BitmapType* GetBitmapPointer() const
 	{
-		return reinterpret_cast<BitmapType*>(reinterpret_cast<char*>(m_Heap.Ptr) + m_Heap.Size);
+		return reinterpret_cast<BitmapType*>(reinterpret_cast<unsigned char*>(m_Heap.Ptr) + m_Heap.Size);
 	}
 };
 
@@ -551,33 +555,33 @@ protected:
 	}
 
 protected:
-	constexpr void* GetBlockPointer(const size_t block) const noexcept
+	constexpr void* GetBlockPointer(size_t block) const noexcept
 	{
-		return static_cast<void*>(reinterpret_cast<char*>(m_Heap.Ptr) + (BlkSz * block));
+		return static_cast<void*>(reinterpret_cast<unsigned char*>(m_Heap.Ptr) + (BlkSz * block));
 	}
 
-	constexpr size_t GetBlock(const void* ptr) const noexcept
+	constexpr size_t GetBlock(const void * const ptr) const noexcept
 	{
-		return (reinterpret_cast<const char*>(ptr) - reinterpret_cast<const char*>(GetBlockPointer(0))) / BlkSz;
+		return (reinterpret_cast<const unsigned char*>(ptr) - reinterpret_cast<const unsigned char*>(GetBlockPointer(0))) / BlkSz;
 	}
 
-	constexpr size_t BytesToBlockSize(const size_t bytes) const noexcept
+	constexpr size_t BytesToBlockSize(size_t bytes) const noexcept
 	{
 		return (bytes + BlkSz - 1) / BlkSz;
 	}
 
 public:
-	const bool Owns(const Blk& blk) const noexcept
+	bool Owns(const Blk& blk) const noexcept
 	{
 		/* m_Heap is never changed in a shared context, so no lock is required. */
-		const char* pBlk = reinterpret_cast<const char*>(blk.Ptr);
-		const char* pHeapStart = reinterpret_cast<const char*>(m_Heap.Ptr);
-		const char* pHeapEnd = reinterpret_cast<const char*>(GetBlockPointer(BlkCnt));
+		const char* pBlk = reinterpret_cast<const unsigned char*>(blk.Ptr);
+		const char* pHeapStart = reinterpret_cast<const unsigned char*>(m_Heap.Ptr);
+		const char* pHeapEnd = reinterpret_cast<const unsigned char*>(GetBlockPointer(BlkCnt));
 
 		return (pBlk >= pHeapStart) && (pBlk < pHeapEnd);
 	}
 
-	Blk Allocate(const size_t sz) noexcept
+	Blk Allocate(size_t sz) noexcept
 	{
 		{	/* CS */
 			std::lock_guard<MutexType> lock(m_Mutex);
@@ -601,7 +605,7 @@ public:
 		}
 	}
 
-	bool Reallocate(Blk& blk, const size_t sz)
+	bool Reallocate(Blk& blk, size_t sz)
 	{
 		{	/* CS */
 			std::lock_guard<MutexType> lock(m_Mutex);
