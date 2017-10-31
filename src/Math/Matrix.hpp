@@ -1031,7 +1031,6 @@ public:
 	template<size_t Amount = 1>
 	auto Expand(const ZeroesTag&) const noexcept
 	{
-		// TODO: Test
 		constexpr static size_t ExpandedSz = ColumnCount + Amount;
 
 		Matrix<T, ExpandedSz> result(*this);
@@ -1057,7 +1056,6 @@ public:
 	template<size_t Amount = 1>
 	auto Expand(const OnesTag&) const noexcept
 	{
-		// TODO: Test
 		constexpr static size_t ExpandedSz = ColumnCount + Amount;
 
 		Matrix<T, ExpandedSz> result(*this);
@@ -1083,13 +1081,12 @@ public:
 	template<size_t Amount = 1>
 	auto Expand(const IdentityTag&) const noexcept
 	{
-		// TODO: Test
 		constexpr static size_t ExpandedSz = ColumnCount + Amount;
 
 		Matrix<T, ExpandedSz> result(*this);
 
-		const auto cv0;
-		const auto cv1;
+		const auto cv0 = T(0);
+		const auto cv1 = T(1);
 
 		for (size_t c = 0; c < ColumnCount; ++c)
 		{
