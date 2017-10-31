@@ -57,6 +57,16 @@ namespace Epic::TMP
 			fn(Item, std::forward<Args>(args)...);
 		}
 	};
+
+	template<size_t N>
+	struct ForEachN
+	{
+		template<class Function, class... Args>
+		static void Apply(Function fn, Args&&... args)
+		{
+			ForEach<MakeSequence<size_t, N>>::Apply(fn, std::forward<Args>(args)...);
+		}
+	};
 }
 
 //////////////////////////////////////////////////////////////////////////////

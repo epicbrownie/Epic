@@ -92,6 +92,7 @@
     <ClInclude Include="src\InputDeviceManager.hpp" />
     <ClInclude Include="src\InputResolver.hpp" />
     <ClInclude Include="src\InputSystem.hpp" />
+    <ClInclude Include="src\Math.hpp" />
     <ClInclude Include="src\Math\Algorithm.hpp" />
     <ClInclude Include="src\Math\Angle.hpp" />
     <ClInclude Include="src\Math\Constants.hpp" />
@@ -100,6 +101,7 @@
     <ClInclude Include="src\Math\detail\MathHelpers.hpp" />
     <ClInclude Include="src\Math\detail\QuaternionBase.hpp" />
     <ClInclude Include="src\Math\detail\QuaternionFwd.hpp" />
+    <ClInclude Include="src\Math\detail\SVectorFwd.hpp" />
     <ClInclude Include="src\Math\detail\VectorBase.hpp" />
     <ClInclude Include="src\Math\detail\VectorHelpers.hpp" />
     <ClInclude Include="src\Math\detail\VectorFwd.hpp" />

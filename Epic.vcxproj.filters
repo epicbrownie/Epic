@@ -86,6 +86,9 @@
     <Filter Include="Core\Graphics\detail">
       <UniqueIdentifier>{594e0832-119f-4fb7-8062-90b668a77d4b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Import">
+      <UniqueIdentifier>{9290df80-b92f-42ae-ad1f-d80caf70e7e6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Singleton.hpp">
@@ -542,11 +545,17 @@
     <ClInclude Include="src\EON\ResultPolicy.hpp">
       <Filter>Utility\EON</Filter>
     </ClInclude>
-    <ClInclude Include="src\EON.hpp">
-      <Filter>Utility</Filter>
-    </ClInclude>
     <ClInclude Include="src\EON\Attribute.hpp">
       <Filter>Utility\EON</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON.hpp">
+      <Filter>Import</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math.hpp">
+      <Filter>Import</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\detail\SVectorFwd.hpp">
+      <Filter>Math\detail</Filter>
     </ClInclude>
     <ClInclude Include="src\Memory\SegBucket.hpp">
       <Filter>Memory</Filter>

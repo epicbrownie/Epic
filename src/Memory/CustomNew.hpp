@@ -45,15 +45,15 @@ public:
 protected:
 	using AllocatorType = Epic::STLAllocatorAdapted<Epic::DefaultAllocatorFor<CRTP, eAllocatorFor::New>>;
 
-	static constexpr bool IsAligned = !detail::CanAllocate<AllocatorType>::value ||
-									  (AllocatorType::Alignment % detail::AlignOf<CRTP>::value) != 0;
-
 private:
 	inline static void* _Allocate(size_t sz)
 	{
 		Blk blk;
 		AllocatorType allocator;
 		size_t alignment;
+
+		constexpr bool IsAligned = !detail::CanAllocate<AllocatorType>::value ||
+								   (AllocatorType::Alignment % detail::AlignOf<CRTP>::value) != 0;
 
 		if constexpr (IsAligned)
 		{
@@ -95,7 +95,10 @@ private:
 		// The AffixAllocator doesn't need to know a block's size to calculate the 
 		// prefix object from a pointer.  A temporary block will be used.
 		Blk blk{ p, 1 };
-		
+	
+		constexpr bool IsAligned = !detail::CanAllocate<AllocatorType>::value ||
+								   (AllocatorType::Alignment % detail::AlignOf<CRTP>::value) != 0;
+
 		if constexpr (IsAligned && detail::CanDeallocateAligned<AllocatorType>::value)
 		{
 			// AllocateAligned was used
@@ -116,25 +119,25 @@ private:
 
 public:
 	// Called by the usual single-object new-expressions for allocating an object (of the derived type).
-	__declspec(allocator) inline static void* operator new (std::size_t sz)
+	__declspec(allocator) inline static void* operator new (size_t sz)
 	{
 		return _Allocate(sz);
 	}
 
 	// Called by the standard single-object placement new expression.
-	inline static void* operator new (std::size_t /*sz*/, void* ptr) noexcept
+	inline static void* operator new (size_t /*sz*/, void* ptr) noexcept
 	{
 		return ptr;
 	}
 
 	// Called by the usual array new[]-expressions if allocating an array of objects (of the derived type).
-	__declspec(allocator) inline static void* operator new[] (std::size_t sz)
+	__declspec(allocator) inline static void* operator new[] (size_t sz)
 	{
 		return _Allocate(sz);
 	}
 
 	// Called by the standard array form placement new expression.
-	inline static void* operator new[] (std::size_t /*sz*/, void* ptr) noexcept
+	inline static void* operator new[] (size_t /*sz*/, void* ptr) noexcept
 	{
 		return ptr;
 	}

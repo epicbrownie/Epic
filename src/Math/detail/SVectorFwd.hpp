@@ -18,5 +18,5 @@
 namespace Epic
 {
 	template<class T, size_t Size>
-	class Vector;
+	class SVector;
 }
