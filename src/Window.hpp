@@ -110,7 +110,7 @@ public:
 	virtual void SetFullscreenState(Epic::eFullscreenState state) = 0;
 	virtual void SetCursorState(Epic::eCursorState state) = 0;
 	virtual void SetWindowTitle(const WindowString& title) = 0;
-	virtual void SetBackgroundColor(const float& r, const float& g, const float& b) = 0;
+	virtual void SetBackgroundColor(float r, float g, float b) = 0;
 
 protected:
 	inline bool OnCloseWindow() noexcept

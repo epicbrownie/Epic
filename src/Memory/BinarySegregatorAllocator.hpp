@@ -14,7 +14,7 @@
 #pragma once
 
 #include <Epic/Memory/SegregatorAllocator.hpp>
-#include <Epic/Memory/SegregatorBucket.hpp>
+#include <Epic/Memory/SegBucket.hpp>
 #include <Epic/TMP/List.hpp>
 #include <Epic/TMP/Utility.hpp>
 #include <tuple>
@@ -86,7 +86,7 @@ namespace Epic::detail
 	};
 
 	template<size_t T, class A, typename... Ls, typename... Rs, typename... Buckets>
-	struct BinarySegregatorAllocatorBuilder<SegregatorBucket<T, A>, TMP::List<Ls...>, TMP::List<Rs...>, Buckets...>
+	struct BinarySegregatorAllocatorBuilder<SegBucket<T, A>, TMP::List<Ls...>, TMP::List<Rs...>, Buckets...>
 	{
 		using Type = Epic::SegregatorAllocator<T,
 			typename BinarySegregatorAllocatorBuilder<typename TMP::Concat<TMP::List<Ls...>, TMP::List<A>>::Type>::Type,
@@ -100,34 +100,34 @@ namespace Epic::detail
 	};
 
 	template<size_t T, class A, class B>
-	struct BinarySegregatorAllocatorBuilder<TMP::List<SegregatorBucket<T, A>, B>>
+	struct BinarySegregatorAllocatorBuilder<TMP::List<SegBucket<T, A>, B>>
 	{
 		using Type = Epic::SegregatorAllocator<T, A, B>;
 	};
 
 
-	// MakeSegregatorBucketList
+	// MakeSegBucketList
 	template<typename... Args>
-	struct MakeSegregatorBucketList;
+	struct MakeSegBucketList;
 
 	template<size_t T, class A, typename... Args>
-	struct MakeSegregatorBucketList<SegregatorBucket<T, A>, Args...>
+	struct MakeSegBucketList<SegBucket<T, A>, Args...>
 	{
 		using Type = typename TMP::Concat<
-			TMP::List<SegregatorBucket<T, A>>, 
-			typename MakeSegregatorBucketList<Args...>::Type>::Type;
+			TMP::List<SegBucket<T, A>>, 
+			typename MakeSegBucketList<Args...>::Type>::Type;
 	};
 
 	template<size_t T, class A, typename... Args>
-	struct MakeSegregatorBucketList<TMP::Literal<size_t, T>, A, Args...>
+	struct MakeSegBucketList<TMP::Literal<size_t, T>, A, Args...>
 	{
 		using Type = typename TMP::Concat<
-			TMP::List<SegregatorBucket<T, A>>, 
-			typename MakeSegregatorBucketList<Args...>::Type>::Type;
+			TMP::List<SegBucket<T, A>>, 
+			typename MakeSegBucketList<Args...>::Type>::Type;
 	};
 
 	template<class A>
-	struct MakeSegregatorBucketList<A>
+	struct MakeSegBucketList<A>
 	{
 		using Type = TMP::List<A>;
 	};
@@ -136,7 +136,7 @@ namespace Epic::detail
 	// BinarySegregatorAllocatorBuilder Invoker
 	template<typename... Args>
 	using BinarySegregatorAllocatorBuilderInvoker =
-		typename BinarySegregatorAllocatorBuilder<typename MakeSegregatorBucketList<Args...>::Type>::Type;
+		typename BinarySegregatorAllocatorBuilder<typename MakeSegBucketList<Args...>::Type>::Type;
 }
 
 //////////////////////////////////////////////////////////////////////////////

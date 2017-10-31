@@ -37,7 +37,7 @@ public:
 	friend class Epic::Matrix;
 
 public:
-	using ValueType = typename Base::ValueType;
+	using value_type = typename Base::value_type;
 	constexpr static size_t Size = Base::Size;
 
 	using ColumnType = typename Base::ColumnType;
@@ -1359,8 +1359,8 @@ private:
 		ForEach<Sz>([&](size_t n) { Values[offset++] = value[n]; });
 	}
 
-	template<class VectorT, class TArray, size_t... Is>
-	inline void PlaceAt(size_t offset, const VectorSwizzler<VectorT, TArray, Is...>& value) noexcept
+	template<class VectorT, size_t TS, size_t... Is>
+	inline void PlaceAt(size_t offset, const Swizzler<VectorT, TS, Is...>& value) noexcept
 	{
 		PlaceAt(offset, value.ToVector());
 	}
@@ -1513,7 +1513,7 @@ namespace Epic
 	template<class U, size_t Sz>
 	inline std::ostream& operator << (std::ostream& stream, const Matrix<U, Sz>& mat)
 	{
-		stream << '[' << std::endl;
+		stream << "[\n";
 		if (Sz > 0)
 		{
 			stream << std::fixed;
@@ -1521,7 +1521,7 @@ namespace Epic
 			{
 				stream << ' ' << mat[n];
 				if (n < Sz - 1) stream << ',';
-				stream << std::endl;
+				stream << '\n';
 			});
 			stream << std::defaultfloat;
 		}
@@ -1533,7 +1533,7 @@ namespace Epic
 	template<class U, size_t Sz>
 	inline std::wostream& operator << (std::wostream& stream, const Matrix<U, Sz>& mat)
 	{
-		stream << L'[' << std::endl;
+		stream << L"[\n";
 		if (Sz > 0)
 		{
 			stream << std::fixed;
@@ -1541,7 +1541,7 @@ namespace Epic
 			{
 				stream << L' ' << mat[n];
 				if (n < Sz - 1) stream << L',';
-				stream << std::endl;
+				stream << L'\n';
 			});
 			stream << std::defaultfloat;
 		}

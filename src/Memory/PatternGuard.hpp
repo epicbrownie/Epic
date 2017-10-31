@@ -24,7 +24,7 @@
 
 namespace Epic
 {
-	class MemoryCorruptedException;
+	struct MemoryCorruptedException;
 
 	struct GuardResponseIgnore;
 	struct GuardResponseThrow;
@@ -35,7 +35,7 @@ namespace Epic
 	namespace detail
 	{
 		template<size_t Pattern, class ResponsePolicy>
-		class PatternGuardImpl;
+		class PGuardImpl;
 	}
 
 	using DefaultGuardPattern = 
@@ -49,9 +49,8 @@ namespace Epic
 //////////////////////////////////////////////////////////////////////////////
 
 /// MemoryCorruptedException
-class Epic::MemoryCorruptedException : public std::runtime_error
+struct Epic::MemoryCorruptedException : public std::runtime_error
 {
-public:
 	using std::runtime_error::runtime_error;
 };
 
@@ -60,7 +59,7 @@ public:
 /// GuardResponseIgnore
 struct Epic::GuardResponseIgnore
 {
-	constexpr bool CheckGuard(const size_t Expected, const size_t Obtained) const noexcept 
+	constexpr bool CheckGuard(size_t /*Expected*/, size_t /*Obtained*/) const noexcept 
 	{
 		return true;
 	}
@@ -69,12 +68,13 @@ struct Epic::GuardResponseIgnore
 /// GuardResponseThrow
 struct Epic::GuardResponseThrow
 {
-	inline bool CheckGuard(const size_t Expected, const size_t Obtained) const noexcept(false)
+	inline bool CheckGuard(size_t Expected, size_t Obtained) const noexcept(false)
 	{
 		if (Obtained != Expected)
 		{
 			std::string msg;
 
+			try
 			{
 				std::ostringstream str;
 				str << "PatternGuard detected corrupted memory. [Expected: 0x"
@@ -85,6 +85,10 @@ struct Epic::GuardResponseThrow
 					<< "]";
 
 				msg = str.str();
+			}
+			catch (...)
+			{
+				std::throw_with_nested(Epic::MemoryCorruptedException("PatternGuard detected corrupted memory."));
 			}
 
 			throw Epic::MemoryCorruptedException(msg);
@@ -97,7 +101,7 @@ struct Epic::GuardResponseThrow
 /// GuardResponseCErr
 struct Epic::GuardResponseCErr
 {
-	inline bool CheckGuard(const size_t Expected, const size_t Obtained) const noexcept
+	inline bool CheckGuard(size_t Expected, size_t Obtained) const noexcept
 	{
 		if (Obtained != Expected)
 		{
@@ -124,7 +128,7 @@ struct Epic::GuardResponseCErr
 /// GuardResponseCOut
 struct Epic::GuardResponseCOut
 {
-	inline bool CheckGuard(const size_t Expected, const size_t Obtained) const noexcept
+	inline bool CheckGuard(size_t Expected, size_t Obtained) const noexcept
 	{
 		if (Obtained != Expected)
 		{
@@ -151,7 +155,7 @@ struct Epic::GuardResponseCOut
 /// GuardResponseAssert
 struct Epic::GuardResponseAssert
 {
-	inline bool CheckGuard(const size_t Expected, const size_t Obtained) const noexcept
+	inline bool CheckGuard(size_t Expected, size_t Obtained) const noexcept
 	{
 		assert((Obtained == Expected) && "PatternGuard detected corrupted memory.");
 
@@ -161,16 +165,16 @@ struct Epic::GuardResponseAssert
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// PatternGuard<P>
+/// PGuardImpl<P>
 template<size_t P, class Response>
-class Epic::detail::PatternGuardImpl
+class Epic::detail::PGuardImpl
 	: private Response
 {
 	static_assert(std::is_nothrow_default_constructible<Response>::value,
-		"PatternGuard ResponsePolicy must have a non-throwing default constructor.");
+		"PatternGuard's Response policy must contain a non-throwing default constructor.");
 
 public:
-	using Type = Epic::detail::PatternGuardImpl<P, Response>;
+	using Type = Epic::detail::PGuardImpl<P, Response>;
 	using ResponsePolicy = Response;
 
 	static constexpr size_t Pattern = P;
@@ -179,16 +183,16 @@ private:
 	const size_t m_Pattern;
 
 public:
-	PatternGuardImpl() noexcept
+	PGuardImpl() noexcept 
 		: m_Pattern(Pattern) { }
 
-	~PatternGuardImpl()
+	~PGuardImpl()
 	{
 		ResponsePolicy::CheckGuard(Pattern, m_Pattern);
 	}
 
 public:
-	inline bool CheckGuard() const
+	bool CheckGuard() const
 	{
 		return ResponsePolicy::CheckGuard(Pattern, m_Pattern);
 	}
@@ -198,7 +202,10 @@ public:
 
 namespace Epic
 {
-	template<size_t Pattern = Epic::DefaultGuardPattern::value, class DebugResponsePolicy = Epic::GuardResponseAssert, class ReleaseResponsePolicy = Epic::GuardResponseCErr>
+	// PatternGuard
+	template<size_t Pattern = Epic::DefaultGuardPattern::value, 
+		class DebugResponsePolicy = Epic::GuardResponseAssert, 
+		class ReleaseResponsePolicy = Epic::GuardResponseCErr>
 	using PatternGuard = 
-		detail::PatternGuardImpl<Pattern, typename TMP::DebugSwitch<DebugResponsePolicy, ReleaseResponsePolicy>::Type>;
+		detail::PGuardImpl<Pattern, typename TMP::DebugSwitch<DebugResponsePolicy, ReleaseResponsePolicy>::Type>;
 }

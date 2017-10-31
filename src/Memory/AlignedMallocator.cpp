@@ -22,7 +22,7 @@ using Epic::AlignedMallocator;
 
 //////////////////////////////////////////////////////////////////////////////
 
-Blk AlignedMallocator::AllocateAligned(const size_t sz, const size_t alignment) const noexcept
+Blk AlignedMallocator::AllocateAligned(size_t sz, size_t alignment) const noexcept
 {
 	// Verify that the alignment is acceptable
 	if (!Epic::detail::IsGoodAlignment(alignment))
@@ -40,7 +40,7 @@ Blk AlignedMallocator::AllocateAligned(const size_t sz, const size_t alignment) 
 	return{ p, sz };
 }
 
-bool AlignedMallocator::ReallocateAligned(Blk& blk, const size_t sz, const size_t alignment) const
+bool AlignedMallocator::ReallocateAligned(Blk& blk, size_t sz, size_t alignment) const
 {
 	assert(Owns(blk) && "AlignedMallocator::ReallocateAligned - Attempted to reallocate a block that was not allocated by this allocator");
 

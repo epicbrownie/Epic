@@ -31,17 +31,17 @@ class Epic::detail::QuaternionBase
 {
 public:
 	using Type = Epic::detail::QuaternionBase<T>;
-	using ValueType = T;
+	using value_type = T;
 
 	union
 	{
 		// Value Array
-		std::array<ValueType, 4> Values;
+		std::array<value_type, 4> Values;
 
 		// Components
 		struct
 		{
-			ValueType x, y, z, w;
+			value_type x, y, z, w;
 		};
 	};
 };

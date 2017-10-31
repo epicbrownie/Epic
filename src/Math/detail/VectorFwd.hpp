@@ -13,10 +13,15 @@
 
 #pragma once
 
+#include <cstddef>
+
 //////////////////////////////////////////////////////////////////////////////
 
 namespace Epic
 {
-	template<class T, size_t Size>
+	template<class T, std::size_t Size>
 	class Vector;
+
+	template<class T, std::size_t Size>
+	class SVector;
 }

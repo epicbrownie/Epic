@@ -88,7 +88,7 @@ public:
 public:
 	/* Returns a block of uninitialized memory (aligned to alignment).
 	   If sz is zero, the returned block's pointer is null. */
-	Blk AllocateAligned(const size_t sz, const size_t alignment = Alignment) noexcept
+	Blk AllocateAligned(size_t sz, size_t alignment = Alignment) noexcept
 	{
 		// Verify that the alignment is acceptable
 		if (!detail::IsGoodAlignment(alignment))
@@ -116,7 +116,7 @@ public:
 	/* Returns a block of uninitialized memory.
 	   alignment must be a non-zero power of two.
 	   Its size is all of the remaining memory and it will be aligned to alignment. */
-	Blk AllocateAllAligned(const size_t alignment = Alignment) noexcept
+	Blk AllocateAllAligned(size_t alignment = Alignment) noexcept
 	{
 		// Verify that the alignment is acceptable
 		if (!detail::IsGoodAlignment(alignment))

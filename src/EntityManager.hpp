@@ -165,21 +165,21 @@ public:
 		return (it != std::end(m_IDEntityMap)) ? it->second : nullptr;
 	}
 
-	inline EntityPtr::pointer GetEntity(const Epic::StringHash& name) noexcept
+	inline EntityPtr::pointer GetEntity(const Epic::StringHash name) noexcept
 	{
 		auto it = m_NameEntityMap.find(name);
 
 		return (it != std::end(m_NameEntityMap)) ? it->second : nullptr;
 	}
 
-	inline const EntityPtr::pointer GetEntity(const Epic::StringHash& name) const noexcept
+	inline const EntityPtr::pointer GetEntity(const Epic::StringHash name) const noexcept
 	{
 		auto it = m_NameEntityMap.find(name);
 
 		return (it != std::end(m_NameEntityMap)) ? it->second : nullptr;
 	}
 
-	inline EntityPtr::pointer GetEntityByIndex(const size_t index) noexcept
+	inline EntityPtr::pointer GetEntityByIndex(size_t index) noexcept
 	{
 		if (index >= 0 && index < m_Entities.size())
 			return m_Entities[index].get();
@@ -187,7 +187,7 @@ public:
 		return nullptr;
 	}
 
-	inline const EntityPtr::pointer GetEntityByIndex(const size_t index) const noexcept
+	inline const EntityPtr::pointer GetEntityByIndex(size_t index) const noexcept
 	{
 		if (index >= 0 && index < m_Entities.size())
 			return m_Entities[index].get();
@@ -196,7 +196,15 @@ public:
 	}
 
 public:
-	inline ControllerPtr::pointer GetControllerByIndex(const size_t index) noexcept
+	inline ControllerPtr::pointer GetControllerByIndex(size_t index) noexcept
+	{
+		if (index >= 0 && index < m_Controllers.size())
+			return m_Controllers[index].get();
+
+		return nullptr;
+	}
+
+	inline const ControllerPtr::pointer GetControllerByIndex(size_t index) const noexcept
 	{
 		if (index >= 0 && index < m_Controllers.size())
 			return m_Controllers[index].get();
@@ -205,13 +213,27 @@ public:
 	}
 
 	template<class Controller>
-	inline Controller* GetControllerByIndex(const size_t index) noexcept
+	inline Controller* GetControllerByIndexAs(size_t index) noexcept
+	{
+		return static_cast<Controller*>(GetControllerByIndex(index));
+	}
+
+	template<class Controller>
+	inline const Controller* GetControllerByIndexAs(size_t index) const noexcept
 	{
 		return static_cast<Controller*>(GetControllerByIndex(index));
 	}
 
 public:
-	inline SystemPtr::pointer GetSystemByIndex(const size_t index) noexcept
+	inline SystemPtr::pointer GetSystemByIndex(size_t index) noexcept
+	{
+		if (index >= 0 && index < m_Systems.size())
+			return m_Systems[index].get();
+
+		return nullptr;
+	}
+
+	inline const SystemPtr::pointer GetSystemByIndex(size_t index) const noexcept
 	{
 		if (index >= 0 && index < m_Systems.size())
 			return m_Systems[index].get();
@@ -220,13 +242,19 @@ public:
 	}
 
 	template<class System>
-	inline System* GetSystemByIndex(const size_t index) noexcept
+	inline System* GetSystemByIndexAs(size_t index) noexcept
+	{
+		return static_cast<System*>(GetSystemByIndex(index));
+	}
+
+	template<class System>
+	inline const System* GetSystemByIndexAs(size_t index) const noexcept
 	{
 		return static_cast<System*>(GetSystemByIndex(index));
 	}
 
 public:
-	EntityPtr::pointer CreateEntity(const Epic::StringHash& name = NoEntityName) noexcept
+	EntityPtr::pointer CreateEntity(const Epic::StringHash name = NoEntityName) noexcept
 	{
 		m_Entities.emplace_back(Epic::MakeUnique<Entity>(this, name, m_NextID++));
 		EntityPtr::pointer pEntity = m_Entities.back().get();
@@ -261,7 +289,7 @@ public:
 		}
 	}
 
-	inline void DestroyEntity(const Epic::StringHash& name, bool destroyNow = false) noexcept
+	inline void DestroyEntity(const Epic::StringHash name, bool destroyNow = false) noexcept
 	{
 		DestroyEntity(GetEntity(name), destroyNow);
 	}

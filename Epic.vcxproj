@@ -58,14 +58,22 @@
     <ClInclude Include="src\EntityController.hpp" />
     <ClInclude Include="src\EntitySystem.hpp" />
     <ClInclude Include="src\EntityManager.hpp" />
+    <ClInclude Include="src\EON.hpp" />
     <ClInclude Include="src\EON\Bin.hpp" />
-    <ClInclude Include="src\EON\Bind.hpp" />
     <ClInclude Include="src\EON\Convert.hpp" />
     <ClInclude Include="src\EON\detail\Assign.hpp" />
+    <ClInclude Include="src\EON\detail\ParserFwd.hpp" />
+    <ClInclude Include="src\EON\detail\Traits.hpp" />
+    <ClInclude Include="src\EON\detail\TypeConvert.hpp" />
     <ClInclude Include="src\EON\detail\Utility.hpp" />
+    <ClInclude Include="src\EON\detail\Visitors.hpp" />
+    <ClInclude Include="src\EON\Error.hpp" />
     <ClInclude Include="src\EON\Extractor.hpp" />
     <ClInclude Include="src\EON\Grammar.hpp" />
+    <ClInclude Include="src\EON\Parser.hpp" />
+    <ClInclude Include="src\EON\ResultPolicy.hpp" />
     <ClInclude Include="src\EON\Selector.hpp" />
+    <ClInclude Include="src\EON\Attribute.hpp" />
     <ClInclude Include="src\EON\Types.hpp" />
     <ClInclude Include="src\Event.hpp" />
     <ClInclude Include="src\Ext\Erase.hpp" />
@@ -95,11 +103,12 @@
     <ClInclude Include="src\Math\detail\VectorBase.hpp" />
     <ClInclude Include="src\Math\detail\VectorHelpers.hpp" />
     <ClInclude Include="src\Math\detail\VectorFwd.hpp" />
-    <ClInclude Include="src\Math\detail\VectorSwizzlerFwd.hpp" />
+    <ClInclude Include="src\Math\detail\SwizzlerFwd.hpp" />
     <ClInclude Include="src\Math\Matrix.hpp" />
     <ClInclude Include="src\Math\Quaternion.hpp" />
+    <ClInclude Include="src\Math\SVector.hpp" />
     <ClInclude Include="src\Math\Vector.hpp" />
-    <ClInclude Include="src\Math\VectorSwizzler.hpp" />
+    <ClInclude Include="src\Math\Swizzler.hpp" />
     <ClInclude Include="src\Memory\AffixAllocator.hpp" />
     <ClInclude Include="src\Memory\AlignedMallocator.hpp" />
     <ClInclude Include="src\Memory\AlignedStackAllocator.hpp" />
@@ -122,7 +131,7 @@
     <ClInclude Include="src\Memory\Mallocator.hpp" />
     <ClInclude Include="src\Memory\MemoryBlock.hpp" />
     <ClInclude Include="src\Memory\PatternGuard.hpp" />
-    <ClInclude Include="src\Memory\SegregatorBucket.hpp" />
+    <ClInclude Include="src\Memory\SegBucket.hpp" />
     <ClInclude Include="src\Memory\StackAllocator.hpp" />
     <ClInclude Include="src\Memory\NullAllocator.hpp" />
     <ClInclude Include="src\Memory\AlignmentAllocator.hpp" />
@@ -178,7 +187,7 @@
     <ProjectGuid>{809D2707-DFB7-4E11-9CF6-FBBC1BD99797}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Epic</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

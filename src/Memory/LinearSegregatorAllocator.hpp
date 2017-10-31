@@ -14,7 +14,7 @@
 #pragma once
 
 #include <Epic/Memory/SegregatorAllocator.hpp>
-#include <Epic/Memory/SegregatorBucket.hpp>
+#include <Epic/Memory/SegBucket.hpp>
 #include <Epic/TMP/Utility.hpp>
 #include <type_traits>
 
@@ -38,13 +38,13 @@ namespace Epic::detail
 	};
 
 	template<size_t T, class S, class L>
-	struct LinearSegregatorAllocatorBuilder<Epic::SegregatorBucket<T, S>, L>
+	struct LinearSegregatorAllocatorBuilder<Epic::SegBucket<T, S>, L>
 	{
 		using Type = typename Epic::SegregatorAllocator<T, S, L>;
 	};
 
 	template<size_t T, class S, typename... Args>
-	struct LinearSegregatorAllocatorBuilder<Epic::SegregatorBucket<T, S>, Args...>
+	struct LinearSegregatorAllocatorBuilder<Epic::SegBucket<T, S>, Args...>
 	{
 		using Type = typename Epic::SegregatorAllocator<T, S, typename LinearSegregatorAllocatorBuilder<Args...>::Type>;
 	};

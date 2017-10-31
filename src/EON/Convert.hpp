@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 //
-//            Copyright (c) 2016 Ronnie Brohn (EpicBrownie)      
+//            Copyright (c) 2017 Ronnie Brohn (EpicBrownie)      
 //
 //                Distributed under The MIT License (MIT).
 //             (See accompanying file License.txt or copy at 
@@ -13,94 +13,226 @@
 
 #pragma once
 
-#include <Epic/EON/Types.hpp>
-#include <Epic/StringHash.hpp>
-#include <cstdint>
-#include <codecvt>
-#include <locale>
-#include <string>
+#include <Epic/EON/detail/TypeConvert.hpp>
+#include <Epic/EON/detail/Traits.hpp>
+#include <Epic/TMP/TypeTraits.hpp>
+
+//////////////////////////////////////////////////////////////////////////////
+
+namespace Epic::EON::detail
+{
+	template<class F, class T>
+	struct Assign;
+
+	template<class F, class T>
+	struct CastConvert;
+
+	template<class F, class T>
+	struct ConstructConvert;
+
+	template<class F, class T>
+	struct EnumConvert;
+
+	template<class F, class T>
+	struct NullConvert;
+
+	template<class F, class T>
+	struct AutoConvert;
+
+	template<class F, class T>
+	class Convert;
+}
 
 //////////////////////////////////////////////////////////////////////////////
 
 namespace Epic::EON
 {
-	template<class From, class To>
-	struct Convert;
+	struct DefaultConverter;
 }
 
-// ConvertAssign<From, To> - Convert from type From to type To
-template<class From, class To>
-struct Epic::EON::Convert
+//////////////////////////////////////////////////////////////////////////////
+
+namespace Epic::EON::detail
 {
-	static constexpr bool Apply(const From& /*src*/, To& /*dest*/)
+	namespace
+	{
+		template<class Converter, class From, class To>
+		bool ConvertIf(Converter convertFn, To& to, const From& from)
+		{
+			if constexpr (std::is_invocable_r_v<bool, Converter, To&, const From&>)
+				return convertFn(to, from);
+			else
+				return DefaultConverter() (to, from);
+		}
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+template<class F, class T>
+struct Epic::EON::detail::Assign
+{
+	bool operator() (T& to, const F& from)
+	{
+		to = from;
+		return true;
+	}
+};
+
+template<class F, class T>
+struct Epic::EON::detail::CastConvert
+{
+	bool operator() (T& to, const F& from)
+	{
+		to = static_cast<T>(from);
+		return true;
+	}
+};
+
+template<class F, class T>
+struct Epic::EON::detail::ConstructConvert
+{
+	bool operator() (T& to, const F& from)
+	{
+		to = T(from);
+		return true;
+	}
+};
+
+template<class F, class T>
+struct Epic::EON::detail::EnumConvert
+{
+private:
+	struct FromTag{ };
+	struct ToTag{ };
+	struct BothTag{ };
+
+	using MakeEnumTag =
+		std::conditional_t<std::is_enum_v<F> && std::is_enum_v<T>, BothTag,
+		std::conditional_t<std::is_enum_v<F>, FromTag, ToTag>>;
+
+	bool DoConvert(T& to, const F& from, FromTag)
+	{
+		using UF = std::underlying_type_t<F>;
+
+		return Convert<UF, T>() (to, static_cast<UF>(from));
+	}
+
+	bool DoConvert(T& to, const F& from, ToTag)
+	{
+		using UT = std::underlying_type_t<T>;
+		
+		return Convert<F, UT>() (reinterpret_cast<UT&>(to), from);
+	}
+
+	bool DoConvert(T& to, const F& from, BothTag)
+	{
+		using UF = std::underlying_type_t<F>;
+		using UT = std::underlying_type_t<T>;
+
+		return Convert<F, UT>() (reinterpret_cast<UT&>(to), static_cast<UF>(from));
+	}
+
+public:
+	bool operator() (T& to, const F& from)
+	{
+		return DoConvert(to, from, MakeEnumTag());
+	}
+};
+
+template<class F, class T>
+struct Epic::EON::detail::NullConvert
+{
+	bool operator() (T& to, const F& from)
 	{
 		return false;
 	}
 };
 
-// ConvertAssign<std::basic_string<wchar_t>, std::basic_string<char>> - Convert from wide string to byte string
-template<class AllocN, class AllocW>
-struct Epic::EON::Convert<std::basic_string<wchar_t, std::char_traits<wchar_t>, AllocW>, std::basic_string<char, std::char_traits<char>, AllocN>>
+template<class F, class T>
+struct Epic::EON::detail::AutoConvert
 {
-	static inline bool Apply(const std::basic_string<wchar_t, std::char_traits<wchar_t>, AllocW>& src, 
-								std::basic_string<char, std::char_traits<char>, AllocN>& dest)
-	{
-		// Convert a wide string to a string
-		using CodeCVT = std::codecvt_utf8<wchar_t>;
-		using Converter = std::wstring_convert<CodeCVT, wchar_t, AllocW, AllocN>;
+	using Type =
+		std::conditional_t<std::is_same_v<F, T>, Assign<F, T>,
+		std::conditional_t<std::is_enum_v<F> || std::is_enum_v<T>, EnumConvert<F, T>,
+		std::conditional_t<std::is_convertible_v<F, T>, CastConvert<F, T>,
+		std::conditional_t<Epic::TMP::IsExplicitlyConvertibleV<F, T>, ConstructConvert<F, T>,
+		std::conditional_t<std::is_invocable_r_v<bool, TypeConvert<F, T>, T&, const F&>, TypeConvert<F, T>,
+		NullConvert<F, T>>>>>>;
+};
 
-		dest = Converter().to_bytes(src);
+template<class F, class T>
+class Epic::EON::detail::Convert
+{
+private:
+	using Traits = EONTraits<T>;
+
+	struct FailTag { };
+	struct AutoTag { };
+	struct ArrayTag { };
+	struct SetTag { };
+
+	using MakeConversionTag =
+		std::conditional_t<!Traits::IsContainer, AutoTag,
+		std::conditional_t<Traits::IsVectorLike, ArrayTag,
+		std::conditional_t<Traits::IsSetLike, SetTag,
+		FailTag>>>;
+
+private:
+	bool DoConversion(T&, const F&, FailTag) 
+	{ 
+		return false; 
+	}
+
+	bool DoConversion(T& to, const F& from, AutoTag)
+	{
+		return AutoConvert<F, T>::Type() (to, from);
+	}
+
+	bool DoConversion(T& to, const F& from, ArrayTag)
+	{
+		static_assert(std::is_default_constructible_v<typename T::value_type>, "Value must be default constructible");
+
+		typename T::value_type item;
+		Convert<F, typename T::value_type> fnConvert;
+
+		if (!fnConvert(item, from))
+			return false;
+
+		to.emplace_back(std::move(item));
+		
+		return true;
+	}
+
+	bool DoConversion(T& to, const F& from, SetTag)
+	{
+		static_assert(std::is_default_constructible_v<typename T::key_type>, "Value must be default constructible");
+
+		typename T::key_type item;
+		Convert<F, typename T::key_type> fnConvert;
+
+		if (!fnConvert(item, from))
+			return false;
+
+		to.emplace(std::move(item));
 
 		return true;
 	}
-};
 
-// ConvertAssign<std::basic_string<char>, std::basic_string<wchar_t>> - Convert from byte string to wide string
-template<class AllocN, class AllocW>
-struct Epic::EON::Convert<std::basic_string<char, std::char_traits<char>, AllocN>, std::basic_string<wchar_t, std::char_traits<wchar_t>, AllocW>>
-{
-	static inline bool Apply(const std::basic_string<char, std::char_traits<char>, AllocN>& src,
-							 std::basic_string<wchar_t, std::char_traits<wchar_t>, AllocW>& dest)
+public:
+	bool operator() (T& to, const F& from)
 	{
-		// Convert a narrow string to a wide string
-		using CodeCVT = std::codecvt_utf8<wchar_t>;
-		using Converter = std::wstring_convert<CodeCVT, wchar_t, AllocW, AllocN>;
-
-		dest = Converter().from_bytes(src);
-
-		return true;
+		return DoConversion(to, from, MakeConversionTag());
 	}
 };
 
-// ConvertAssign<Epic::EON::String, std::basic_string> - Convert from EON::String to std::string
-template<class Char, class Alloc>
-struct Epic::EON::Convert<Epic::EON::String, std::basic_string<Char, std::char_traits<Char>, Alloc>>
-{
-	static inline bool Apply(const Epic::EON::String& src,
-							 std::basic_string<Char, std::char_traits<Char>, Alloc>& dest)
-	{
-		return Epic::EON::Convert<std::decay_t<decltype(src.Value)>, std::decay_t<decltype(dest)>>::Apply(src.Value, dest);
-	}
-};
+//////////////////////////////////////////////////////////////////////////////
 
-// ConvertAssign<std::basic_string, Epic::BasicStringHash> - Convert from std::basic_string to Epic::BasicStringHash
-template<class CharS, class CharH, class Alloc, Epic::StringHashAlgorithms Algorithm>
-struct Epic::EON::Convert<std::basic_string<CharS, std::char_traits<CharS>, Alloc>, Epic::BasicStringHash<CharH, Algorithm>>
+struct Epic::EON::DefaultConverter
 {
-	static inline bool Apply(const std::basic_string<CharS, std::char_traits<CharS>, Alloc>& src,
-							 Epic::BasicStringHash<CharH, Algorithm>& dest)
+	template<class T, class F>
+	bool operator() (T& to, const F& from)
 	{
-		dest = Epic::Hash(src);
-		return true;
-	}
-};
-
-// ConvertAssign<Epic::EON::String, Epic::BasicStringHash> - Convert from EON::String to Epic::BasicStringHash
-template<class CharH, Epic::StringHashAlgorithms Algorithm>
-struct Epic::EON::Convert<Epic::EON::String, Epic::BasicStringHash<CharH, Algorithm>>
-{
-	static inline bool Apply(const Epic::EON::String& src, Epic::BasicStringHash<CharH, Algorithm>& dest)
-	{
-		return Epic::EON::Convert<std::decay_t<decltype(src.Value)>, std::decay_t<decltype(dest)>>::Apply(src.Value, dest);
+		return detail::Convert<F, T>()(to, from);
 	}
 };
