@@ -131,7 +131,7 @@
     <ClInclude Include="src\Memory\Mallocator.hpp" />
     <ClInclude Include="src\Memory\MemoryBlock.hpp" />
     <ClInclude Include="src\Memory\PatternGuard.hpp" />
-    <ClInclude Include="src\Memory\SegregatorBucket.hpp" />
+    <ClInclude Include="src\Memory\SegBucket.hpp" />
     <ClInclude Include="src\Memory\StackAllocator.hpp" />
     <ClInclude Include="src\Memory\NullAllocator.hpp" />
     <ClInclude Include="src\Memory\AlignmentAllocator.hpp" />

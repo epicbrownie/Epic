@@ -17,7 +17,7 @@
 
 namespace Epic
 {
-	/// SegregatorBucket - Metatype for creating SegregatorAllocator compositions
+	/// SegBucket - Metatype for creating SegregatorAllocator compositions
 	template<size_t Threshold, class Allocator>
-	struct SegregatorBucket { };
+	struct SegBucket { };
 }

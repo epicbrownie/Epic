@@ -142,9 +142,6 @@
     <ClInclude Include="src\Memory\LinearSegregatorAllocator.hpp">
       <Filter>Memory\Allocators - Behavioral</Filter>
     </ClInclude>
-    <ClInclude Include="src\Memory\SegregatorBucket.hpp">
-      <Filter>Memory</Filter>
-    </ClInclude>
     <ClInclude Include="src\TMP\List.hpp">
       <Filter>Utility\TMP</Filter>
     </ClInclude>
@@ -550,6 +547,9 @@
     </ClInclude>
     <ClInclude Include="src\EON\Attribute.hpp">
       <Filter>Utility\EON</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Memory\SegBucket.hpp">
+      <Filter>Memory</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
