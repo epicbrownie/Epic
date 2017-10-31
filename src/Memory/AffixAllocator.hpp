@@ -182,8 +182,11 @@ public:
 		if (!blk) return{ nullptr, 0 };
 
 		// Construct the Prefix and Suffix objects
-		detail::AffixConstructor<Prefix>::apply(AffixedToPrefixPtr(blk));
-		detail::AffixConstructor<Suffix>::apply(AffixedToSuffixPtr(blk));
+		if constexpr (HasPrefix)
+			::new (AffixedToPrefixPtr(blk)) Prefix();
+
+		if constexpr (HasSuffix)
+			::new (AffixedToSuffixPtr(blk)) Suffix();
 
 		// Store alignment memento
 		const auto memento = static_cast<AlignmentMemento>(Alignment);
@@ -217,8 +220,11 @@ public:
 		if (!blk) return{ nullptr, 0 };
 
 		// Construct the Prefix and Suffix objects
-		detail::AffixConstructor<Prefix>::apply(AffixedToPrefixPtr(blk));
-		detail::AffixConstructor<Suffix>::apply(AffixedToSuffixPtr(blk));
+		if constexpr (HasPrefix)
+			::new (AffixedToPrefixPtr(blk)) Prefix();
+
+		if constexpr (HasSuffix)
+			::new (AffixedToSuffixPtr(blk)) Suffix();
 
 		// Store alignment memento
 		const auto memento = static_cast<AlignmentMemento>(alignment);
