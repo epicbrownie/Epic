@@ -107,7 +107,9 @@ private:
 
 public:
 	Selector() noexcept = default;
-	
+	Selector(const Type&) = default;
+	Selector(Type&&) = default;
+
 	template<size_t N>
 	Selector(const StringView::value_type(&path)[N]) noexcept 
 		: Selector(StringView{ path, N })

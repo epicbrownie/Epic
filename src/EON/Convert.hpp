@@ -13,6 +13,7 @@
 
 #pragma once
 
+#include <Epic/EON/detail/Tags.hpp>
 #include <Epic/EON/detail/TypeConvert.hpp>
 #include <Epic/EON/detail/Traits.hpp>
 #include <Epic/TMP/TypeTraits.hpp>
@@ -57,12 +58,12 @@ namespace Epic::EON::detail
 	namespace
 	{
 		template<class Converter, class From, class To>
-		bool ConvertIf(Converter convertFn, To& to, const From& from)
+		bool ConvertIf(Converter convertFn, To& to, From from)
 		{
-			if constexpr (std::is_invocable_r_v<bool, Converter, To&, const From&>)
-				return convertFn(to, from);
+			if constexpr (std::is_invocable_r_v<bool, Converter, To&, From>)
+				return convertFn(to, std::move(from));
 			else
-				return DefaultConverter() (to, from);
+				return DefaultConverter() (to, std::move(from));
 		}
 	}
 }
@@ -72,9 +73,9 @@ namespace Epic::EON::detail
 template<class F, class T>
 struct Epic::EON::detail::Assign
 {
-	bool operator() (T& to, const F& from)
+	bool operator() (T& to, F from)
 	{
-		to = from;
+		to = std::move(from);
 		return true;
 	}
 };
@@ -82,7 +83,7 @@ struct Epic::EON::detail::Assign
 template<class F, class T>
 struct Epic::EON::detail::CastConvert
 {
-	bool operator() (T& to, const F& from)
+	bool operator() (T& to, F from)
 	{
 		to = static_cast<T>(from);
 		return true;
@@ -92,9 +93,9 @@ struct Epic::EON::detail::CastConvert
 template<class F, class T>
 struct Epic::EON::detail::ConstructConvert
 {
-	bool operator() (T& to, const F& from)
+	bool operator() (T& to, F from)
 	{
-		to = T(from);
+		to = T(std::move(from));
 		return true;
 	}
 };
@@ -111,39 +112,51 @@ private:
 		std::conditional_t<std::is_enum_v<F> && std::is_enum_v<T>, BothTag,
 		std::conditional_t<std::is_enum_v<F>, FromTag, ToTag>>;
 
-	bool DoConvert(T& to, const F& from, FromTag)
+	bool DoConvert(T& to, F from, FromTag)
 	{
 		using UF = std::underlying_type_t<F>;
 
 		return Convert<UF, T>() (to, static_cast<UF>(from));
 	}
 
-	bool DoConvert(T& to, const F& from, ToTag)
+	bool DoConvert(T& to, F from, ToTag)
 	{
 		using UT = std::underlying_type_t<T>;
 		
-		return Convert<F, UT>() (reinterpret_cast<UT&>(to), from);
+		UT item;
+		if (!Convert<F, UT>() (item, std::move(from)))
+			return false;
+
+		to = static_cast<T>(item);
+
+		return true;
 	}
 
-	bool DoConvert(T& to, const F& from, BothTag)
+	bool DoConvert(T& to, F from, BothTag)
 	{
 		using UF = std::underlying_type_t<F>;
 		using UT = std::underlying_type_t<T>;
 
-		return Convert<F, UT>() (reinterpret_cast<UT&>(to), static_cast<UF>(from));
+		UT item;
+		if (!Convert<UF, UT>() (item, static_cast<UF>(from)))
+			return false;
+		
+		to = static_cast<T>(item);
+
+		return true;
 	}
 
 public:
-	bool operator() (T& to, const F& from)
+	bool operator() (T& to, F from)
 	{
-		return DoConvert(to, from, MakeEnumTag());
+		return DoConvert(to, std::move(from), MakeEnumTag());
 	}
 };
 
 template<class F, class T>
 struct Epic::EON::detail::NullConvert
 {
-	bool operator() (T& to, const F& from)
+	bool operator() (T& /*to*/, F /*from*/)
 	{
 		return false;
 	}
@@ -157,7 +170,7 @@ struct Epic::EON::detail::AutoConvert
 		std::conditional_t<std::is_enum_v<F> || std::is_enum_v<T>, EnumConvert<F, T>,
 		std::conditional_t<std::is_convertible_v<F, T>, CastConvert<F, T>,
 		std::conditional_t<Epic::TMP::IsExplicitlyConvertibleV<F, T>, ConstructConvert<F, T>,
-		std::conditional_t<std::is_invocable_r_v<bool, TypeConvert<F, T>, T&, const F&>, TypeConvert<F, T>,
+		std::conditional_t<std::is_invocable_r_v<bool, TypeConvert<F, T>, T&, F>, TypeConvert<F, T>,
 		NullConvert<F, T>>>>>>;
 };
 
@@ -167,11 +180,6 @@ class Epic::EON::detail::Convert
 private:
 	using Traits = EONTraits<T>;
 
-	struct FailTag { };
-	struct AutoTag { };
-	struct ArrayTag { };
-	struct SetTag { };
-
 	using MakeConversionTag =
 		std::conditional_t<!Traits::IsContainer, AutoTag,
 		std::conditional_t<Traits::IsVectorLike, ArrayTag,
@@ -179,39 +187,36 @@ private:
 		FailTag>>>;
 
 private:
-	bool DoConversion(T&, const F&, FailTag) 
+	bool DoConversion(T&, F, FailTag) 
 	{ 
 		return false; 
 	}
 
-	bool DoConversion(T& to, const F& from, AutoTag)
+	bool DoConversion(T& to, F from, AutoTag)
 	{
-		return AutoConvert<F, T>::Type() (to, from);
+		return AutoConvert<F, T>::Type() (to, std::move(from));
 	}
 
-	bool DoConversion(T& to, const F& from, ArrayTag)
+	bool DoConversion(T& to, F from, ArrayTag)
 	{
-		static_assert(std::is_default_constructible_v<typename T::value_type>, "Value must be default constructible");
+		using Item = typename T::value_type;
 
-		typename T::value_type item;
-		Convert<F, typename T::value_type> fnConvert;
+		static_assert(std::is_default_constructible_v<Item>, "Array value type must be default constructible");
 
-		if (!fnConvert(item, from))
-			return false;
-
-		to.emplace_back(std::move(item));
+		Item& item = to.emplace_back();
 		
-		return true;
+		return Convert<F, Item>() (item, std::move(from));
 	}
 
-	bool DoConversion(T& to, const F& from, SetTag)
+	bool DoConversion(T& to, F from, SetTag)
 	{
-		static_assert(std::is_default_constructible_v<typename T::key_type>, "Value must be default constructible");
+		using Item = typename T::key_type;
+		
+		static_assert(std::is_default_constructible_v<Item>, "Set key type must be default constructible");
 
-		typename T::key_type item;
-		Convert<F, typename T::key_type> fnConvert;
-
-		if (!fnConvert(item, from))
+		Item item;
+		
+		if (!Convert<F, Item>() (item, std::move(from)))
 			return false;
 
 		to.emplace(std::move(item));
@@ -220,9 +225,9 @@ private:
 	}
 
 public:
-	bool operator() (T& to, const F& from)
+	bool operator() (T& to, F from)
 	{
-		return DoConversion(to, from, MakeConversionTag());
+		return DoConversion(to, std::move(from), MakeConversionTag());
 	}
 };
 
@@ -231,8 +236,8 @@ public:
 struct Epic::EON::DefaultConverter
 {
 	template<class T, class F>
-	bool operator() (T& to, const F& from)
+	bool operator() (T& to, F from)
 	{
-		return detail::Convert<F, T>()(to, from);
+		return detail::Convert<F, T>() (to, std::move(from));
 	}
 };

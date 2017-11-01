@@ -63,6 +63,7 @@
     <ClInclude Include="src\EON\Convert.hpp" />
     <ClInclude Include="src\EON\detail\Assign.hpp" />
     <ClInclude Include="src\EON\detail\ParserFwd.hpp" />
+    <ClInclude Include="src\EON\detail\Tags.hpp" />
     <ClInclude Include="src\EON\detail\Traits.hpp" />
     <ClInclude Include="src\EON\detail\TypeConvert.hpp" />
     <ClInclude Include="src\EON\detail\Utility.hpp" />
@@ -76,9 +77,7 @@
     <ClInclude Include="src\EON\Attribute.hpp" />
     <ClInclude Include="src\EON\Types.hpp" />
     <ClInclude Include="src\Event.hpp" />
-    <ClInclude Include="src\Ext\Erase.hpp" />
     <ClInclude Include="src\AudioSystem.hpp" />
-    <ClInclude Include="src\Ext\Sort.hpp" />
     <ClInclude Include="src\GLFWContextTypes.hpp" />
     <ClInclude Include="src\GLFWJoystickInputDevice.hpp" />
     <ClInclude Include="src\GLFWKeyboardInputDevice.hpp" />

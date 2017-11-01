@@ -65,7 +65,6 @@ struct Epic::EON::EONBoolean
 
 	operator ValueType& () { return Value; }
 	operator const ValueType& () const { return Value; }
-
 };
 
 struct Epic::EON::EONFloat

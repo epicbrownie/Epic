@@ -16,6 +16,7 @@
 #include <Epic/EON/Types.hpp>
 #include <Epic/EON/Convert.hpp>
 #include <Epic/EON/Error.hpp>
+#include <Epic/EON/detail/Tags.hpp>
 #include <Epic/EON/detail/Traits.hpp>
 #include <algorithm>
 #include <iterator>
@@ -49,17 +50,11 @@ private:
 public:
 	ConversionVisitor() = delete;
 	ConversionVisitor(T& to, Converter convertFn, const EONObject& scope)
-		: m_To(to), m_ConvertFn(convertFn), m_GlobalScope(scope) { }
+		: m_To(to), m_ConvertFn(std::move(convertFn)), m_GlobalScope(scope) { }
 
 private:
 	using Traits = EONTraits<T>;
 
-	struct FailTag { };
-	struct ScalarTag{ };
-	struct ArrayTag{ };
-	struct SetTag{ };
-	struct MapTag{ };
-	
 	using MakeArrayTag = 
 		std::conditional_t<Traits::IsVectorLike || Traits::IsSetLike, ArrayTag, 
 		std::conditional_t<Traits::IsIndexableScalar, ScalarTag,
@@ -87,23 +82,20 @@ private:
 	bool DoScalarConversion(const S& v, ArrayTag)
 	{
 		using Item = typename T::value_type;
-		static_assert(std::is_default_constructible_v<Item>, "Item must be default constructible");
-
-		Item item;
-
-		if (!ConvertIf(m_ConvertFn, item, v))
-			return false;
-
-		m_To.emplace_back(std::move(item));
 		
-		return true;
+		static_assert(std::is_default_constructible_v<Item>, "Array value type must be default constructible");
+
+		Item& item = m_To.emplace_back();
+
+		return ConvertIf(m_ConvertFn, item, v);
 	}
 
 	template<class S>
 	bool DoScalarConversion(const S& v, SetTag)
 	{
 		using Item = typename T::key_type;
-		static_assert(std::is_default_constructible_v<Item>, "Item must be default constructible");
+
+		static_assert(std::is_default_constructible_v<Item>, "Set key type must be default constructible");
 
 		Item item;
 
@@ -119,42 +111,33 @@ private:
 
 	bool DoArrayConversion(const EONArray& v, ScalarTag)
 	{
-		static_assert(std::is_default_constructible_v<T>, "Container must be default constructible");
+		using Item = typename T::value_type;
 
-		T item;
+		static_assert(std::is_default_constructible_v<Item>, "Array value type must be default constructible");
 
-		for (decltype(v.Members.size()) i=0; i<v.Members.size(); ++i)
+		for (decltype(v.Members.size()) i = 0; i < v.Members.size(); ++i)
 		{
-			if (i >= std::size(item))
+			if (i >= std::size(m_To))
 				break;
 
-			const auto& vm = v.Members[i];
-			typename T::value_type value;
+			Item value;
 
-			if (!std::visit(ConversionVisitor<typename T::value_type, Converter>(value, m_ConvertFn, m_GlobalScope), vm.Data))
+			if (!std::visit(ConversionVisitor<Item, Converter>(value, m_ConvertFn, m_GlobalScope), v.Members[i]))
 				return false;
 
-			item[i] = value;
+			m_To[i] = std::move(value);
 		}
-
-		m_To = std::move(item);
 
 		return true;
 	}
 
 	bool DoArrayConversion(const EONArray& v, ArrayTag)
 	{
-		static_assert(std::is_default_constructible_v<T>, "Container must be default constructible");
-
-		T items;
-
 		for (const auto& vm : v.Members)
 		{
-			if (!std::visit(ConversionVisitor<T, Converter>(items, m_ConvertFn, m_GlobalScope), vm.Data))
+			if (!std::visit(ConversionVisitor<T, Converter>(m_To, m_ConvertFn, m_GlobalScope), vm.Data))
 				return false;
 		}
-
-		m_To = std::move(items);
 
 		return true;
 	}
@@ -163,26 +146,24 @@ private:
 
 	bool DoObjectConversion(const EONObject& v, MapTag)
 	{
-		static_assert(std::is_default_constructible_v<T>, "Container must be default constructible");
-		static_assert(std::is_default_constructible_v<typename T::key_type>, "K must be default constructible");
-		static_assert(std::is_default_constructible_v<typename T::mapped_type>, "V must be default constructible");
+		using Key = typename T::key_type;
+		using Item = typename T::mapped_type;
 
-		T items;
+		static_assert(std::is_default_constructible_v<Key>, "Map key type must be default constructible");
+		static_assert(std::is_default_constructible_v<Item>, "Map mapped type must be default constructible");
 
 		for (const auto& vm : v.Members)
 		{
-			typename T::key_type key;
+			Key key;
 			if (!ConvertIf(m_ConvertFn, key, vm.Name))
 				return false;
 
-			typename T::mapped_type value;
-			if (!std::visit(ConversionVisitor<typename T::mapped_type, Converter>(value, m_ConvertFn, m_GlobalScope), vm.Value.Data))
+			Item value;
+			if (!std::visit(ConversionVisitor<Item, Converter>(value, m_ConvertFn, m_GlobalScope), vm.Value.Data))
 				return false;
 
-			items.emplace(std::move(key), std::move(value));
+			m_To.emplace(std::move(key), std::move(value));
 		}
-
-		m_To = std::move(items);
 
 		return true;
 	}
