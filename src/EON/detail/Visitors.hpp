@@ -16,6 +16,7 @@
 #include <Epic/EON/Types.hpp>
 #include <Epic/EON/Convert.hpp>
 #include <Epic/EON/Error.hpp>
+#include <Epic/EON/detail/Tags.hpp>
 #include <Epic/EON/detail/Traits.hpp>
 #include <algorithm>
 #include <iterator>
@@ -49,17 +50,11 @@ private:
 public:
 	ConversionVisitor() = delete;
 	ConversionVisitor(T& to, Converter convertFn, const EONObject& scope)
-		: m_To(to), m_ConvertFn(convertFn), m_GlobalScope(scope) { }
+		: m_To(to), m_ConvertFn(std::move(convertFn)), m_GlobalScope(scope) { }
 
 private:
 	using Traits = EONTraits<T>;
 
-	struct FailTag { };
-	struct ScalarTag{ };
-	struct ArrayTag{ };
-	struct SetTag{ };
-	struct MapTag{ };
-	
 	using MakeArrayTag = 
 		std::conditional_t<Traits::IsVectorLike || Traits::IsSetLike, ArrayTag, 
 		std::conditional_t<Traits::IsIndexableScalar, ScalarTag,
@@ -90,23 +85,20 @@ private:
 	bool DoScalarConversion(const S& v, ArrayTag)
 	{
 		using Item = typename T::value_type;
-		static_assert(std::is_default_constructible_v<Item>, "Item must be default constructible");
-
-		Item item;
-
-		if (!ConvertIf(m_ConvertFn, item, v))
-			return false;
-
-		m_To.emplace_back(std::move(item));
 		
-		return true;
+		static_assert(std::is_default_constructible_v<Item>, "Array value type must be default constructible");
+
+		Item& item = m_To.emplace_back();
+
+		return ConvertIf(m_ConvertFn, item, v);
 	}
 
 	template<class S>
 	bool DoScalarConversion(const S& v, SetTag)
 	{
 		using Item = typename T::key_type;
-		static_assert(std::is_default_constructible_v<Item>, "Item must be default constructible");
+
+		static_assert(std::is_default_constructible_v<Item>, "Set key type must be default constructible");
 
 		Item item;
 
@@ -124,25 +116,25 @@ private:
 	{
 		// TODO: Reduce trait requirements as much as possible (decltype(m_To[0]) instead of value_type since indexing is already required)
 		// TODO: Add these requirements to the trait testers (IsIndexable, etc...)
-		// TODO: Remove the all-or-nothing handling of assignment.. in-place editing is fine
 
+    using Item = std::decay_t<decltype(m_To[0])>; // TODO: Is this correct?
+
+    static_assert(std::is_default_constructible_v<Item>, "Array value type must be default constructible");
+    
 		if constexpr (Epic::TMP::IsDetected<ResizeImpl, size_t>::value) // TODO: Headers for this?
 			m_To.resize(v.Members.size());
 
 		for(decltype(v.Members.size()) i = 0; i < v.Members.size(); ++i)
 		{
-			using Value = std::decay_t<decltype(m_To[0])>; // TODO: Is this correct?
-
 			if (i >= std::size(m_To)) // TODO: Indexable needs this requirement
 				break;
 
-			const auto& vm = v.Members[i];
-			Value value;
+			Item item;
 
-			if (!std::visit(ConversionVisitor<Value, Converter>(value, m_ConvertFn, m_GlobalScope), vm.Data))
+			if (!std::visit(ConversionVisitor<Item, Converter>(value, m_ConvertFn, m_GlobalScope), v.Members[i]))
 				return false;
 
-			m_To[i] = value; // TODO: Indexable needs this requirement
+			m_To[i] = std::move(item); // TODO: Indexable needs this requirement
 		}
 
 		return true;
@@ -150,17 +142,11 @@ private:
 
 	bool DoArrayConversion(const EONArray& v, ArrayTag)
 	{
-		static_assert(std::is_default_constructible_v<T>, "Container must be default constructible");
-
-		T items;
-
 		for (const auto& vm : v.Members)
 		{
-			if (!std::visit(ConversionVisitor<T, Converter>(items, m_ConvertFn, m_GlobalScope), vm.Data))
+			if (!std::visit(ConversionVisitor<T, Converter>(m_To, m_ConvertFn, m_GlobalScope), vm.Data))
 				return false;
 		}
-
-		m_To = std::move(items);
 
 		return true;
 	}
@@ -169,26 +155,24 @@ private:
 
 	bool DoObjectConversion(const EONObject& v, MapTag)
 	{
-		static_assert(std::is_default_constructible_v<T>, "Container must be default constructible");
-		static_assert(std::is_default_constructible_v<typename T::key_type>, "K must be default constructible");
-		static_assert(std::is_default_constructible_v<typename T::mapped_type>, "V must be default constructible");
+		using Key = typename T::key_type;
+		using Item = typename T::mapped_type;
 
-		T items;
+		static_assert(std::is_default_constructible_v<Key>, "Map key type must be default constructible");
+		static_assert(std::is_default_constructible_v<Item>, "Map mapped type must be default constructible");
 
 		for (const auto& vm : v.Members)
 		{
-			typename T::key_type key;
+			Key key;
 			if (!ConvertIf(m_ConvertFn, key, vm.Name))
 				return false;
 
-			typename T::mapped_type value;
-			if (!std::visit(ConversionVisitor<typename T::mapped_type, Converter>(value, m_ConvertFn, m_GlobalScope), vm.Value.Data))
+			Item value;
+			if (!std::visit(ConversionVisitor<Item, Converter>(value, m_ConvertFn, m_GlobalScope), vm.Value.Data))
 				return false;
 
-			items.emplace(std::move(key), std::move(value));
+			m_To.emplace(std::move(key), std::move(value));
 		}
-
-		m_To = std::move(items);
 
 		return true;
 	}
@@ -318,19 +302,19 @@ public:
 class Epic::EON::detail::FilterVisitor
 {
 private:
-	std::size_t _Filter;
+	size_t _Filter;
 
 public:
 	explicit FilterVisitor(eEONVariantType filter) noexcept
-		: _Filter(std::size_t(filter)) { }
+		: _Filter(size_t(filter)) { }
 
 public:	
-	bool operator() (const EONInteger& v) { return (_Filter & std::size_t(eEONVariantType::Integer)) != 0; }
-	bool operator() (const EONFloat& v) { return (_Filter & std::size_t(eEONVariantType::Float)) != 0; }
-	bool operator() (const EONBoolean& v) { return (_Filter & std::size_t(eEONVariantType::Boolean)) != 0; }
-	bool operator() (const EONString& v) { return (_Filter & std::size_t(eEONVariantType::String)) != 0; }
-	bool operator() (const EONArray& v) { return (_Filter & std::size_t(eEONVariantType::Array)) != 0; }
-	bool operator() (const EONObject& v) { return (_Filter & std::size_t(eEONVariantType::Object)) != 0; }
+	bool operator() (const EONInteger& v) { return (_Filter & size_t(eEONVariantType::Integer)) != 0; }
+	bool operator() (const EONFloat& v) { return (_Filter & size_t(eEONVariantType::Float)) != 0; }
+	bool operator() (const EONBoolean& v) { return (_Filter & size_t(eEONVariantType::Boolean)) != 0; }
+	bool operator() (const EONString& v) { return (_Filter & size_t(eEONVariantType::String)) != 0; }
+	bool operator() (const EONArray& v) { return (_Filter & size_t(eEONVariantType::Array)) != 0; }
+	bool operator() (const EONObject& v) { return (_Filter & size_t(eEONVariantType::Object)) != 0; }
 };
 
 //////////////////////////////////////////////////////////////////////////////

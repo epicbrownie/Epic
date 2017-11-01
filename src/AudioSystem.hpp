@@ -16,7 +16,7 @@
 #include <Epic/AudioTypes.hpp>
 #include <Epic/AudioBus.hpp>
 #include <Epic/Event.hpp>
-#include <Epic/OS.h>
+#include <Epic/OS.hpp>
 #include <Epic/Sound.hpp>
 #include <Epic/VolumeControl.hpp>
 #include <Epic/StringHash.hpp>
@@ -64,14 +64,16 @@ namespace Epic::detail
 
 		void __stdcall AudioFree(void* p, FMOD_MEMORY_TYPE /*type*/, const char* /* srcStr */)
 		{
-			Epic::detail::AudioAllocator<Epic::AudioSystem> allocator;
+			using Allocator = Epic::detail::AudioAllocator<Epic::AudioSystem>;
+			Allocator allocator;
 
 			Blk blk{ p, 1 };
 
 			const auto pPrefix = allocator.Allocator().GetPrefixObject(blk, Epic::detail::AudioAlignment);
 			blk.Size = pPrefix->Size;
 
-			detail::DeallocateIf<decltype(allocator)>::apply(allocator, blk);
+			if constexpr (detail::CanDeallocate<Allocator>::value)
+				allocator.Deallocate(blk);
 		}
 	}
 }
@@ -123,16 +125,16 @@ private:
 public:
 	AudioSystem() noexcept
 	{
-#ifdef WindowsOS
-		::CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
-#endif
+		#ifdef WindowsOS
+			::CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+		#endif
 	}
 
 	~AudioSystem() noexcept
 	{
-#ifdef WindowsOS
-		::CoUninitialize();
-#endif
+		#ifdef WindowsOS
+			::CoUninitialize();
+		#endif
 	}
 
 public:

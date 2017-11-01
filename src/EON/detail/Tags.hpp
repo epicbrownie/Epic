@@ -15,8 +15,12 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-namespace Epic
+namespace Epic::EON::detail
 {
-	template<class T, size_t Size>
-	class Vector;
+	struct AutoTag { };
+	struct FailTag { };
+	struct ScalarTag { };
+	struct ArrayTag { };
+	struct SetTag { };
+	struct MapTag { };
 }

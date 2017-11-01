@@ -59,13 +59,13 @@ public:
 public:
 	/* Returns a block of uninitialized memory (using ::_aligned_malloc).
 	   If sz is zero, the returned block's pointer is null. */
-	Blk AllocateAligned(const size_t sz, const size_t alignment = Alignment) const noexcept;
+	Blk AllocateAligned(size_t sz, size_t alignment = Alignment) const noexcept;
 
 	/* Attempts to reallocate the memory of blk (aligned to alignment) to the new size sz (using ::_realloc_malloc)
 	   If the block's pointer is null, this is equivalent to calling AllocateAligned(sz, alignment)
 	   If sz is zero, the returned block's pointer is malloc-implementation-specific.
 	   Note: According to ::_realloc_malloc, it is an error to reallocate memory and change the alignment of a block. */
-	bool ReallocateAligned(Blk& blk, const size_t sz, const size_t alignment = Alignment) const;
+	bool ReallocateAligned(Blk& blk, size_t sz, size_t alignment = Alignment) const;
 
 public:
 	/* Frees the memory for blk (using ::_aligned_free). */

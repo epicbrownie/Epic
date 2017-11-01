@@ -55,7 +55,7 @@ public:
 	void Insert(const EONObject& obj)
 	{
 		for(auto& v : obj.Members)
-			Insert(std::move(EONVariable{ v }));
+			Insert(EONVariable{ v });
 	}
 
 	void Insert(EONObject&& obj)
@@ -66,12 +66,12 @@ public:
 
 	void Insert(const EONVariable& variable)
 	{
-		Insert(std::move(EONVariable{ variable }));
+		Insert(EONVariable{ variable });
 	}
 
 	void Insert(EONVariable&& variable)
 	{
-		assert(variable.Name != "" && "Variable must have a name");
+		assert(!variable.Name.empty() && "Variable must have a name");
 
 		if (detail::Tidy(&m_Data, &m_Data, variable, true))
 			m_Data.Members.emplace_back(std::move(variable));

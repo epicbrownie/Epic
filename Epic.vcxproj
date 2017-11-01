@@ -64,6 +64,7 @@
     <ClInclude Include="src\EON\Convert.hpp" />
     <ClInclude Include="src\EON\detail\Assign.hpp" />
     <ClInclude Include="src\EON\detail\ParserFwd.hpp" />
+    <ClInclude Include="src\EON\detail\Tags.hpp" />
     <ClInclude Include="src\EON\detail\Traits.hpp" />
     <ClInclude Include="src\EON\detail\TypeConvert.hpp" />
     <ClInclude Include="src\EON\detail\Utility.hpp" />
@@ -77,9 +78,7 @@
     <ClInclude Include="src\EON\Attribute.hpp" />
     <ClInclude Include="src\EON\Types.hpp" />
     <ClInclude Include="src\Event.hpp" />
-    <ClInclude Include="src\Ext\Erase.hpp" />
     <ClInclude Include="src\AudioSystem.hpp" />
-    <ClInclude Include="src\Ext\Sort.hpp" />
     <ClInclude Include="src\GLFWContextTypes.hpp" />
     <ClInclude Include="src\GLFWJoystickInputDevice.hpp" />
     <ClInclude Include="src\GLFWKeyboardInputDevice.hpp" />
@@ -93,6 +92,7 @@
     <ClInclude Include="src\InputDeviceManager.hpp" />
     <ClInclude Include="src\InputResolver.hpp" />
     <ClInclude Include="src\InputSystem.hpp" />
+    <ClInclude Include="src\Math.hpp" />
     <ClInclude Include="src\Math\Algorithm.hpp" />
     <ClInclude Include="src\Math\Angle.hpp" />
     <ClInclude Include="src\Math\Constants.hpp" />
@@ -101,6 +101,7 @@
     <ClInclude Include="src\Math\detail\MathHelpers.hpp" />
     <ClInclude Include="src\Math\detail\QuaternionBase.hpp" />
     <ClInclude Include="src\Math\detail\QuaternionFwd.hpp" />
+    <ClInclude Include="src\Math\detail\SVectorFwd.hpp" />
     <ClInclude Include="src\Math\detail\VectorBase.hpp" />
     <ClInclude Include="src\Math\detail\VectorHelpers.hpp" />
     <ClInclude Include="src\Math\detail\VectorFwd.hpp" />
@@ -132,7 +133,7 @@
     <ClInclude Include="src\Memory\Mallocator.hpp" />
     <ClInclude Include="src\Memory\MemoryBlock.hpp" />
     <ClInclude Include="src\Memory\PatternGuard.hpp" />
-    <ClInclude Include="src\Memory\SegregatorBucket.hpp" />
+    <ClInclude Include="src\Memory\SegBucket.hpp" />
     <ClInclude Include="src\Memory\StackAllocator.hpp" />
     <ClInclude Include="src\Memory\NullAllocator.hpp" />
     <ClInclude Include="src\Memory\AlignmentAllocator.hpp" />
@@ -141,7 +142,7 @@
     <ClInclude Include="src\NullAtomic.hpp" />
     <ClInclude Include="src\NullMutex.hpp" />
     <ClInclude Include="src\NumericalResolver.hpp" />
-    <ClInclude Include="src\OS.h" />
+    <ClInclude Include="src\OS.hpp" />
     <ClInclude Include="src\Singleton.hpp" />
     <ClInclude Include="src\Sound.hpp" />
     <ClInclude Include="src\Specs.hpp" />

@@ -17,6 +17,6 @@
 
 namespace Epic
 {
-	template<class T, std::size_t VS, std::size_t... Indices>
+	template<class T, size_t VS, size_t... Indices>
 	class Swizzler;
 }

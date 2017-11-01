@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 //
-//            Copyright (c) 2016 Ronnie Brohn (EpicBrownie)      
+//            Copyright (c) 2017 Ronnie Brohn (EpicBrownie)      
 //
 //                Distributed under The MIT License (MIT).
 //             (See accompanying file License.txt or copy at 
@@ -13,11 +13,9 @@
 
 #pragma once
 
-//////////////////////////////////////////////////////////////////////////////
-
-namespace Epic
-{
-	/// SegregatorBucket - Metatype for creating SegregatorAllocator compositions
-	template<size_t Threshold, class Allocator>
-	struct SegregatorBucket { };
-}
+#include <Epic/Math/Angle.hpp>
+#include <Epic/Math/Vector.hpp>
+#include <Epic/Math/SVector.hpp>
+#include <Epic/Math/Matrix.hpp>
+#include <Epic/Math/Quaternion.hpp>
+#include <Epic/Math/Algorithm.hpp>

@@ -30,10 +30,10 @@ struct Epic::MemoryBlock
 	using Pointer = void*;
 	using SizeType = size_t;
 
-	Pointer Ptr;
-	SizeType Size;
+	Pointer Ptr = nullptr;
+	SizeType Size = 0;
 
-	constexpr MemoryBlock() noexcept : Ptr{ nullptr }, Size{ 0 }  { }
+	constexpr MemoryBlock() noexcept = default;
 	constexpr MemoryBlock(Pointer ptr, SizeType sz) noexcept : Ptr{ ptr }, Size{ sz }  { }
 	constexpr MemoryBlock(const MemoryBlock&) noexcept = default;
 
@@ -46,7 +46,6 @@ struct Epic::MemoryBlock
 
 	~MemoryBlock() noexcept = default;
 
-
 	MemoryBlock& operator = (const MemoryBlock&) noexcept = default;
 
 	MemoryBlock& operator = (MemoryBlock&& o) noexcept
@@ -56,7 +55,6 @@ struct Epic::MemoryBlock
 
 		return *this;
 	}
-
 
 	explicit constexpr operator bool() const 
 	{ 

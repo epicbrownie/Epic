@@ -24,42 +24,17 @@ namespace Epic::detail
 	template<class Affix>
 	struct AffixSize;
 
-	template<class Affix>
-	struct AffixConstructor;
-
-	template<class Affix, bool Enabled = std::is_same<Affix, void>::value || std::is_move_constructible<Affix>::value>
+	template<class Affix, bool Enabled = std::disjunction_v<std::is_same<Affix, void>, std::is_move_constructible<Affix>>>
 	struct AffixBuffer;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
 template<class Affix>
-struct Epic::detail::AffixSize
-{
-	static constexpr size_t value = sizeof(Affix);
-};
+struct Epic::detail::AffixSize : std::integral_constant<size_t, sizeof(Affix)> { };
 
 template<>
-struct Epic::detail::AffixSize<void>
-{
-	static constexpr size_t value = 0;
-};
-
-template<class Affix>
-struct Epic::detail::AffixConstructor
-{
-	static void apply(void* pWhere)
-		noexcept(std::is_nothrow_default_constructible<Affix>::value)
-	{
-		::new (pWhere) Affix{ };
-	}
-};
-
-template<>
-struct Epic::detail::AffixConstructor<void>
-{
-	static void apply(void*) noexcept { }
-};
+struct Epic::detail::AffixSize<void> : std::integral_constant<size_t, 0> { };
 
 template<class Affix>
 struct Epic::detail::AffixBuffer<Affix, false>

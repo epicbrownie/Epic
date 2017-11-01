@@ -18,7 +18,6 @@
 #include <Epic/EON/detail/Visitors.hpp>
 #include <Epic/STL/Vector.hpp>
 #include <cctype>
-#include <cstddef>
 #include <string_view>
 
 //////////////////////////////////////////////////////////////////////////////
@@ -108,8 +107,10 @@ private:
 
 public:
 	Selector() noexcept = default;
-	
-	template<std::size_t N>
+	Selector(const Type&) = default;
+	Selector(Type&&) = default;
+
+	template<size_t N>
 	Selector(const StringView::value_type(&path)[N]) noexcept 
 		: Selector(StringView{ path, N })
 	{ }
@@ -166,7 +167,7 @@ public:
 
 			default /* Identifier */:
 			{
-				std::size_t ide = 0;
+				size_t ide = 0;
 				while (ide < path.size())
 				{
 					const auto c = path.at(ide);
@@ -197,7 +198,7 @@ public:
 						if (filter != StringView::npos)
 						{
 							auto typeFilters = path.substr(1, filter - 1);
-							std::size_t result = 0;
+							size_t result = 0;
 
 							while (!typeFilters.empty())
 							{
@@ -212,17 +213,17 @@ public:
 									typeFilters.remove_suffix(typeFilters.length());
 
 								if (typeFilter == "INTEGER")
-									result |= (std::size_t)eEONVariantType::Integer;
+									result |= (size_t)eEONVariantType::Integer;
 								else if (typeFilter == "FLOAT")
-									result |= (std::size_t)eEONVariantType::Float;
+									result |= (size_t)eEONVariantType::Float;
 								else if (typeFilter == "BOOLEAN")
-									result |= (std::size_t)eEONVariantType::Boolean;
+									result |= (size_t)eEONVariantType::Boolean;
 								else if (typeFilter == "STRING")
-									result |= (std::size_t)eEONVariantType::String;
+									result |= (size_t)eEONVariantType::String;
 								else if (typeFilter == "ARRAY")
-									result |= (std::size_t)eEONVariantType::Array;
+									result |= (size_t)eEONVariantType::Array;
 								else if (typeFilter == "OBJECT")
-									result |= (std::size_t)eEONVariantType::Object;
+									result |= (size_t)eEONVariantType::Object;
 							}
 
 							segment.TypeFilter = (eEONVariantType)result;
@@ -371,7 +372,7 @@ private:
 			{
 				default:
 				case eMatch::First:
-					for (std::size_t i = 0; i < pScopeObject->Members.size(); ++i)
+					for (size_t i = 0; i < pScopeObject->Members.size(); ++i)
 					{
 						if (IsSegmentMatch(segment, pScopeObject->Members[i], pGlobalScope))
 						{
@@ -382,7 +383,7 @@ private:
 					break;
 
 				case eMatch::Last:
-					for (std::size_t i = pScopeObject->Members.size() - 1; i >= 0; --i)
+					for (size_t i = pScopeObject->Members.size() - 1; i >= 0; --i)
 					{
 						if (IsSegmentMatch(segment, pScopeObject->Members[i], pGlobalScope))
 						{
@@ -393,7 +394,7 @@ private:
 					break;
 
 				case eMatch::All:
-					for (std::size_t i = 0; i < pScopeObject->Members.size(); ++i)
+					for (size_t i = 0; i < pScopeObject->Members.size(); ++i)
 						if (IsSegmentMatch(segment, pScopeObject->Members[i], pGlobalScope))
 							matches.emplace_back(pScopeObject->Members[i].Name, &pScopeObject->Members[i].Value);
 					break;
@@ -410,7 +411,7 @@ private:
 			{
 				default:
 				case eMatch::First:
-					for (std::size_t i = 0; i < pScopeArray->Members.size(); ++i)
+					for (size_t i = 0; i < pScopeArray->Members.size(); ++i)
 					{
 						if (IsSegmentMatch(segment, pScopeArray->Members[i]))
 						{
@@ -421,7 +422,7 @@ private:
 					break;
 
 				case eMatch::Last:
-					for (std::size_t i = pScopeArray->Members.size() - 1; i >= 0; --i)
+					for (size_t i = pScopeArray->Members.size() - 1; i >= 0; --i)
 					{
 						if (IsSegmentMatch(segment, pScopeArray->Members[i]))
 						{
@@ -432,7 +433,7 @@ private:
 					break;
 
 				case eMatch::All:
-					for (std::size_t i = 0; i < pScopeArray->Members.size(); ++i)
+					for (size_t i = 0; i < pScopeArray->Members.size(); ++i)
 						if (IsSegmentMatch(segment, pScopeArray->Members[i]))
 							matches.emplace_back("", &pScopeArray->Members[i]);
 					break;
@@ -453,7 +454,7 @@ private:
 		{
 			default:
 			case eMatch::First:
-				for (std::size_t i = 0; i < rootScope.Members.size(); ++i)
+				for (size_t i = 0; i < rootScope.Members.size(); ++i)
 				{
 					if (IsSegmentMatch(segment, rootScope.Members[i], &rootScope))
 					{
@@ -464,7 +465,7 @@ private:
 				break;
 
 			case eMatch::Last:
-				for (std::size_t i = rootScope.Members.size() - 1; i >= 0; --i)
+				for (size_t i = rootScope.Members.size() - 1; i >= 0; --i)
 				{
 					if (IsSegmentMatch(segment, rootScope.Members[i], &rootScope))
 					{
@@ -475,7 +476,7 @@ private:
 				break;
 
 			case eMatch::All:
-				for (std::size_t i = 0; i < rootScope.Members.size(); ++i)
+				for (size_t i = 0; i < rootScope.Members.size(); ++i)
 					if (IsSegmentMatch(segment, rootScope.Members[i], &rootScope))
 						matches.emplace_back(rootScope.Members[i].Name, &rootScope.Members[i].Value);
 				break;

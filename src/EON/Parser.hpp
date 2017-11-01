@@ -39,24 +39,26 @@ struct Epic::EON::Parser
 
 	Epic::STLVector<Binding> m_Bindings;
 
-	Parser() = default;
+	Parser() noexcept = default;
+	Parser(const Type&) = default;
+	Parser(Type&&) = default;
 
 	template<class U, class Converter = DefaultConverter>
-	Parser(const Selector& selector, U T::* pMember, Converter fnConvert = Converter())
+	Parser(Selector selector, U T::* pMember, Converter fnConvert = Converter())
 	{
-		Bind(selector, pMember, fnConvert);
+		Bind(std::move(selector), pMember, std::move(fnConvert));
 	}
 
 	template<class U, class Converter = DefaultConverter>
 	Parser(eAttribute attr, U T::* pMember, Converter fnConvert = Converter())
 	{
-		Bind(attr, pMember, fnConvert);
+		Bind(attr, pMember, std::move(fnConvert));
 	}
 
 	template<class E, class U, class Converter = DefaultConverter>
-	Parser(const Selector& selector, U T::* pMember, const Parser<E>& extractor, Converter fnConvert = Converter())
+	Parser(Selector selector, U T::* pMember, Parser<E> parser, Converter fnConvert = Converter())
 	{
-		Bind(selector, pMember, extractor, fnConvert);
+		Bind(std::move(selector), pMember, std::move(parser), std::move(fnConvert));
 	}
 
 	template<class U, class I, class IConverter, class UConverter = DefaultConverter>
@@ -72,10 +74,14 @@ struct Epic::EON::Parser
 	}
 
 	template<class U, class Converter = DefaultConverter>
-	Type& Bind(const Selector& selector, U T::* pMember, Converter fnConvert = Converter())
+	Type& Bind(Selector selector, U T::* pMember, Converter fnConvert = Converter())
 	{
 		using Assigner = detail::MemberAssigner<T, U, Converter>;
-		m_Bindings.emplace_back(Binding{ selector, Epic::MakeShared<Assigner>(pMember, fnConvert) });
+		
+		m_Bindings.emplace_back(
+			std::move(selector), 
+			Epic::MakeShared<Assigner>(pMember, std::move(fnConvert))
+		);
 
 		return *this;
 	}
@@ -84,16 +90,24 @@ struct Epic::EON::Parser
 	Type& Bind(eAttribute attr, U T::* pMember, Converter fnConvert = Converter())
 	{
 		using Assigner = detail::MemberAttributeAssigner<T, U, Converter>;
-		m_Bindings.emplace_back(Binding{ Selector(), Epic::MakeShared<Assigner>(attr, pMember, fnConvert) });
+		
+		m_Bindings.emplace_back(
+			Selector(), 
+			Epic::MakeShared<Assigner>(attr, pMember, std::move(fnConvert))
+		);
 
 		return *this;
 	}
 
 	template<class E, class U, class Converter = DefaultConverter>
-	Type& Bind(const Selector& selector, U T::* pMember, const Parser<E>& extractor, Converter fnConvert = Converter())
+	Type& Bind(Selector selector, U T::* pMember, Parser<E> parser, Converter fnConvert = Converter())
 	{
 		using Assigner = detail::MemberObjectAssigner<T, U, E, Converter>;
-		m_Bindings.emplace_back(Binding{ selector, Epic::MakeShared<Assigner>(pMember, extractor, fnConvert) });
+		
+		m_Bindings.emplace_back(
+			std::move(selector),
+			Epic::MakeShared<Assigner>(pMember, std::move(parser), std::move(fnConvert))
+		);
 
 		return *this;
 	}
@@ -128,21 +142,21 @@ struct Epic::EON::Parser
 	}
 
 	template<class U, class Converter = DefaultConverter>
-	Type& operator() (const Selector& selector, U T::* pMember, Converter fnConvert = Converter())
+	Type& operator() (Selector selector, U T::* pMember, Converter fnConvert = Converter())
 	{
-		return Bind(selector, pMember, fnConvert);
+		return Bind(std::move(selector), pMember, std::move(fnConvert));
 	}
 
 	template<class U, class Converter = DefaultConverter>
 	Type& operator() (eAttribute attr, U T::* pMember, Converter fnConvert = Converter())
 	{
-		return Bind(attr, pMember, fnConvert);
+		return Bind(attr, pMember, std::move(fnConvert));
 	}
 
 	template<class E, class U, class Converter = DefaultConverter>
-	Type& operator() (const Selector& selector, U T::* pMember, const Parser<E>& extractor, Converter fnConvert = Converter())
+	Type& operator() (Selector selector, U T::* pMember, Parser<E> parser, Converter fnConvert = Converter())
 	{
-		return Bind(selector, pMember, extractor, fnConvert);
+		return Bind(std::move(selector), pMember, std::move(parser), std::move(fnConvert));
 	}
 
 	template<class U, class I, class IConverter, class UConverter = DefaultConverter>
@@ -163,12 +177,9 @@ struct Epic::EON::Parser
 	{
 		static_assert(std::is_default_constructible_v<T>, "Extracted type must be default constructible.");
 
-		T extracted;
 		for (auto& bnd : m_Bindings)
-			if (!bnd.second->Assign(extracted, bnd.first, scope, globalScope))
+			if (!bnd.second->Assign(to, bnd.first, scope, globalScope))
 				return false;
-
-		to = std::move(extracted);
 
 		return true;
 	}
@@ -182,21 +193,21 @@ namespace Epic::EON
 	namespace
 	{
 		template<class T, class U, class Converter = DefaultConverter>
-		Parser<T> Bind(const Selector& selector, U T::* pMember, Converter fnConvert = Converter())
+		Parser<T> Bind(Selector selector, U T::* pMember, Converter fnConvert = Converter())
 		{
-			return Parser<T>(selector, pMember, fnConvert);
+			return Parser<T>(std::move(selector), pMember, std::move(fnConvert));
 		}
 
 		template<class T, class E, class U, class Converter = DefaultConverter>
-		Parser<T> Bind(const Selector& selector, U T::* pMember, const Parser<E>& extractor, Converter fnConvert = Converter())
+		Parser<T> Bind(Selector selector, U T::* pMember, Parser<E> parser, Converter fnConvert = Converter())
 		{
-			return Parser<T>(selector, pMember, extractor, fnConvert);
+			return Parser<T>(std::move(selector), pMember, std::move(parser), std::move(fnConvert));
 		}
 
 		template<class T, class U, class Converter = DefaultConverter>
 		Parser<T> Bind(eAttribute attr, U T::* pMember, Converter fnConvert = Converter())
 		{
-			return Parser<T>(attr, pMember, fnConvert);
+			return Parser<T>(attr, pMember, std::move(fnConvert));
 		}
 
 		template<class T, class U, class I, class IConverter = DefaultConverter, class UConverter = DefaultConverter>
