@@ -20,6 +20,7 @@
 #include <Epic/EON/detail/Tags.hpp>
 #include <Epic/EON/detail/Traits.hpp>
 #include <Epic/EON/detail/Visitors.hpp>
+#include <Epic/STL/UniquePtr.hpp>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -36,6 +37,12 @@ namespace Epic::EON::detail
 
 	template<class T, class U, class Converter>
 	struct MemberAttributeAssigner;
+
+	template<class I, class T, class U, class IConverter, class UConverter>
+	struct MemberAdapter;
+
+	template<class I, class T, class U, class E, class IConverter, class UConverter>
+	struct MemberObjectAdapter;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -381,5 +388,119 @@ struct Epic::EON::detail::MemberAttributeAssigner : public Assigner<T>
 		}
 
 		return true;
+	}
+};
+
+// MemberAdapter
+template<class I, class T, class U, class IConverter, class UConverter>
+struct Epic::EON::detail::MemberAdapter : public Assigner<T>
+{
+	U T::* pDest;
+	IConverter fnConvertI;
+	UConverter fnConvertU;
+
+	MemberAdapter(U T::* dest, IConverter convertI, UConverter convertU)
+		: pDest(dest), fnConvertI(convertI), fnConvertU(convertU)
+	{ }
+
+	bool Assign(T& to, const Selector& selector, const EONVariant& scope, const EONObject& globalScope) const override
+	{
+		// Create an intermediate type and assign to it
+		I intermediate;
+
+		if (!DoConvertAssign(intermediate, selector, fnConvertI, scope, globalScope))
+			return false;
+
+		// Convert the intermediate type to the target type
+		return ConvertIf(fnConvertU, to.*pDest, intermediate);
+	}
+};
+
+// MemberObjectAdapter
+template<class I, class T, class U, class E, class IConverter, class UConverter>
+struct Epic::EON::detail::MemberObjectAdapter : public Assigner<T>
+{
+public:
+	U T::* pDest;
+	Parser<E> Ext;
+	IConverter fnConvertI;
+	UConverter fnConvertU;
+
+private:
+	using Traits = EONTraits<I>;
+
+	struct FailTag { };
+	struct ScalarTag { };
+	struct ArrayTag { };
+	struct SetTag { };
+	struct MapTag { };
+
+	using MakeAssignTag =
+		std::conditional_t<!Traits::IsContainer, ScalarTag,
+		std::conditional_t<Traits::IsVectorLike, ArrayTag,
+		std::conditional_t<Traits::IsSetLike, SetTag,
+		std::conditional_t<Traits::IsMapLike, MapTag,
+		FailTag>>>>;
+
+private:
+	bool DoAssign(I&, const Selector&, const EONVariant&, const EONObject&, FailTag) const
+	{
+		return false;
+	}
+
+	bool DoAssign(I& to, const Selector& selector, const EONVariant& scope, 
+				  const EONObject& globalScope, ScalarTag) const
+	{
+		static_assert(std::is_default_constructible_v<E>, "Extracted type must be default constructible.");
+
+		return DoScalarAssign(to, selector, Ext, fnConvertI, scope, globalScope);
+	}
+
+	bool DoAssign(I& to, const Selector& selector, const EONVariant& scope, 
+				  const EONObject& globalScope, ArrayTag) const
+	{
+		static_assert(std::is_default_constructible_v<I>, "Array type must be default constructible.");
+		static_assert(std::is_default_constructible_v<typename I::value_type>, "Value type must be default constructible.");
+		static_assert(std::is_default_constructible_v<E>, "Extracted type must be default constructible.");
+
+		return DoArrayAssign(to, selector, Ext, fnConvertI, scope, globalScope);
+	}
+
+	bool DoAssign(I& to, const Selector& selector, const EONVariant& scope, 
+				  const EONObject& globalScope, SetTag) const
+	{
+		static_assert(std::is_default_constructible_v<I>, "Set type must be default constructible.");
+		static_assert(std::is_default_constructible_v<typename I::key_type>, "Key type must be default constructible.");
+		static_assert(std::is_default_constructible_v<E>, "Extracted type must be default constructible.");
+
+		return DoSetAssign(to, selector, Ext, fnConvertI, scope, globalScope);
+	}
+
+	bool DoAssign(I& to, const Selector& selector, const EONVariant& scope, 
+				  const EONObject& globalScope, MapTag) const
+	{
+		static_assert(std::is_default_constructible_v<I>, "Map type must be default constructible.");
+		static_assert(std::is_default_constructible_v<typename I::key_type>, "Key type must be default constructible.");
+		static_assert(std::is_default_constructible_v<typename I::mapped_type>, "Value type must be default constructible.");
+		static_assert(std::is_default_constructible_v<E>, "Extracted type must be default constructible.");
+
+		return DoMapAssign(to, selector, Ext, fnConvertI, scope, globalScope);
+	}
+
+public:
+	MemberObjectAdapter(U T::* dest, const Parser<E>& extractor, IConverter convertI, UConverter convertU)
+		: pDest(dest), Ext(extractor), fnConvertI(convertI), fnConvertU(convertU)
+	{ }
+
+	bool Assign(T& to, const Selector& selector, const EONVariant& scope, const EONObject& globalScope) const override
+	{
+		// Create an intermediate type and assign to it
+		I intermediate;
+
+		if (!DoAssign(intermediate, selector, scope, globalScope, MakeAssignTag()))
+			return false;
+
+		// Convert the intermediate type to the target type
+		return ConvertIf(fnConvertU, to.*pDest, intermediate);
 	}
 };

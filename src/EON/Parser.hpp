@@ -15,6 +15,7 @@
 
 #include <Epic/EON/Attribute.hpp>
 #include <Epic/EON/Selector.hpp>
+#include <Epic/EON/Adapter.hpp>
 #include <Epic/EON/detail/ParserFwd.hpp>
 #include <Epic/EON/detail/Assign.hpp>
 #include <Epic/EON/detail/Utility.hpp>
@@ -60,6 +61,18 @@ struct Epic::EON::Parser
 		Bind(std::move(selector), pMember, std::move(parser), std::move(fnConvert));
 	}
 
+	template<class U, class I, class IConverter, class UConverter = DefaultConverter>
+	Parser(const Selector& selector, const Adapter<I, T, U, IConverter>& adapter, UConverter fnConvert = UConverter())
+	{
+		Bind(selector, adapter, fnConvert);
+	}
+
+	template<class E, class U, class I, class IConverter, class UConverter = DefaultConverter>
+	Parser(const Selector& selector, const Adapter<I, T, U, IConverter>& adapter, const Parser<E>& extractor, UConverter fnConvert = UConverter())
+	{
+		Bind(selector, adapter, extractor, fnConvert);
+	}
+
 	template<class U, class Converter = DefaultConverter>
 	Type& Bind(Selector selector, U T::* pMember, Converter fnConvert = Converter())
 	{
@@ -99,6 +112,35 @@ struct Epic::EON::Parser
 		return *this;
 	}
 
+	template<class U, class I, class IConverter = DefaultConverter, class UConverter = DefaultConverter>
+	Type& Bind(const Selector& selector, const Adapter<I, T, U, IConverter>& adapter, UConverter fnConvertU = UConverter())
+	{
+		using Assigner = detail::MemberAdapter<I, T, U, IConverter, UConverter>;
+		m_Bindings.emplace_back(Binding{ selector, Epic::MakeShared<Assigner>
+		(
+			adapter.pDest, 
+			adapter.fnConvertI, 
+			fnConvertU
+		) });
+
+		return *this;
+	}
+
+	template<class E, class U, class I, class IConverter = DefaultConverter, class UConverter = DefaultConverter>
+	Type& Bind(const Selector& selector, const Adapter<I, T, U, IConverter>& adapter, const Parser<E>& extractor, UConverter fnConvertU = UConverter())
+	{
+		using Assigner = detail::MemberObjectAdapter<I, T, U, E, IConverter, UConverter>;
+		m_Bindings.emplace_back(Binding{ selector, Epic::MakeShared<Assigner>
+		(
+			adapter.pDest, 
+			extractor,
+			adapter.fnConvertI, 
+			fnConvertU
+		) });
+
+		return *this;
+	}
+
 	template<class U, class Converter = DefaultConverter>
 	Type& operator() (Selector selector, U T::* pMember, Converter fnConvert = Converter())
 	{
@@ -115,6 +157,18 @@ struct Epic::EON::Parser
 	Type& operator() (Selector selector, U T::* pMember, Parser<E> parser, Converter fnConvert = Converter())
 	{
 		return Bind(std::move(selector), pMember, std::move(parser), std::move(fnConvert));
+	}
+
+	template<class U, class I, class IConverter, class UConverter = DefaultConverter>
+	Type& operator() (const Selector& selector, const Adapter<I, T, U, IConverter>& adapter, UConverter fnConvert = UConverter())
+	{
+		return Bind(selector, adapter, fnConvert);
+	}
+
+	template<class E, class U, class I, class IConverter, class UConverter = DefaultConverter>
+	Type& operator() (const Selector& selector, const Adapter<I, T, U, IConverter>& adapter, const Parser<E>& extractor, UConverter fnConvert = UConverter())
+	{
+		return Bind(selector, adapter, extractor, fnConvert);
 	}
 
 	/////
@@ -154,6 +208,18 @@ namespace Epic::EON
 		Parser<T> Bind(eAttribute attr, U T::* pMember, Converter fnConvert = Converter())
 		{
 			return Parser<T>(attr, pMember, std::move(fnConvert));
+		}
+
+		template<class T, class U, class I, class IConverter = DefaultConverter, class UConverter = DefaultConverter>
+		Parser<T> Bind(const Selector& selector, const Adapter<I, T, U, IConverter>& adapter, UConverter fnConvert = UConverter())
+		{
+			return Parser<T>(selector, adapter, fnConvert);
+		}
+
+		template<class T, class E, class U, class I, class IConverter = DefaultConverter, class UConverter = DefaultConverter>
+		Parser<T> Bind(const Selector& selector, const Adapter<I, T, U, IConverter>& adapter, const Parser<E>& extractor, UConverter fnConvert = UConverter())
+		{
+			return Parser<T>(selector, adapter, extractor, fnConvert);
 		}
 	}
 }

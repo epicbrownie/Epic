@@ -80,6 +80,16 @@ struct Epic::EON::detail::Assign
 	}
 };
 
+template<class U, size_t N>
+struct Epic::EON::detail::Assign<U[N], U[N]>
+{
+	bool operator() (U(&to)[N], const U(&from)[N])
+	{
+		std::memcpy(to, from, N * sizeof(U));
+		return true;
+	}
+};
+
 template<class F, class T>
 struct Epic::EON::detail::CastConvert
 {
