@@ -84,7 +84,7 @@ struct Epic::EON::detail::Assign<U[N], U[N]>
 {
 	bool operator() (U(&to)[N], const U(&from)[N])
 	{
-		std::copy(std::begin(from), std::end(from), std::begin(to));
+		std::memcpy(to, from, N * sizeof(U));
 		return true;
 	}
 };

@@ -551,6 +551,9 @@
     <ClInclude Include="src\EON\Attribute.hpp">
       <Filter>Utility\EON</Filter>
     </ClInclude>
+    <ClInclude Include="src\EON\Adapter.hpp">
+      <Filter>Utility\EON</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Memory\NullAllocator.cpp">

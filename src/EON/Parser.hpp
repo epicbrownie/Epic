@@ -15,6 +15,7 @@
 
 #include <Epic/EON/Attribute.hpp>
 #include <Epic/EON/Selector.hpp>
+#include <Epic/EON/Adapter.hpp>
 #include <Epic/EON/detail/ParserFwd.hpp>
 #include <Epic/EON/detail/Assign.hpp>
 #include <Epic/EON/detail/Utility.hpp>
@@ -24,32 +25,6 @@
 #include <Epic/TMP/TypeTraits.hpp>
 #include <string_view>
 #include <utility>
-
-//////////////////////////////////////////////////////////////////////////////
-
-namespace Epic::EON
-{
-	template<class I, class T, class U, class IConverter = DefaultConverter>
-	struct Adapter;
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
-// Adapter - TODO: Move to own file
-template<class I, class T, class U, class IConverter>
-struct Epic::EON::Adapter
-{
-	using Type = Epic::EON::Adapter<I, T, U, IConverter>;
-	using IntermediateType = I;
-	using ConverterType = IConverter;
-
-	U T::* pDest;
-	IConverter fnConvertI;
-
-	explicit Adapter(U T::* dest, IConverter convert = IConverter())
-		: pDest(dest), fnConvertI(convert)
-	{ }
-};
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -234,21 +209,6 @@ namespace Epic::EON
 		Parser<T> Bind(const Selector& selector, const Adapter<I, T, U, IConverter>& adapter, const Parser<E>& extractor, UConverter fnConvert = UConverter())
 		{
 			return Parser<T>(selector, adapter, extractor, fnConvert);
-		}
-	}
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
-// Adapt
-namespace Epic::EON
-{
-	namespace
-	{
-		template<class I, class T, class U, class Converter = DefaultConverter>
-		auto Adapt(U T::* pMember, Converter fnConvert = Converter()) noexcept
-		{
-			return Adapter<I, T, U, Converter>(pMember, fnConvert);
 		}
 	}
 }

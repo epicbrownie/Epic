@@ -59,6 +59,7 @@
     <ClInclude Include="src\EntitySystem.hpp" />
     <ClInclude Include="src\EntityManager.hpp" />
     <ClInclude Include="src\EON.hpp" />
+    <ClInclude Include="src\EON\Adapter.hpp" />
     <ClInclude Include="src\EON\Bin.hpp" />
     <ClInclude Include="src\EON\Convert.hpp" />
     <ClInclude Include="src\EON\detail\Assign.hpp" />
