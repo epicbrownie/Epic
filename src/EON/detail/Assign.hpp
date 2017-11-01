@@ -75,13 +75,21 @@ namespace Epic::EON::detail
 				if (!pAsObject)
 					return false;
 
-				E extracted;
+				if constexpr (std::is_same_v<T, E>)
+				{
+					if (!parser.Assign(to, *var.second, globalScope))
+						return false;
+				}
+				else
+				{
+					E extracted;
 
-				if (!parser.Assign(extracted, *var.second, globalScope))
-					return false;
+					if (!parser.Assign(extracted, *var.second, globalScope))
+						return false;
 
-				if (!ConvertIf(std::move(fnConvert), to, std::move(extracted)))
-					return false;
+					if (!ConvertIf(std::move(fnConvert), to, std::move(extracted)))
+						return false;
+				}
 			}
 
 			return true;
@@ -112,14 +120,24 @@ namespace Epic::EON::detail
 					if (!pAsObject)
 						return false;
 
-					E extracted;
-					if (!parser.Assign(extracted, vm, globalScope))
-						return false;
+					if constexpr (std::is_same_v<Item, E>)
+					{
+						Item& item = to.emplace_back();
 
-					Item& item = to.emplace_back();
+						if (!parser.Assign(item, vm, globalScope))
+							return false;
+					}
+					else
+					{
+						E extracted;
+						if (!parser.Assign(extracted, vm, globalScope))
+							return false;
 
-					if (!ConvertIf(std::move(fnConvert), item, std::move(extracted)))
-						return false;
+						Item& item = to.emplace_back();
+
+						if (!ConvertIf(std::move(fnConvert), item, std::move(extracted)))
+							return false;
+					}
 				}
 			}
 
@@ -151,16 +169,28 @@ namespace Epic::EON::detail
 					if (!pAsObject)
 						return false;
 
-					E extracted;
-					if (!parser.Assign(extracted, vm, globalScope))
-						return false;
+					if constexpr (std::is_same_v<Item, E>)
+					{
+						Item item;
 
-					Item item;
-					
-					if (!ConvertIf(std::move(fnConvert), item, std::move(extracted)))
-						return false;
+						if (!parser.Assign(item, vm, globalScope))
+							return false;
 
-					to.emplace(std::move(item));
+						to.emplace(std::move(item));
+					}
+					else
+					{
+						E extracted;
+						if (!parser.Assign(extracted, vm, globalScope))
+							return false;
+
+						Item item;
+
+						if (!ConvertIf(std::move(fnConvert), item, std::move(extracted)))
+							return false;
+
+						to.emplace(std::move(item));
+					}
 				}
 			}
 
@@ -198,15 +228,26 @@ namespace Epic::EON::detail
 					if (!ConvertIf(fnConvert, key, vm.Name))
 						return false;
 
-					E extracted;
-					if (!parser.Assign(extracted, vm.Value, globalScope))
-						return false;
+					if constexpr (std::is_same_v<Item, E>)
+					{
+						Item item;
+						if (!parser.Assign(item, vm.Value, globalScope))
+							return false;
 
-					Item item;
-					if (!ConvertIf(std::move(fnConvert), item, std::move(extracted)))
-						return false;
+						to.emplace(std::move(key), std::move(item));
+					}
+					else
+					{
+						E extracted;
+						if (!parser.Assign(extracted, vm.Value, globalScope))
+							return false;
 
-					to.emplace(std::move(key), std::move(item));
+						Item item;
+						if (!ConvertIf(std::move(fnConvert), item, std::move(extracted)))
+							return false;
+					
+						to.emplace(std::move(key), std::move(item));
+					}
 				}
 			}
 

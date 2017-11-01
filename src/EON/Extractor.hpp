@@ -116,13 +116,21 @@ private:
 
 			for (const auto& var : vars)
 			{
-				E extracted;
+				if constexpr (std::is_same_v<T, E>)
+				{
+					if (!parser.Assign(to, *var.second, scope))
+						return false;
+				}
+				else
+				{
+					E extracted;
 
-				if (!parser.Assign(extracted, *var.second, scope))
-					return false;
+					if (!parser.Assign(extracted, *var.second, scope))
+						return false;
 
-				if (!detail::ConvertIf(std::move(fnConvert), to, std::move(extracted)))
-					return false;
+					if (!detail::ConvertIf(std::move(fnConvert), to, std::move(extracted)))
+						return false;
+				}
 			}
 
 			return true;
@@ -201,14 +209,25 @@ private:
 
 			for (const auto& var : vars)
 			{
-				E extracted;
-				if (!parser.Assign(extracted, *var.second, scope))
-					return false;
+				if constexpr (std::is_same_v<Item, E>)
+				{
+					Item& item = to.emplace_back();
 
-				Item& item = to.emplace_back();
+					if (!parser.Assign(item, *var.second, scope))
+						return false;
+				}
+				else
+				{
+					E extracted;
 
-				if (!detail::ConvertIf(std::move(fnConvert), item, std::move(extracted)))
-					return false;
+					if (!parser.Assign(extracted, *var.second, scope))
+						return false;
+
+					Item& item = to.emplace_back();
+
+					if (!detail::ConvertIf(std::move(fnConvert), item, std::move(extracted)))
+						return false;
+				}
 			}
 
 			return true;
@@ -295,15 +314,26 @@ private:
 
 			for (const auto& var : vars)
 			{
-				E extracted;
-				if (!parser.Assign(extracted, *var.second, scope))
-					return false;
+				if constexpr (std::is_same_v<Item, E>)
+				{
+					Item item;
+					if (!parser.Assign(item, *var.second, scope))
+						return false;
 
-				Item item;
-				if (!detail::ConvertIf(std::move(fnConvert), item, std::move(extracted)))
-					return false;
+					to.emplace(std::move(item));
+				}
+				else
+				{
+					E extracted;
+					if (!parser.Assign(extracted, *var.second, scope))
+						return false;
 
-				to.emplace(std::move(item));
+					Item item;
+					if (!detail::ConvertIf(std::move(fnConvert), item, std::move(extracted)))
+						return false;
+
+					to.emplace(std::move(item));
+				}
 			}
 
 			return true;
@@ -405,17 +435,29 @@ private:
 				if (!detail::ConvertIf(fnConvert, key, var.first))
 					return false;
 
-				E extracted;
+				if constexpr (std::is_same_v<Item, E>)
+				{
+					Item item;
 
-				if (!parser.Assign(extracted, *var.second, scope))
-					return false;
+					if (!parser.Assign(item, *var.second, scope))
+						return false;
 
-				Item item;
+					to.emplace(std::move(key), std::move(item));
+				}
+				else
+				{
+					E extracted;
 
-				if (!detail::ConvertIf(std::move(fnConvert), item, std::move(extracted)))
-					return false;
+					if (!parser.Assign(extracted, *var.second, scope))
+						return false;
 
-				to.emplace(std::move(key), std::move(item));
+					Item item;
+
+					if (!detail::ConvertIf(std::move(fnConvert), item, std::move(extracted)))
+						return false;
+
+					to.emplace(std::move(key), std::move(item));
+				}
 			}
 
 			return true;
