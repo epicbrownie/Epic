@@ -48,7 +48,7 @@ private:
 	using Base::Values;
 
 public:
-	#pragma region Constructors
+#pragma region Constructors
 
 	// Constructs a quaternion with default initialized values
 	Quaternion() noexcept = default;
@@ -62,7 +62,7 @@ public:
 	// Copy-converts a quaternion
 	template<class U, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
 	Quaternion(const Quaternion<U>& quat) noexcept
-	{ 
+	{
 		for (size_t i = 0; i < Size; ++i)
 			Values[i] = static_cast<T>(quat.Values[i]);
 	}
@@ -70,7 +70,7 @@ public:
 	// Constructs a quaternion from a list of convertible values.
 	template<class U, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
 	Quaternion(const U(&values)[Size]) noexcept
-	{ 
+	{
 		for (size_t i = 0; i < Size; ++i)
 			Values[i] = static_cast<T>(values[i]);
 	}
@@ -86,7 +86,7 @@ public:
 
 	// Constructs an identity quaternion
 	Quaternion(const IdentityTag&) noexcept
-	{ 
+	{
 		MakeIdentity();
 	}
 
@@ -132,10 +132,10 @@ public:
 		MakeRotation(std::move(axis.x), std::move(axis.y), std::move(axis.z), std::move(angle));
 	}
 
-	#pragma endregion
+#pragma endregion
 
 public:
-	#pragma region Range Accessors
+#pragma region Range Accessors
 
 	// Retrieves the number of elements
 	constexpr size_t size() const noexcept
@@ -201,7 +201,7 @@ public:
 		return Values.end();
 	}
 
-	#pragma endregion
+#pragma endregion
 
 private:
 	template<size_t S>
@@ -283,7 +283,7 @@ public:
 		const auto[sh, ch] = (heading / T(2)).SinCos();
 		const auto[sr, cr] = (roll / T(2)).SinCos();
 
-		return *this = 
+		return *this =
 		{
 			(cr * ch * sp) - (sr * sh * cp),
 			(cr * sh * cp) + (sr * ch * sp),
@@ -321,10 +321,10 @@ public:
 	// Calculates the dot product of this quaternion and 'quat'
 	constexpr T Dot(Quaternion quat) const noexcept
 	{
-		return (Values[0] * quat.Values[0]) + 
-			   (Values[1] * quat.Values[1]) + 
-			   (Values[2] * quat.Values[2]) +
-			   (Values[3] * quat.Values[3]);
+		return (Values[0] * quat.Values[0]) +
+			(Values[1] * quat.Values[1]) +
+			(Values[2] * quat.Values[2]) +
+			(Values[3] * quat.Values[3]);
 	}
 
 	// Calculates the squared length of this quaternion
@@ -359,7 +359,7 @@ public:
 		const auto tx = Values[0];
 		const auto ty = Values[1];
 		const auto tz = Values[2];
-		
+
 		Values[0] = (ty * quat.Values[2]) - (tz * quat.Values[1]) + (Values[3] * quat.Values[0]) + (tx * quat.Values[3]);
 		Values[1] = (tz * quat.Values[0]) - (tx * quat.Values[2]) + (Values[3] * quat.Values[1]) + (ty * quat.Values[3]);
 		Values[2] = (tx * quat.Values[1]) - (ty * quat.Values[0]) + (Values[3] * quat.Values[2]) + (tz * quat.Values[3]);
@@ -409,8 +409,8 @@ public:
 	{
 		const T a = static_cast<T>(
 			std::sqrt((Values[0] * Values[0]) +
-					  (Values[1] * Values[1]) +
-					  (Values[2] * Values[2])));
+			(Values[1] * Values[1]) +
+				(Values[2] * Values[2])));
 
 		const T sina = static_cast<T>(std::sin(a));
 		const T cosa = static_cast<T>(std::cos(a));
@@ -449,10 +449,10 @@ public:
 	Radian<T> Pitch() const noexcept
 	{
 		const T y = T(2) * (Values[1] * Values[2] + Values[3] * Values[0]);
-		const T x = (Values[3] * Values[3]) - (Values[0] * Values[0]) - 
-					(Values[1] * Values[1]) + (Values[2] * Values[2]);
+		const T x = (Values[3] * Values[3]) - (Values[0] * Values[0]) -
+			(Values[1] * Values[1]) + (Values[2] * Values[2]);
 
-		if(y == T(0) && x == T(0))
+		if (y == T(0) && x == T(0))
 			return Radian<T>(static_cast<T>(std::atan2(Values[0], Values[3])) * T(2));
 
 		return Radian<T>(static_cast<T>(std::atan2(y, x)));
@@ -467,7 +467,7 @@ public:
 	// Calculates the roll (Z-axis) Euler angle of this quaternion
 	Radian<T> Roll() const noexcept
 	{
-		const T x = (Values[3] * Values[3]) + (Values[0] * Values[0]) - 
+		const T x = (Values[3] * Values[3]) + (Values[0] * Values[0]) -
 			(Values[1] * Values[1]) - (Values[2] * Values[2]);
 		const T y = T(2) * (Values[0] * Values[1] + Values[3] * Values[2]);
 
@@ -501,7 +501,7 @@ public:
 				Radian<T>(static_cast<T>(std::atan2(r12, r31 * r13)))
 			);
 		}
-		
+
 		return std::make_tuple
 		(
 			Radian<T>(static_cast<T>(std::atan2(r32, r33))),
@@ -564,67 +564,58 @@ public:
 
 public:
 	// Calculates the linear interpolation of normalized quaternions 'from' and 'to'
+	template<typename = std::enable_if_t<std::is_floating_point_v<T>>>
 	static auto Lerp(Type from, Type to, T t) noexcept
 	{
-		if constexpr (std::is_floating_point_v<T>::value)
-			return NormalOf((std::move(from) * (T(1) - t)) + (std::move(to) * t));
-		else
-			static_assert(false, "Cannot interpolate non-floating-point Quaternion types.");
+		return NormalOf((std::move(from) * (T(1) - t)) + (std::move(to) * t));
 	}
 
 	// Calculates the spherical linear interpolation of normalized quaternions 'from' and 'to'.
 	// Reduces spinning by checking if 'from' and 'to' are more than 90 deg apart.
+	template<typename = std::enable_if_t<std::is_floating_point_v<T>>>
 	static auto SlerpSR(Type from, Type to, T t) noexcept
 	{
-		if constexpr (std::is_floating_point_v<T>::value)
+		Type qt = std::move(to);
+		auto dot = from.Dot(qt);
+
+		// When from and to > 90 deg apart, perform spin reduction
+		if (dot < T(0))
 		{
-			Type qt = std::move(to);
-			auto dot = from.Dot(qt);
-
-			// When from and to > 90 deg apart, perform spin reduction
-			if (dot < T(0))
-			{
-				qt.Conjugate(); // A quaternion's inverse is its conjugate if it's normalized
-				dot = -dot;
-			}
-
-			// Use linear interpolation when sin(acos(dot)) close to 0
-			if (dot > T(1) - Epsilon<T>)
-				return Lerp(std::move(from), std::move(to), std::move(t));
-
-			// Spherical interpolation
-			Radian<T> theta = static_cast<T>(acos(dot));
-			Radian<T> thetaFrom = theta.Value() * (T(1) - t);
-			Radian<T> thetaTo = theta.Value() * t;
-
-			return ((std::move(from) * thetaFrom.Sin()) + (std::move(qt) * thetaTo.Sin())) / theta.Sin();
+			qt.Conjugate(); // A quaternion's inverse is its conjugate if it's normalized
+			dot = -dot;
 		}
-		else
-			static_assert(false, "Cannot interpolate non-floating-point Quaternion types.");
+
+		// Use linear interpolation when sin(acos(dot)) close to 0
+		if (dot > T(1) - Epsilon<T>)
+			return Lerp(std::move(from), std::move(to), std::move(t));
+
+		// Spherical interpolation
+		Radian<T> theta = static_cast<T>(acos(dot));
+		Radian<T> thetaFrom = theta.Value() * (T(1) - t);
+		Radian<T> thetaTo = theta.Value() * t;
+
+		return ((std::move(from) * thetaFrom.Sin()) + (std::move(qt) * thetaTo.Sin())) / theta.Sin();
 	}
 
 	// Calculates the spherical linear interpolation of normalized quaternions 'from' and 'to'
+	template<typename = std::enable_if_t<std::is_floating_point_v<T>>>
 	static auto Slerp(Type from, Type to, T t) noexcept
 	{
-		if constexpr (std::is_floating_point_v<T>::value)
-		{
-			auto dot = from.Dot(to);
+		auto dot = from.Dot(to);
 
-			// Use linear interpolation when sin(acos(dot)) close to 0
-			if (dot > T(1) - Epsilon<T>)
-				return Lerp(std::move(from), std::move(to), std::move(t));
+		// Use linear interpolation when sin(acos(dot)) close to 0
+		if (dot > T(1) - Epsilon<T>)
+			return Lerp(std::move(from), std::move(to), std::move(t));
 
-			Radian<T> theta = acos(dot);
-			Radian<T> thetaFrom = theta.Value() * (T(1) - t);
-			Radian<T> thetaTo = theta.Value() * t;
+		Radian<T> theta = acos(dot);
+		Radian<T> thetaFrom = theta.Value() * (T(1) - t);
+		Radian<T> thetaTo = theta.Value() * t;
 
-			return ((std::move(from) * thetaFrom.Sin()) + (std::move(to) * thetaTo.Sin())) / theta.Sin();
-		}
-		else
-			static_assert(false, "Cannot interpolate non-floating-point Quaternion types.");
+		return ((std::move(from) * thetaFrom.Sin()) + (std::move(to) * thetaTo.Sin())) / theta.Sin();
 	}
 
 	// Calculates the spherical cubic interpolation of normalized quaternions 'from', 'to', 'a', and 'b'
+	template<typename = std::enable_if_t<std::is_floating_point_v<T>>>
 	static auto Squad(Type from, Type to, Type a, Type b, T t) noexcept
 	{
 		return Slerp(Slerp(std::move(from), std::move(to), t), Slerp(std::move(a), std::move(b), t), T(2) * t * (T(1) - t));

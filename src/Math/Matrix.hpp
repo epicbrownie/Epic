@@ -809,7 +809,7 @@ public:
 		T result = T(0);
 
 		for (size_t n = 0; n < ColumnCount; ++n)
-			result += Values[(i * ColumnType::Size) = i];
+			result += Values[(n * ColumnType::Size) + n];
 
 		return result;
 	}
