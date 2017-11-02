@@ -733,6 +733,8 @@ namespace Epic
 	{
 		for (size_t i = 0; i < Sz; ++i)
 			if (vecA[i] != vecB[i]) return false;
+
+		return true;
 	}
 
 	template<class U, size_t Sz>

@@ -285,9 +285,9 @@ public:
 
 		return *this = 
 		{
-			(cr * ch * sp) - (sr * sh * cp)
-			(cr * sh * cp) + (sr * ch * sp)
-			(sr * ch * cp) - (cr * sh * sp)
+			(cr * ch * sp) - (sr * sh * cp),
+			(cr * sh * cp) + (sr * ch * sp),
+			(sr * ch * cp) - (cr * sh * sp),
 			(cr * ch * cp) + (sr * sh * sp)
 		};
 	}

@@ -103,13 +103,15 @@ public:
 	{
 		// Verify that the requested size is within our allowed bounds
 		if (sz == 0 || sz < MinAllocSize || sz > MaxAllocSize)
-			return{ nullptr, 0 };
+			return { nullptr, 0 };
 
 		// Allocate the block
 		if constexpr (detail::CanAllocateAligned<A>::value)
 		{
 			if (auto blk = m_Allocator.AllocateAligned(sz, Alignment); blk)
 				return blk;
+			else
+				return { nullptr 0 };
 		}
 
 		else if constexpr (detail::CanAllocate<A>::value)
@@ -133,11 +135,11 @@ public:
 				return { pAlignedRegion, space };
 			}
 
-			return {};
+			return { nullptr, 0 };
 		}
 
 		else
-			static_assert(false);
+			return { nullptr, 0 };
 	}
 
 	/* Returns a block of uninitialized memory (aligned to alignment).
