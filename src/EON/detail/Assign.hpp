@@ -127,12 +127,14 @@ namespace Epic::EON::detail
 					if (!pAsObject)
 						return false;
 
+					Item item;
+
 					if constexpr (std::is_same_v<Item, E>)
 					{
-						Item& item = to.emplace_back();
-
 						if (!parser.Assign(item, vm, globalScope))
 							return false;
+
+						to.emplace_back(std::move(item));
 					}
 					else
 					{
@@ -140,11 +142,11 @@ namespace Epic::EON::detail
 						if (!parser.Assign(extracted, vm, globalScope))
 							return false;
 
-						Item& item = to.emplace_back();
-
 						if (!ConvertIf(std::move(fnConvert), item, std::move(extracted)))
 							return false;
 					}
+
+					to.emplace_back(std::move(item));
 				}
 			}
 
@@ -176,14 +178,12 @@ namespace Epic::EON::detail
 					if (!pAsObject)
 						return false;
 
+					Item item;
+					
 					if constexpr (std::is_same_v<Item, E>)
 					{
-						Item item;
-
 						if (!parser.Assign(item, vm, globalScope))
 							return false;
-
-						to.emplace(std::move(item));
 					}
 					else
 					{
@@ -191,13 +191,11 @@ namespace Epic::EON::detail
 						if (!parser.Assign(extracted, vm, globalScope))
 							return false;
 
-						Item item;
-
 						if (!ConvertIf(std::move(fnConvert), item, std::move(extracted)))
 							return false;
-
-						to.emplace(std::move(item));
 					}
+
+					to.emplace(std::move(item));
 				}
 			}
 
@@ -232,16 +230,16 @@ namespace Epic::EON::detail
 						return false;
 
 					Key key;
+					
 					if (!ConvertIf(fnConvert, key, vm.Name))
 						return false;
 
+					Item item;
+					
 					if constexpr (std::is_same_v<Item, E>)
 					{
-						Item item;
 						if (!parser.Assign(item, vm.Value, globalScope))
 							return false;
-
-						to.emplace(std::move(key), std::move(item));
 					}
 					else
 					{
@@ -249,12 +247,11 @@ namespace Epic::EON::detail
 						if (!parser.Assign(extracted, vm.Value, globalScope))
 							return false;
 
-						Item item;
 						if (!ConvertIf(std::move(fnConvert), item, std::move(extracted)))
 							return false;
-					
-						to.emplace(std::move(key), std::move(item));
 					}
+
+					to.emplace(std::move(key), std::move(item));
 				}
 			}
 
@@ -400,19 +397,19 @@ struct Epic::EON::detail::MemberAdapter : public Assigner<T>
 	UConverter fnConvertU;
 
 	MemberAdapter(U T::* dest, IConverter convertI, UConverter convertU)
-		: pDest(dest), fnConvertI(convertI), fnConvertU(convertU)
+		: pDest(dest), fnConvertI(std::move(convertI)), fnConvertU(std::move(convertU))
 	{ }
 
-	bool Assign(T& to, const Selector& selector, const EONVariant& scope, const EONObject& globalScope) const override
+	bool Assign(T& to, Selector selector, const EONVariant& scope, const EONObject& globalScope) const override
 	{
 		// Create an intermediate type and assign to it
 		I intermediate;
 
-		if (!DoConvertAssign(intermediate, selector, fnConvertI, scope, globalScope))
+		if (!DoConvertAssign(intermediate, std::move(selector), fnConvertI, scope, globalScope))
 			return false;
 
 		// Convert the intermediate type to the target type
-		return ConvertIf(fnConvertU, to.*pDest, intermediate);
+		return ConvertIf(fnConvertU, to.*pDest, std::move(intermediate));
 	}
 };
 
@@ -443,64 +440,46 @@ private:
 		FailTag>>>>;
 
 private:
-	bool DoAssign(I&, const Selector&, const EONVariant&, const EONObject&, FailTag) const
+	bool DoAssign(I&, Selector, const EONVariant&, const EONObject&, FailTag) const
 	{
 		return false;
 	}
 
-	bool DoAssign(I& to, const Selector& selector, const EONVariant& scope, 
+	bool DoAssign(I& to, Selector selector, const EONVariant& scope, 
 				  const EONObject& globalScope, ScalarTag) const
 	{
-		static_assert(std::is_default_constructible_v<E>, "Extracted type must be default constructible.");
-
-		return DoScalarAssign(to, selector, Ext, fnConvertI, scope, globalScope);
+		return DoScalarAssign(to, std::move(selector), Ext, fnConvertI, scope, globalScope);
 	}
 
-	bool DoAssign(I& to, const Selector& selector, const EONVariant& scope, 
-				  const EONObject& globalScope, ArrayTag) const
+	bool DoAssign(I& to, Selector selector, const EONVariant& scope, const EONObject& globalScope, ArrayTag) const
 	{
-		static_assert(std::is_default_constructible_v<I>, "Array type must be default constructible.");
-		static_assert(std::is_default_constructible_v<typename I::value_type>, "Value type must be default constructible.");
-		static_assert(std::is_default_constructible_v<E>, "Extracted type must be default constructible.");
-
-		return DoArrayAssign(to, selector, Ext, fnConvertI, scope, globalScope);
+		return DoArrayAssign(to, std::move(selector), Ext, fnConvertI, scope, globalScope);
 	}
 
-	bool DoAssign(I& to, const Selector& selector, const EONVariant& scope, 
-				  const EONObject& globalScope, SetTag) const
+	bool DoAssign(I& to, Selector selector, const EONVariant& scope, const EONObject& globalScope, SetTag) const
 	{
-		static_assert(std::is_default_constructible_v<I>, "Set type must be default constructible.");
-		static_assert(std::is_default_constructible_v<typename I::key_type>, "Key type must be default constructible.");
-		static_assert(std::is_default_constructible_v<E>, "Extracted type must be default constructible.");
-
-		return DoSetAssign(to, selector, Ext, fnConvertI, scope, globalScope);
+		return DoSetAssign(to, std::move(selector), Ext, fnConvertI, scope, globalScope);
 	}
 
-	bool DoAssign(I& to, const Selector& selector, const EONVariant& scope, 
-				  const EONObject& globalScope, MapTag) const
+	bool DoAssign(I& to, Selector selector, const EONVariant& scope, const EONObject& globalScope, MapTag) const
 	{
-		static_assert(std::is_default_constructible_v<I>, "Map type must be default constructible.");
-		static_assert(std::is_default_constructible_v<typename I::key_type>, "Key type must be default constructible.");
-		static_assert(std::is_default_constructible_v<typename I::mapped_type>, "Value type must be default constructible.");
-		static_assert(std::is_default_constructible_v<E>, "Extracted type must be default constructible.");
-
-		return DoMapAssign(to, selector, Ext, fnConvertI, scope, globalScope);
+		return DoMapAssign(to, std::move(selector), Ext, fnConvertI, scope, globalScope);
 	}
 
 public:
-	MemberObjectAdapter(U T::* dest, const Parser<E>& extractor, IConverter convertI, UConverter convertU)
-		: pDest(dest), Ext(extractor), fnConvertI(convertI), fnConvertU(convertU)
+	MemberObjectAdapter(U T::* dest, Parser<E> extractor, IConverter convertI, UConverter convertU)
+		: pDest(dest), Ext(std::move(extractor)), fnConvertI(std::move(convertI)), fnConvertU(std::move(convertU))
 	{ }
 
-	bool Assign(T& to, const Selector& selector, const EONVariant& scope, const EONObject& globalScope) const override
+	bool Assign(T& to, Selector selector, const EONVariant& scope, const EONObject& globalScope) const override
 	{
 		// Create an intermediate type and assign to it
 		I intermediate;
 
-		if (!DoAssign(intermediate, selector, scope, globalScope, MakeAssignTag()))
+		if (!DoAssign(intermediate, std::move(selector), scope, globalScope, MakeAssignTag()))
 			return false;
 
 		// Convert the intermediate type to the target type
-		return ConvertIf(fnConvertU, to.*pDest, intermediate);
+		return ConvertIf(fnConvertU, to.*pDest, std::move(intermediate));
 	}
 };

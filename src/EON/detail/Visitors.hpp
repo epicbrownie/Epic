@@ -88,9 +88,14 @@ private:
 		
 		static_assert(std::is_default_constructible_v<Item>, "Array value type must be default constructible");
 
-		Item& item = m_To.emplace_back();
+		Item item;
 
-		return ConvertIf(m_ConvertFn, item, v);
+		if (!ConvertIf(m_ConvertFn, item, v))
+			return false;
+
+		m_To.emplace_back(std::move(item));
+
+		return true;
 	}
 
 	template<class S>
@@ -114,27 +119,24 @@ private:
 
 	bool DoArrayConversion(const EONArray& v, ScalarTag)
 	{
-		// TODO: Reduce trait requirements as much as possible (decltype(m_To[0]) instead of value_type since indexing is already required)
-		// TODO: Add these requirements to the trait testers (IsIndexable, etc...)
+		using Item = std::decay_t<decltype(m_To[0])>;
 
-    using Item = std::decay_t<decltype(m_To[0])>; // TODO: Is this correct?
-
-    static_assert(std::is_default_constructible_v<Item>, "Array value type must be default constructible");
+		static_assert(std::is_default_constructible_v<Item>, "Array value type must be default constructible");
     
-		if constexpr (Epic::TMP::IsDetected<ResizeImpl, size_t>::value) // TODO: Headers for this?
+		if constexpr (Epic::TMP::IsDetected<ResizeImpl, size_t>::value)
 			m_To.resize(v.Members.size());
 
 		for(decltype(v.Members.size()) i = 0; i < v.Members.size(); ++i)
 		{
-			if (i >= std::size(m_To)) // TODO: Indexable needs this requirement
+			if (i >= std::size(m_To))
 				break;
 
 			Item item;
 
-			if (!std::visit(ConversionVisitor<Item, Converter>(value, m_ConvertFn, m_GlobalScope), v.Members[i]))
+			if (!std::visit(ConversionVisitor<Item, Converter>(item, m_ConvertFn, m_GlobalScope), v.Members[i].Data))
 				return false;
 
-			m_To[i] = std::move(item); // TODO: Indexable needs this requirement
+			m_To[i] = std::move(item);
 		}
 
 		return true;

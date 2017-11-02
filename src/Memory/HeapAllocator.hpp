@@ -279,9 +279,9 @@ private:
 public:
 	bool Owns(const Blk& blk) const noexcept
 	{
-		const char* pBlk = reinterpret_cast<const unsigned char*>(blk.Ptr);
-		const char* pHeapStart = reinterpret_cast<const unsigned char*>(m_Heap.Ptr);
-		const char* pHeapEnd = reinterpret_cast<const unsigned char*>(GetBlockPointer(0));
+		auto pBlk = reinterpret_cast<const unsigned char*>(blk.Ptr);
+		auto pHeapStart = reinterpret_cast<const unsigned char*>(m_Heap.Ptr);
+		auto pHeapEnd = reinterpret_cast<const unsigned char*>(GetBlockPointer(0));
 
 		return (pBlk >= pHeapStart) && (pBlk < pHeapEnd);
 	}
@@ -574,9 +574,9 @@ public:
 	bool Owns(const Blk& blk) const noexcept
 	{
 		/* m_Heap is never changed in a shared context, so no lock is required. */
-		const char* pBlk = reinterpret_cast<const unsigned char*>(blk.Ptr);
-		const char* pHeapStart = reinterpret_cast<const unsigned char*>(m_Heap.Ptr);
-		const char* pHeapEnd = reinterpret_cast<const unsigned char*>(GetBlockPointer(BlkCnt));
+		auto pBlk = reinterpret_cast<const unsigned char*>(blk.Ptr);
+		auto pHeapStart = reinterpret_cast<const unsigned char*>(m_Heap.Ptr);
+		auto pHeapEnd = reinterpret_cast<const unsigned char*>(GetBlockPointer(BlkCnt));
 
 		return (pBlk >= pHeapStart) && (pBlk < pHeapEnd);
 	}

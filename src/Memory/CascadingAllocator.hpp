@@ -207,9 +207,9 @@ protected:
 			{
 				Blk blk{ pNode, nodesz };
 
-				if constexpr (CanAllocate<NodeA>::value)
+				if constexpr (CanDeallocate<NodeA>::value)
 					m_NodeAllocator.Deallocate(blk);
-				else
+				else if constexpr (CanDeallocateAligned<NodeA>::value)
 					m_NodeAllocator.DeallocateAligned(blk);
 			}
 
@@ -344,9 +344,9 @@ protected:
 			Blk blk{ pNode, node.m_AllocatedSize };
 			pNode->~CascadingAllocatorNode();
 
-			if constexpr (CanAllocate<NodeA>::value)
+			if constexpr (CanDeallocate<A>::value)
 				node.m_Allocator.Deallocate(blk);
-			else
+			else if constexpr (CanDeallocateAligned<A>::value)
 				node.m_Allocator.DeallocateAligned(blk);
 
 			m_pAllocNodes.store(pNextNode, std::memory_order_release);

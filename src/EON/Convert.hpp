@@ -58,12 +58,12 @@ namespace Epic::EON::detail
 	namespace
 	{
 		template<class Converter, class From, class To>
-		bool ConvertIf(Converter convertFn, To& to, From from)
+		bool ConvertIf(Converter convertFn, To& to, From&& from)
 		{
 			if constexpr (std::is_invocable_r_v<bool, Converter, To&, From>)
-				return convertFn(to, std::move(from));
+				return convertFn(to, std::forward<From>(from));
 			else
-				return DefaultConverter() (to, std::move(from));
+				return DefaultConverter() (to, std::forward<From>(from));
 		}
 	}
 }
@@ -213,9 +213,14 @@ private:
 
 		static_assert(std::is_default_constructible_v<Item>, "Array value type must be default constructible");
 
-		Item& item = to.emplace_back();
+		Item item;
 		
-		return Convert<F, Item>() (item, std::move(from));
+		if (!Convert<F, Item>() (item, std::move(from)))
+			return false;
+		
+		to.emplace_back(std::move(item));
+
+		return true;
 	}
 
 	bool DoConversion(T& to, F from, SetTag)

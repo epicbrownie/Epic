@@ -188,10 +188,12 @@ private:
 
 			for (const auto& var : vars)
 			{
-				Item& item = to.emplace_back();
+				Item item;
 
 				if (!std::visit(detail::ConversionVisitor<Item, Converter>(item, std::move(fnConvert), scope), var.second->Data))
 					return false;
+
+				to.emplace_back(std::move(item));
 			}
 
 			return true;
@@ -209,10 +211,10 @@ private:
 
 			for (const auto& var : vars)
 			{
+				Item item;
+				
 				if constexpr (std::is_same_v<Item, E>)
 				{
-					Item& item = to.emplace_back();
-
 					if (!parser.Assign(item, *var.second, scope))
 						return false;
 				}
@@ -223,11 +225,11 @@ private:
 					if (!parser.Assign(extracted, *var.second, scope))
 						return false;
 
-					Item& item = to.emplace_back();
-
 					if (!detail::ConvertIf(std::move(fnConvert), item, std::move(extracted)))
 						return false;
 				}
+
+				to.emplace_back(std::move(item));
 			}
 
 			return true;
@@ -244,7 +246,7 @@ private:
 
 			for (const auto& var : vars)
 			{
-				Item& item = to.emplace_back();
+				Item item;
 
 				auto [isValid, pVariable, index] = detail::GetAttributes(var.second, scope);
 
@@ -275,6 +277,8 @@ private:
 					default:
 						return false;
 				}
+
+				to.emplace_back(std::move(item));
 			}
 
 			return true;

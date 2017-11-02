@@ -83,24 +83,6 @@ namespace Epic::TMP
 
 //////////////////////////////////////////////////////////////////////////////
 
-// IsCallable
-namespace Epic::TMP
-{
-	/*	Derives from std::true_type if Function(Args...) could be called and would result in
-		a type that is implicitly convertible to ReturnType.  Derives from std::false_type otherwise. */
-
-//	template<class Function, class Return, class Enable = void>
-//	struct IsCallable : std::false_type { };
-
-//	template<class Function, class Return, class... Ts>
-//	struct IsCallable<Function(Ts...), Return,
-//		std::void_t< decltype(std::declval<Function>() (std::declval<Ts>()...))> >
-//		: std::is_convertible<decltype(std::declval<Function>() (std::declval<Ts>()...)), Return>
-//	{ };
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
 // IsExplicitlyConvertible
 namespace Epic::TMP
 {
@@ -132,6 +114,9 @@ namespace Epic::TMP
 
 		template<class C>
 		using CanCStrImpl = decltype(std::declval<const C>().c_str());
+
+		template<class C>
+		using CanSizeImpl = decltype(std::size(std::declval<const C>()));
 
 		template<class C, class I>
 		using IsIndexableImpl = decltype(std::declval<C>()[std::declval<I>()] = std::declval<typename C::value_type>());
@@ -206,6 +191,7 @@ namespace Epic::TMP
 				std::is_array<C>,
 				std::conjunction<
 					IsDetected<detail::HasValueMemberImpl, C>,
-					IsDetected<detail::IsIndexableImpl, C, I>>>;
+					IsDetected<detail::IsIndexableImpl, C, I>,
+					IsDetected<detail::CanSizeImpl, C>>>;
 	};
 }

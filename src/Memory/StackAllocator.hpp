@@ -45,8 +45,8 @@ public:
 	static_assert(detail::IsGoodAlignment(Alignment), "Error: Invalid Alignment");
 
 private:
-	char* _pCursor;
-	alignas(Alignment) char _Memory[MemorySize];
+	unsigned char* _pCursor;
+	alignas(Alignment) unsigned char _Memory[MemorySize];
 
 public:
 	constexpr StackAllocator() noexcept 
@@ -60,12 +60,12 @@ public:
 	StackAllocator& operator = (Type&&) = delete;
 
 private:
-	char* _End() noexcept
+	unsigned char* _End() noexcept
 	{
 		return _Memory + MemorySize;
 	}
 
-	constexpr const char* _End() const noexcept
+	constexpr const unsigned char* _End() const noexcept
 	{
 		return _Memory + MemorySize;
 	}

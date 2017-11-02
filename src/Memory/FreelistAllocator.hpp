@@ -151,7 +151,7 @@ private:
 
 		// Break the remaining chunk space into free blocks and add them to the freelist
 		constexpr size_t remainingBlocks = BatchSize - ChunkInfoBlocks;
-		char* pFreeBlocks = reinterpret_cast<unsigned char*>(chunk.Ptr) + (ChunkInfoBlocks * BlockSize);
+		auto pFreeBlocks = reinterpret_cast<unsigned char*>(chunk.Ptr) + (ChunkInfoBlocks * BlockSize);
 		
 		for (size_t i = 0; i < remainingBlocks; ++i)
 		{
@@ -215,7 +215,7 @@ private:
 
 		// If the blk was allocated aligned, the alignment must be removed
 		const size_t alignPad = BlockSize - blk.Size;
-		char* pPtr = reinterpret_cast<unsigned char*>(blk.Ptr) - alignPad;
+		auto pPtr = reinterpret_cast<unsigned char*>(blk.Ptr) - alignPad;
 
 		// Push the adjusted pointer
 		auto pNewHead = reinterpret_cast<FreelistBlock*>(pPtr);
@@ -240,7 +240,7 @@ private:
 
 		while (pChunk)
 		{
-			const void* pEnd = static_cast<const void*>(reinterpret_cast<const unsigned char*>(pChunk->Mem.Ptr) + pChunk->Mem.Size));
+			auto pEnd = static_cast<const void*>(reinterpret_cast<const unsigned char*>(pChunk->Mem.Ptr) + pChunk->Mem.Size));
 
 			if (blk.Ptr >= pChunk->Mem.Ptr && blk.Ptr < pEnd)
 				return true;

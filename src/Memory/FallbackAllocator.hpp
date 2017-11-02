@@ -190,7 +190,7 @@ public:
 	/* Frees the memory for blk (blk needs to have been allocated with AllocateAligned). */
 	template<typename = std::enable_if_t<std::conjunction_v<
 		detail::CanAllocateAligned<P>, detail::CanAllocateAligned<F>, 
-		std::disjunction<detail::CanDeallocateAligned<P>, detail::CanDeallocateAligned<F>>>>
+		std::disjunction<detail::CanDeallocateAligned<P>, detail::CanDeallocateAligned<F>>>>>
 	void DeallocateAligned(const Blk& blk)
 	{
 		if (m_PAllocator.Owns(blk))
