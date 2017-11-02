@@ -37,7 +37,7 @@ struct Epic::EON::Adapter
 	IConverter fnConvertI;
 
 	explicit Adapter(U T::* dest, IConverter convert = IConverter())
-		: pDest(dest), fnConvertI(convert)
+		: pDest(dest), fnConvertI(std::move(convert))
 	{ }
 };
 
@@ -52,7 +52,7 @@ namespace Epic::EON
 		template<class I, class T, class U, class Converter = DefaultConverter>
 		auto Adapt(U T::* pMember, Converter fnConvert = Converter()) noexcept
 		{
-			return Adapter<I, T, U, Converter>(pMember, fnConvert);
+			return Adapter<I, T, U, Converter>(pMember, std::move(fnConvert));
 		}
 	}
 }
