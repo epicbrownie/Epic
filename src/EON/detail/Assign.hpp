@@ -133,8 +133,6 @@ namespace Epic::EON::detail
 					{
 						if (!parser.Assign(item, vm, globalScope))
 							return false;
-
-						to.emplace_back(std::move(item));
 					}
 					else
 					{
@@ -275,7 +273,7 @@ struct Epic::EON::detail::MemberAssigner : public Assigner<T>
 {
 	U T::* pDest;
 	Converter fnConvert;
-
+	
 	MemberAssigner(U T::* dest, Converter convertFn)
 		: pDest(dest), fnConvert(std::move(convertFn)) { }
 
@@ -295,7 +293,7 @@ public:
 	Converter fnConvert;
 
 private:
-	using Traits = EONTraits<T>;
+	using Traits = EONTraits<U>;
 
 	using MakeAssignTag =
 		std::conditional_t<!Traits::IsContainer, ScalarTag,

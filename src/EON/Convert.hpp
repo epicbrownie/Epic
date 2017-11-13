@@ -251,8 +251,8 @@ public:
 struct Epic::EON::DefaultConverter
 {
 	template<class T, class F>
-	bool operator() (T& to, F from)
+	bool operator() (T& to, F&& from)
 	{
-		return detail::Convert<F, T>() (to, std::move(from));
+		return detail::Convert<F, T>() (to, std::forward<F>(from));
 	}
 };
