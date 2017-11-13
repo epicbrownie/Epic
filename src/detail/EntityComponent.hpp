@@ -17,37 +17,40 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-namespace Epic::detail
+namespace Epic
 {
-	struct EntityComponentContainerBase;
+	namespace detail
+	{
+		struct EntityComponentBase;
 
-	template<class Component>
-	struct EntityComponentContainer;
+		template<class Component>
+		struct EntityComponent;
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-// EntityComponentContainerBase
-struct Epic::detail::EntityComponentContainerBase
+// EntityComponentBase
+struct Epic::detail::EntityComponentBase
 {
-	virtual ~EntityComponentContainerBase() { };
+	virtual ~EntityComponentBase() { };
 };
 
 //////////////////////////////////////////////////////////////////////////////
 
-// EntityComponentContainer<Component>
+// EntityComponent<Component>
 template<class C>
-struct Epic::detail::EntityComponentContainer : Epic::detail::EntityComponentContainerBase
+struct Epic::detail::EntityComponent : Epic::detail::EntityComponentBase
 {
-	using Type = Epic::detail::EntityComponentContainer<C>;
-	using Base = Epic::detail::EntityComponentContainerBase;
+	using Type = Epic::detail::EntityComponent<C>;
+	using Base = Epic::detail::EntityComponentBase;
 	using ComponentType = C;
 	
 	using DefaultAllocator = Epic::DefaultAllocatorFor<ComponentType, Epic::eAllocatorFor::UniquePtr>;
 
 	ComponentType Component;
 
-	EntityComponentContainer() { }
-	EntityComponentContainer(const ComponentType& component) : Component{ component } { }
-	EntityComponentContainer(ComponentType&& component) : Component{ std::move(component) } { }
+	EntityComponent() noexcept { }
+	EntityComponent(const ComponentType& component) noexcept : Component{ component } { }
+	EntityComponent(ComponentType&& component) noexcept : Component{ std::move(component) } { }
 };

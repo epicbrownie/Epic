@@ -36,7 +36,7 @@
     <ClInclude Include="src\CPUInfo.h" />
     <ClInclude Include="src\detail\AudioAllocator.hpp" />
     <ClInclude Include="src\detail\AudioParameterList.hpp" />
-    <ClInclude Include="src\detail\EntityComponentContainer.hpp" />
+    <ClInclude Include="src\detail\EntityComponent.hpp" />
     <ClInclude Include="src\detail\EntityComponentIterator.hpp" />
     <ClInclude Include="src\detail\EntityComponentView.hpp" />
     <ClInclude Include="src\detail\EntityHelpers.hpp" />
@@ -54,7 +54,7 @@
     <ClInclude Include="src\detail\WindowTypes.hpp" />
     <ClInclude Include="src\DeviceResolver.hpp" />
     <ClInclude Include="src\Entity.hpp" />
-    <ClInclude Include="src\EntityComponent.hpp" />
+    <ClInclude Include="src\EntityComponentTraits.hpp" />
     <ClInclude Include="src\EntityController.hpp" />
     <ClInclude Include="src\EntitySystem.hpp" />
     <ClInclude Include="src\EntityManager.hpp" />

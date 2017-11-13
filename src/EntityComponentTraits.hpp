@@ -36,10 +36,10 @@ namespace Epic::detail
 {
 	namespace
 	{
-		template<size_t N>
+		template<class C, size_t N>
 		constexpr EntityComponentID MakeEntityComponentID(const char(&cstr)[N])
 		{
-			return EntityComponentID(Epic::Hash(cstr).Value());
+			return { Epic::Hash<N>(cstr).Value() };
 		}
 	}
 }
@@ -47,10 +47,10 @@ namespace Epic::detail
 //////////////////////////////////////////////////////////////////////////////
 
 #define MAKE_ENTITY_COMPONENT(type)	 \
-	template<>																	\
-	struct Epic::EntityComponentTraits<type>									\
-	{																			\
-		static constexpr auto ID = Epic::detail::MakeEntityComponentID(#type);	\
+	template<>																			\
+	struct Epic::EntityComponentTraits<type>											\
+	{																					\
+		static constexpr auto ID = Epic::detail::MakeEntityComponentID<type>(#type);	\
 	};
 
 //////////////////////////////////////////////////////////////////////////////

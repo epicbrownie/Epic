@@ -17,12 +17,12 @@
 
 #pragma once
 
-#include <Epic/EntityComponent.hpp>
+#include <Epic/EntityComponentTraits.hpp>
+#include <Epic/detail/EntityComponent.hpp>
 #include <Epic/Event.hpp>
 #include <Epic/StringHash.hpp>
 #include <Epic/STL/Map.hpp>
 #include <Epic/STL/UniquePtr.hpp>
-#include <Epic/detail/EntityComponentContainer.hpp>
 #include <Epic/detail/EntityManagerFwd.hpp>
 #include <functional>
 
@@ -49,7 +49,7 @@ public:
 	constexpr static Epic::StringHash NoEntityName = Epic::Hash("");
 
 private:
-	using ComponentPtr = Epic::UniquePtr<Epic::detail::EntityComponentContainerBase>;
+	using ComponentPtr = Epic::UniquePtr<Epic::detail::EntityComponentBase>;
 	using ComponentMap = Epic::STLUnorderedMap<Epic::EntityComponentID, ComponentPtr>;
 
 private:
@@ -165,7 +165,7 @@ public:
 
 		if (it != std::end(m_Components))
 		{
-			auto pContainer = static_cast<detail::EntityComponentContainer<Component>*>((*it).second.get());
+			auto pContainer = static_cast<detail::EntityComponent<Component>*>((*it).second.get());
 			pContainer->Component = Component{ std::forward<Args>(args)... };
 			
 			this->ComponentAttached(this, Epic::EntityComponentTraits<Component>::ID);
@@ -175,10 +175,10 @@ public:
 		else
 		{
 			auto pContainerBase 
-				= Epic::MakeImpl<detail::EntityComponentContainerBase, 
-								 detail::EntityComponentContainer<Component>>
+				= Epic::MakeImpl<detail::EntityComponentBase, 
+								 detail::EntityComponent<Component>>
 									 (Component{ std::forward<Args>(args)... });
-			auto pContainer = static_cast<detail::EntityComponentContainer<Component>*>(pContainerBase.get());
+			auto pContainer = static_cast<detail::EntityComponent<Component>*>(pContainerBase.get());
 			
 			m_Components[Epic::EntityComponentTraits<Component>::ID] = std::move(pContainerBase);
 			this->ComponentAttached(this, Epic::EntityComponentTraits<Component>::ID);
@@ -222,7 +222,7 @@ public:
 		auto it = m_Components.find(Epic::EntityComponentTraits<Component>::ID);
 		assert(it != std::end(m_Components));
 
-		auto pContainer = static_cast<detail::EntityComponentContainer<Component>*>((*it).second.get());
+		auto pContainer = static_cast<detail::EntityComponent<Component>*>((*it).second.get());
 		return pContainer->Component;
 	}
 
@@ -235,7 +235,7 @@ public:
 		auto it = m_Components.find(Epic::EntityComponentTraits<Component>::ID);
 		assert(it != std::end(m_Components));
 
-		auto pContainer = static_cast<detail::EntityComponentContainer<Component>*>((*it).second.get());
+		auto pContainer = static_cast<detail::EntityComponent<Component>*>((*it).second.get());
 		return pContainer->Component;
 	}
 

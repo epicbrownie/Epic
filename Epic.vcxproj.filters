@@ -428,9 +428,6 @@
     <ClInclude Include="src\Entity.hpp">
       <Filter>Core\Entity</Filter>
     </ClInclude>
-    <ClInclude Include="src\detail\EntityComponentContainer.hpp">
-      <Filter>Core\Entity\detail</Filter>
-    </ClInclude>
     <ClInclude Include="src\detail\EntityComponentView.hpp">
       <Filter>Core\Entity\detail</Filter>
     </ClInclude>
@@ -466,9 +463,6 @@
     </ClInclude>
     <ClInclude Include="src\VertexAttribute.hpp">
       <Filter>Core\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="src\EntityComponent.hpp">
-      <Filter>Core\Entity</Filter>
     </ClInclude>
     <ClInclude Include="src\detail\VertexSkin.hpp">
       <Filter>Core\Graphics\detail</Filter>
@@ -556,6 +550,12 @@
     </ClInclude>
     <ClInclude Include="src\EON\detail\Tags.hpp">
       <Filter>Utility\EON\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EntityComponentTraits.hpp">
+      <Filter>Core\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\detail\EntityComponent.hpp">
+      <Filter>Core\Entity\detail</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
