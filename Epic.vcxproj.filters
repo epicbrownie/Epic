@@ -557,6 +557,9 @@
     <ClInclude Include="src\detail\EntityComponent.hpp">
       <Filter>Core\Entity\detail</Filter>
     </ClInclude>
+    <ClInclude Include="src\Preprocessor.hpp">
+      <Filter>Utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Memory\NullAllocator.cpp">
