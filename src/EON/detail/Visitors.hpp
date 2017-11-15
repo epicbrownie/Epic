@@ -294,7 +294,7 @@ public:
 	template<class From, class To>
 	void operator() (To& to, const From& from)
 	{
-		Merge<From, To>(to, from);
+		Merge(to, from);
 	}
 };
 

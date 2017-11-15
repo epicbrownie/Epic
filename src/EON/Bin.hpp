@@ -73,8 +73,9 @@ public:
 	{
 		assert(!variable.Name.empty() && "Variable must have a name");
 
-		if (detail::Tidy(&m_Data, &m_Data, variable, true))
-			m_Data.Members.emplace_back(std::move(variable));
+		m_Data.Members.emplace_back(std::move(variable));
+		if (!detail::Tidy(&m_Data, &m_Data, m_Data.Members.back(), true))
+			m_Data.Members.pop_back();
 	}
 
 public:
