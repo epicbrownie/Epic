@@ -892,7 +892,7 @@ namespace Epic
 		if constexpr (S == 3 || S == 4)
 			quat.Transform(*this);
 		else
-			static_assert(false, "Operation is only available for Vectors of size 3 or 4.");
+			static_assert(!std::is_same_v<T, T>, "Operation is only available for Vectors of size 3 or 4.");
 
 		return *this;
 	}
@@ -907,7 +907,7 @@ namespace Epic
 			return result;
 		}
 		else
-			static_assert(false, "Operation is only available for Vectors of size 3 or 4.");
+			static_assert(!std::is_same_v<T, T>, "Operation is only available for Vectors of size 3 or 4.");
 	}
 }
 

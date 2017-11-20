@@ -327,6 +327,8 @@ public:
 	{
 		for (size_t n = 0; n < Size; ++n)
 			Values[n] = static_cast<T>(std::pow(Values[n], exp.Values[n]));
+
+		return *this;
 	}
 
 	// Calculates the projection of this vector onto unit vector 'axis'

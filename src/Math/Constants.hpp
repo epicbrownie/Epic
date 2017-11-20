@@ -23,30 +23,30 @@ namespace Epic
 	namespace
 	{
 		template<typename T = float>
-		constexpr T Pi = T(3.1415926535897932385);
+		constexpr static T Pi = T(3.1415926535897932385);
 
 		template<typename T = float>
-		constexpr T PiSq = Pi<T> * Pi<T>;
+		constexpr static T PiSq = Pi<T> * Pi<T>;
 
 		template<typename T = float>
-		constexpr T TwoPi = Pi<T> + Pi<T>;
+		constexpr static T TwoPi = Pi<T> + Pi<T>;
 
 		template<typename T = float>
-		constexpr T HalfPi = Pi<T> / T(2);
+		constexpr static T HalfPi = Pi<T> / T(2);
 
 		template<typename T = float>
-		constexpr T InvPi = T(1) / Pi<T>;
+		constexpr static T InvPi = T(1) / Pi<T>;
 
 		template<typename T = float>
-		constexpr T InvTwoPi = T(1) / TwoPi<T>;
+		constexpr static T InvTwoPi = T(1) / TwoPi<T>;
 
 		template<typename T = float>
-		constexpr T Epsilon = std::numeric_limits<T>::epsilon();
+		constexpr static T Epsilon = std::numeric_limits<T>::epsilon();
 
 		template<typename T = float>
-		constexpr T MaxReal = std::numeric_limits<T>::max();
+		constexpr static T MaxReal = std::numeric_limits<T>::max();
 
 		template<typename T = float>
-		constexpr T MinReal = std::numeric_limits<T>::min();
+		constexpr static T MinReal = std::numeric_limits<T>::min();
 	}
 }
