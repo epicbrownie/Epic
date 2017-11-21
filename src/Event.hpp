@@ -323,7 +323,7 @@ public:
 	}
 
 	// Connect a function handler with a handle
-	inline void Connect(const DelegateType& delegate, const Epic::StringHash handle) noexcept
+	inline void Connect(const DelegateType& delegate, Epic::StringHash handle) noexcept
 	{
 		Subscribe(delegate, typename EventHandler::HandleType(handle));
 	}
@@ -337,7 +337,7 @@ public:
 
 	// Connect a function object handler with a handle
 	template<class Function>
-	inline void Connect(const Function& fn, const Epic::StringHash handle) noexcept
+	inline void Connect(const Function& fn, Epic::StringHash handle) noexcept
 	{
 		Subscribe(DelegateType(fn), typename EventHandler::HandleType(handle));
 	}
@@ -349,7 +349,7 @@ public:
 	}
 
 	// Connect a static function pointer handler with a handle
-	inline void Connect(R(*fn)(Args...), const Epic::StringHash handle) noexcept
+	inline void Connect(R(*fn)(Args...), Epic::StringHash handle) noexcept
 	{
 		Subscribe(DelegateType(fn), 
 				  reinterpret_cast<EventHandler::InstanceType>(fn), 
@@ -374,7 +374,7 @@ public:
 
 	// Connect a member function pointer handler with a handle
 	template<class T, class This>
-	inline void Connect(This* pThis, R(T::* fn)(Args...), const Epic::StringHash handle) noexcept
+	inline void Connect(This* pThis, R(T::* fn)(Args...), Epic::StringHash handle) noexcept
 	{
 		Subscribe(BMFP<sizeof...(Args), T, This>::Bind(pThis, fn),
 				  reinterpret_cast<EventHandler::InstanceType>(pThis),
@@ -383,7 +383,7 @@ public:
 
 	// Connect a const member function pointer handler with a handle
 	template<class T, class This>
-	inline void Connect(const This* pThis, R(T::* fn)(Args...) const, const Epic::StringHash handle) noexcept
+	inline void Connect(const This* pThis, R(T::* fn)(Args...) const, Epic::StringHash handle) noexcept
 	{
 		Subscribe(BMFP<sizeof...(Args), T, This>::Bind(pThis, fn),
 				  reinterpret_cast<EventHandler::InstanceType>(pThis),
@@ -398,7 +398,7 @@ public:
 	}
 
 	// Disconnect all handlers with the supplied handle
-	inline void Disconnect(const Epic::StringHash handle) noexcept
+	inline void Disconnect(Epic::StringHash handle) noexcept
 	{
 		Unsubscribe(typename EventHandler::HandleType(handle));
 	}
@@ -410,7 +410,7 @@ public:
 	}
 
 	// Disconnect a static function pointer handler with a handle
-	inline void Disconnect(R(*fn)(Args...), const Epic::StringHash handle) noexcept
+	inline void Disconnect(R(*fn)(Args...), Epic::StringHash handle) noexcept
 	{
 		Unsubscribe(reinterpret_cast<EventHandler::InstanceType>(fn), typename EventHandler::HandleType(handle));
 	}
@@ -424,7 +424,7 @@ public:
 
 	// Disconnect a member function pointer handler with a handle
 	template<class This>
-	inline void Disconnect(const This* pThis, const Epic::StringHash handle) noexcept
+	inline void Disconnect(const This* pThis, Epic::StringHash handle) noexcept
 	{
 		Unsubscribe(reinterpret_cast<EventHandler::InstanceType>(pThis),
 					typename EventHandler::HandleType(handle));
@@ -481,7 +481,7 @@ public:
 	}
 
 	// Alias: Disconnect all handlers with the supplied handle
-	inline Type& operator -= (const Epic::StringHash handle) noexcept
+	inline Type& operator -= (Epic::StringHash handle) noexcept
 	{
 		Disconnect(handle);
 		return *this;
@@ -649,7 +649,7 @@ public:
 
 	// Connect an event as a handler to this event with a handle
 	template<class Return>
-	inline void Connect(Event<Return(Args...)>& event, const Epic::StringHash handle) noexcept
+	inline void Connect(Event<Return(Args...)>& event, Epic::StringHash handle) noexcept
 	{
 		Base::Connect(&event, &Event<Return(Args...)>::ForwardedInvoke<R>, handle);
 	}
@@ -663,7 +663,7 @@ public:
 	
 	// Connect a polled event as a handler to this event with a handle
 	template<class Return>
-	inline void Connect(PolledEvent<Return(Args...)>& event, const Epic::StringHash handle) noexcept
+	inline void Connect(PolledEvent<Return(Args...)>& event, Epic::StringHash handle) noexcept
 	{
 		Base::Connect(&event, &PolledEvent<Return(Args...)>::ForwardedInvoke<R>, handle);
 	}
@@ -680,7 +680,7 @@ public:
 
 	// Disconnect an event handler with a handle
 	template<class Return>
-	inline void Disconnect(const Event<Return(Args...)>& event, const Epic::StringHash handle) noexcept
+	inline void Disconnect(const Event<Return(Args...)>& event, Epic::StringHash handle) noexcept
 	{
 		Base::Disconnect(&event, handle);
 	}
@@ -694,7 +694,7 @@ public:
 
 	// Disconnect a polled event handler with a handle
 	template<class Return>
-	inline void Disconnect(const PolledEvent<Return(Args...)>& event, const Epic::StringHash handle) noexcept
+	inline void Disconnect(const PolledEvent<Return(Args...)>& event, Epic::StringHash handle) noexcept
 	{
 		Base::Disconnect(&event, handle);
 	}

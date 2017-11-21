@@ -165,14 +165,14 @@ public:
 		return (it != std::end(m_IDEntityMap)) ? it->second : nullptr;
 	}
 
-	inline EntityPtr::pointer GetEntity(const Epic::StringHash name) noexcept
+	inline EntityPtr::pointer GetEntity(Epic::StringHash name) noexcept
 	{
 		auto it = m_NameEntityMap.find(name);
 
 		return (it != std::end(m_NameEntityMap)) ? it->second : nullptr;
 	}
 
-	inline const EntityPtr::pointer GetEntity(const Epic::StringHash name) const noexcept
+	inline const EntityPtr::pointer GetEntity(Epic::StringHash name) const noexcept
 	{
 		auto it = m_NameEntityMap.find(name);
 
@@ -254,7 +254,7 @@ public:
 	}
 
 public:
-	EntityPtr::pointer CreateEntity(const Epic::StringHash name = NoEntityName) noexcept
+	EntityPtr::pointer CreateEntity(Epic::StringHash name = NoEntityName) noexcept
 	{
 		m_Entities.emplace_back(Epic::MakeUnique<Entity>(this, name, m_NextID++));
 		EntityPtr::pointer pEntity = m_Entities.back().get();
@@ -289,7 +289,7 @@ public:
 		}
 	}
 
-	inline void DestroyEntity(const Epic::StringHash name, bool destroyNow = false) noexcept
+	inline void DestroyEntity(Epic::StringHash name, bool destroyNow = false) noexcept
 	{
 		DestroyEntity(GetEntity(name), destroyNow);
 	}

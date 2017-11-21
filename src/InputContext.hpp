@@ -40,14 +40,14 @@ private:
 	ActionList m_Actions;
 
 public:
-	explicit InputContext(const Epic::StringHash contextName) noexcept
+	explicit InputContext(Epic::StringHash contextName) noexcept
 		: m_ContextName{ contextName }
 	{
 		assert(m_ContextName != Epic::Hash(""));
 	}
 
 public:
-	inline const Epic::StringHash GetContextName() const noexcept
+	inline Epic::StringHash GetContextName() const noexcept
 	{
 		return m_ContextName;
 	}
@@ -79,12 +79,12 @@ public:
 	}
 
 public:
-	bool HasAction(const Epic::StringHash actionName) const noexcept
+	bool HasAction(Epic::StringHash actionName) const noexcept
 	{
 		std::find(begin(), end(), actionName) != end();
 	}
 
-	bool AddAction(const Epic::StringHash actionName) noexcept
+	bool AddAction(Epic::StringHash actionName) noexcept
 	{
 		auto it = std::find(begin(), end(), actionName);
 
@@ -97,7 +97,7 @@ public:
 		return false;
 	}
 	
-	bool RemoveAction(const Epic::StringHash actionName) noexcept
+	bool RemoveAction(Epic::StringHash actionName) noexcept
 	{
 		auto it = std::find(begin(), end(), actionName);
 

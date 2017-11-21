@@ -40,24 +40,24 @@ private:
 public:
 	ButtonResolver() noexcept = delete;
 
-	ButtonResolver(InputDataID dataID, eInputButtonState resolveOn, const Epic::StringHash device)
+	ButtonResolver(InputDataID dataID, eInputButtonState resolveOn, Epic::StringHash device)
 		: m_DataID{ dataID }, m_State{ resolveOn }, m_DeviceName{ device }
 	{ }
 
 	virtual ~ButtonResolver() noexcept = default;
 
 public:
-	inline const InputDataID GetButtonID() const noexcept
+	inline InputDataID GetButtonID() const noexcept
 	{
 		return m_DataID;
 	}
 
-	inline const eInputButtonState GetResolveState() const noexcept
+	inline eInputButtonState GetResolveState() const noexcept
 	{
 		return m_State;
 	}
 
-	inline const Epic::StringHash GetDeviceName() const noexcept
+	inline Epic::StringHash GetDeviceName() const noexcept
 	{
 		return m_DeviceName;
 	}

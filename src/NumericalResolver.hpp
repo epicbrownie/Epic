@@ -40,19 +40,19 @@ private:
 public:
 	NumericalResolver() noexcept = delete;
 
-	NumericalResolver(eInputButtonState resolveOn, const Epic::StringHash device)
+	NumericalResolver(eInputButtonState resolveOn, Epic::StringHash device)
 		: m_State{ resolveOn }, m_DeviceName{ device }
 	{ }
 
 	virtual ~NumericalResolver() noexcept = default;
 
 public:
-	inline const eInputButtonState GetResolveState() const noexcept
+	inline eInputButtonState GetResolveState() const noexcept
 	{
 		return m_State;
 	}
 
-	inline const Epic::StringHash GetDeviceName() const noexcept
+	inline Epic::StringHash GetDeviceName() const noexcept
 	{
 		return m_DeviceName;
 	}

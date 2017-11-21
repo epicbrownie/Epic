@@ -668,7 +668,7 @@ public:
 		return true;
 	}
 
-	void UnloadAudioLibrary(const Epic::StringHash libraryID) noexcept
+	void UnloadAudioLibrary(Epic::StringHash libraryID) noexcept
 	{
 		auto it = m_Libraries.find(libraryID);
 		if (it != std::end(m_Libraries))
@@ -685,7 +685,7 @@ public:
 		}
 	}
 
-	void CacheLibrary(const Epic::StringHash libraryID) noexcept
+	void CacheLibrary(Epic::StringHash libraryID) noexcept
 	{
 		auto it = m_Libraries.find(libraryID);
 		if (it != std::end(m_Libraries))
@@ -695,7 +695,7 @@ public:
 		}
 	}
 
-	void UncacheLibrary(const Epic::StringHash libraryID) noexcept
+	void UncacheLibrary(Epic::StringHash libraryID) noexcept
 	{
 		auto it = m_Libraries.find(libraryID);
 		if (it != std::end(m_Libraries))
@@ -710,7 +710,7 @@ public:
 public:
 	#pragma region Sounds
 		
-	SoundPtr CreateInstance(const Epic::StringHash id) noexcept
+	SoundPtr CreateInstance(Epic::StringHash id) noexcept
 	{
 		auto it = m_Sounds.find(id);
 		if (it != std::end(m_Sounds))
@@ -719,7 +719,7 @@ public:
 		return nullptr;
 	}
 
-	void CacheSound(const Epic::StringHash soundID) noexcept
+	void CacheSound(Epic::StringHash soundID) noexcept
 	{
 		auto it = m_Sounds.find(soundID);
 		if (it != std::end(m_Sounds))
@@ -729,7 +729,7 @@ public:
 		}
 	}
 
-	void UncacheSound(const Epic::StringHash soundID) noexcept
+	void UncacheSound(Epic::StringHash soundID) noexcept
 	{
 		auto it = m_Sounds.find(soundID);
 		if (it != std::end(m_Sounds))
@@ -744,7 +744,7 @@ public:
 public:
 	#pragma region Buses
 
-	BusPtr GetBus(const Epic::StringHash id) noexcept
+	BusPtr GetBus(Epic::StringHash id) noexcept
 	{
 		auto it = m_Buses.find(id);
 		if (it != std::end(m_Buses))
@@ -758,7 +758,7 @@ public:
 public:
 	#pragma region Volume Controls
 
-	VolumeControlPtr GetVolumeControl(const Epic::StringHash id) noexcept
+	VolumeControlPtr GetVolumeControl(Epic::StringHash id) noexcept
 	{
 		auto it = m_VolumeControls.find(id);
 		if (it != std::end(m_VolumeControls))
