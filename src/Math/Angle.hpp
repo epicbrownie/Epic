@@ -73,11 +73,11 @@ public:
 	Radian(Type&&) noexcept = default;
 
 	template<class U, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
-	constexpr Radian(const U value) noexcept
+	constexpr Radian(U value) noexcept
 		: m_Value(static_cast<T>(value)) { }
 
 	template<class U, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
-	constexpr Radian(const Degree<U>& value) noexcept
+	constexpr Radian(Degree<U> value) noexcept
 		: m_Value(Epic::DegToRad(static_cast<T>(value.Value()))) { }
 
 public:
@@ -115,9 +115,9 @@ public:
 	}
 
 public:
-	static Type NormalOf(const Type& value, T min = T(0)) noexcept
+	static Type NormalOf(Type value, T min = T(0)) noexcept
 	{
-		return Type(value).Normalize(min);
+		return value.Normalize(min);
 	}
 
 public:
@@ -131,27 +131,27 @@ public:
 	
 	#define CREATE_ASSIGNMENT_OPERATOR(Op)	\
 																					\
-	Type& operator Op (const value_type& value) noexcept							\
+	Type& operator Op (value_type value) noexcept									\
 	{																				\
-		m_Value Op value;															\
+		m_Value Op std::move(value);												\
 		return *this;																\
 	}																				\
 																					\
-	Type& operator Op (const Type& value) noexcept									\
+	Type& operator Op (Type value) noexcept											\
 	{																				\
 		m_Value Op value.Value();													\
 		return *this;																\
 	}																				\
 																					\
 	template<class U, typename = std::enable_if_t<std::is_convertible_v<U, T>>>		\
-	Type& operator Op (const Radian<U>& value) noexcept								\
+	Type& operator Op (Radian<U> value) noexcept									\
 	{																				\
 		m_Value Op static_cast<T>(value.Value());									\
 		return *this;																\
 	}																				\
 																					\
 	template<class U, typename = std::enable_if_t<std::is_convertible_v<U, T>>>		\
-	Type& operator Op (const Degree<U>& value) noexcept								\
+	Type& operator Op (Degree<U> value) noexcept									\
 	{																				\
 		m_Value Op Epic::DegToRad(static_cast<T>(value.Value()));					\
 		return *this;																\
@@ -170,42 +170,42 @@ public:
 public:
 	#pragma region Arithmetic Operators
 	#define CREATE_ARITHMETIC_OPERATOR(Op) 	\
-																					\
-	Type operator Op (const value_type& value) const noexcept						\
-	{																				\
-		Type result{ *this };														\
-		result Op= value;															\
-		return result;																\
-	}																				\
-																					\
-	Type operator Op (const Type& value) const noexcept								\
-	{																				\
-		Type result{ *this };														\
-		result Op= value;															\
-		return result;																\
-	}																				\
-																					\
-	template<class U>																\
-	Type operator Op (const Radian<U>& value) const noexcept						\
-	{																				\
-		Type result{ *this };														\
-		result Op= value;															\
-		return result;																\
-	}																				\
-																					\
-	template<class U>																\
-	Type operator Op (const Degree<U>& value) const noexcept						\
-	{																				\
-		Type result{ *this };														\
-		result Op= value;															\
-		return result;																\
-	}																				\
-																					\
-	friend Type operator Op (const value_type& value, const Type& rad) noexcept		\
-	{																				\
-		Type result{ rad };															\
-		result Op= value;															\
-		return result;																\
+																	\
+	Type operator Op (value_type value) const noexcept				\
+	{																\
+		Type result{ *this };										\
+		result Op= std::move(value);								\
+		return result;												\
+	}																\
+																	\
+	Type operator Op (Type value) const noexcept					\
+	{																\
+		Type result{ *this };										\
+		result Op= std::move(value);								\
+		return result;												\
+	}																\
+																	\
+	template<class U>												\
+	Type operator Op (Radian<U> value) const noexcept				\
+	{																\
+		Type result{ *this };										\
+		result Op= std::move(value);								\
+		return result;												\
+	}																\
+																	\
+	template<class U>												\
+	Type operator Op (Degree<U> value) const noexcept				\
+	{																\
+		Type result{ *this };										\
+		result Op= std::move(value);								\
+		return result;												\
+	}																\
+																	\
+	friend Type operator Op (value_type value, Type rad) noexcept	\
+	{																\
+		Type result{ rad };											\
+		result Op= std::move(value);								\
+		return result;												\
 	}
 
 	CREATE_ARITHMETIC_OPERATOR(+);
@@ -220,18 +220,18 @@ public:
 	#pragma region Comparison Operators
 	#define CREATE_COMPARISON_OPERATOR(Op)	\
 																				\
-	constexpr bool operator Op (const value_type& value) const noexcept			\
+	constexpr bool operator Op (value_type value) const noexcept				\
 	{																			\
-		return m_Value Op value;												\
+		return m_Value Op std::move(value);										\
 	}																			\
 																				\
-	constexpr bool operator Op (const Type& value) const noexcept				\
+	constexpr bool operator Op (Type value) const noexcept						\
 	{																			\
 		return m_Value Op value.Value();										\
 	}																			\
 																				\
 	template<class U, typename = std::enable_if_t<std::is_convertible_v<U, T>>>	\
-	constexpr bool operator Op (const Radian<U>& value) const noexcept			\
+	constexpr bool operator Op (Radian<U> value) const noexcept					\
 	{																			\
 		return m_Value Op static_cast<T>(value.Value());						\
 	}
@@ -288,11 +288,11 @@ public:
 	Degree(Type&&) noexcept = default;
 
 	template<class U, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
-	constexpr Degree(const U value) noexcept
+	constexpr Degree(U value) noexcept
 		: m_Value(static_cast<T>(value)) { }
 
 	template<class U, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
-	constexpr Degree(const Radian<U>& value) noexcept
+	constexpr Degree(Radian<U> value) noexcept
 		: m_Value(Epic::RadToDeg(static_cast<T>(value.Value()))) { }
 
 public:
@@ -331,9 +331,9 @@ public:
 	}
 
 public:
-	static Type NormalOf(const Type& value, T min = T(0)) noexcept
+	static Type NormalOf(Type value, T min = T(0)) noexcept
 	{
-		return Type(value).Normalize(min);
+		return value.Normalize(min);
 	}
 
 public:
@@ -347,27 +347,27 @@ public:
 	
 	#define CREATE_ASSIGNMENT_OPERATOR(Op)	\
 																					\
-	Type& operator Op (const value_type& value) noexcept							\
+	Type& operator Op (value_type value) noexcept									\
 	{																				\
-		m_Value Op value;															\
+		m_Value Op std::move(value);												\
 		return *this;																\
 	}																				\
 																					\
-	Type& operator Op (const Type& value) noexcept									\
+	Type& operator Op (Type value) noexcept											\
 	{																				\
 		m_Value Op value.Value();													\
 		return *this;																\
 	}																				\
 																					\
 	template<class U, typename = std::enable_if_t<std::is_convertible_v<U, T>>>		\
-	Type& operator Op (const Degree<U>& value) noexcept								\
+	Type& operator Op (Degree<U> value) noexcept									\
 	{																				\
 		m_Value Op static_cast<T>(value.Value());									\
 		return *this;																\
 	}																				\
 																					\
 	template<class U, typename = std::enable_if_t<std::is_convertible_v<U, T>>>		\
-	Type& operator Op (const Radian<U>& value) noexcept								\
+	Type& operator Op (Radian<U> value) noexcept									\
 	{																				\
 		m_Value Op Epic::RadToDeg(static_cast<T>(value.Value()));					\
 		return *this;																\
@@ -386,42 +386,42 @@ public:
 public:
 	#pragma region Arithmetic Operators
 	#define CREATE_ARITHMETIC_OPERATOR(Op) 	\
-																					\
-	Type operator Op (const value_type& value) const noexcept						\
-	{																				\
-		Type result{ *this };														\
-		result Op= value;															\
-		return result;																\
-	}																				\
-																					\
-	Type operator Op (const Type& value) const noexcept								\
-	{																				\
-		Type result{ *this };														\
-		result Op= value;															\
-		return result;																\
-	}																				\
-																					\
-	template<class U>																\
-	Type operator Op (const Degree<U>& value) const noexcept						\
-	{																				\
-		Type result{ *this };														\
-		result Op= value;															\
-		return result;																\
-	}																				\
-																					\
-	template<class U>																\
-	Type operator Op (const Radian<U>& value) const noexcept						\
-	{																				\
-		Type result{ *this };														\
-		result Op= value;															\
-		return result;																\
-	}																				\
-																					\
-	friend Type operator Op (const value_type& value, const Type& deg) noexcept		\
-	{																				\
-		Type result{ deg };															\
-		result Op= value;															\
-		return result;																\
+																	\
+	Type operator Op (value_type value) const noexcept				\
+	{																\
+		Type result{ *this };										\
+		result Op= std::move(value);								\
+		return result;												\
+	}																\
+																	\
+	Type operator Op (Type value) const noexcept					\
+	{																\
+		Type result{ *this };										\
+		result Op= std::move(value);								\
+		return result;												\
+	}																\
+																	\
+	template<class U>												\
+	Type operator Op (Degree<U> value) const noexcept				\
+	{																\
+		Type result{ *this };										\
+		result Op= std::move(value);								\
+		return result;												\
+	}																\
+																	\
+	template<class U>												\
+	Type operator Op (Radian<U> value) const noexcept				\
+	{																\
+		Type result{ *this };										\
+		result Op= std::move(value);								\
+		return result;												\
+	}																\
+																	\
+	friend Type operator Op (value_type value, Type deg) noexcept	\
+	{																\
+		Type result{ deg };											\
+		result Op= std::move(value);								\
+		return result;												\
 	}
 
 	CREATE_ARITHMETIC_OPERATOR(+);
@@ -436,18 +436,18 @@ public:
 	#pragma region Comparison Operators
 	#define CREATE_COMPARISON_OPERATOR(Op)	\
 																				\
-	constexpr bool operator Op (const value_type& value) const noexcept			\
+	constexpr bool operator Op (value_type value) const noexcept				\
 	{																			\
 		return m_Value Op value;												\
 	}																			\
 																				\
-	constexpr bool operator Op (const Type& value) const noexcept				\
+	constexpr bool operator Op (Type value) const noexcept						\
 	{																			\
 		return m_Value Op value.Value();										\
 	}																			\
 																				\
 	template<class U, typename = std::enable_if_t<std::is_convertible_v<U, T>>>	\
-	constexpr bool operator Op (const Degree<U>& value) const noexcept			\
+	constexpr bool operator Op (Degree<U> value) const noexcept					\
 	{																			\
 		return m_Value Op static_cast<T>(value.Value());						\
 	}
@@ -487,11 +487,53 @@ const Epic::Degree<T> Epic::Degree<T>::Circle = T(360);
 
 //////////////////////////////////////////////////////////////////////////////
 
+// Comparison Operators
+namespace Epic
+{
+	template<class T, class U>
+	inline bool operator < (Degree<T> d, Radian<U> r) { return d < Degree<T>(std::move(r)); }
+
+	template<class T, class U>
+	inline bool operator < (Radian<T> r, Degree<U> d) { return r < Radian<T>(std::move(d)); }
+
+	template<class T, class U>
+	inline bool operator <= (Degree<T> d, Radian<U> r) { return d <= Degree<T>(std::move(r)); }
+
+	template<class T, class U>
+	inline bool operator <= (Radian<T> r, Degree<U> d) { return r <= Radian<T>(std::move(d)); }
+
+	template<class T, class U>
+	inline bool operator > (Degree<T> d, Radian<U> r) { return d > Degree<T>(std::move(r)); }
+
+	template<class T, class U>
+	inline bool operator > (Radian<T> r, Degree<U> d) { return r > Radian<T>(std::move(d)); }
+
+	template<class T, class U>
+	inline bool operator >= (Degree<T> d, Radian<U> r) { return d >= Degree<T>(std::move(r)); }
+
+	template<class T, class U>
+	inline bool operator >= (Radian<T> r, Degree<U> d) { return r >= Radian<T>(std::move(d)); }
+
+	template<class T, class U>
+	inline bool operator == (Degree<T> d, Radian<U> r) { return d == Degree<T>(std::move(r)); }
+
+	template<class T, class U>
+	inline bool operator == (Radian<T> r, Degree<U> d) { return r == Radian<T>(std::move(d)); }
+
+	template<class T, class U>
+	inline bool operator != (Degree<T> d, Radian<U> r) { return d != Degree<T>(std::move(r)); }
+
+	template<class T, class U>
+	inline bool operator != (Radian<T> r, Degree<U> d) { return r != Radian<T>(std::move(d)); }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
 // Stream Operators
 namespace Epic
 {
 	template<class Char, class Traits, class T>
-	inline std::basic_ostream<Char, Traits>& operator << (std::basic_ostream<Char, Traits>& out, const Epic::Radian<T>& value)
+	inline std::basic_ostream<Char, Traits>& operator << (std::basic_ostream<Char, Traits>& out, Epic::Radian<T> value)
 	{
 		return (out << value.Value());
 	}
@@ -507,7 +549,7 @@ namespace Epic
 	}
 
 	template<class Char, class Traits, class T>
-	inline std::basic_ostream<Char, Traits>& operator << (std::basic_ostream<Char, Traits>& out, const Epic::Degree<T>& value)
+	inline std::basic_ostream<Char, Traits>& operator << (std::basic_ostream<Char, Traits>& out, Epic::Degree<T> value)
 	{
 		return (out << value.Value());
 	}
@@ -590,37 +632,37 @@ namespace Epic
 namespace std
 {
 	template<class T>
-	constexpr T sin(const Epic::Radian<T>& value) noexcept
+	constexpr T sin(Epic::Radian<T> value) noexcept
 	{
 		return value.Sin();
 	}
 
 	template<class T>
-	constexpr T cos(const Epic::Radian<T>& value) noexcept
+	constexpr T cos(Epic::Radian<T> value) noexcept
 	{
 		return value.Cos();
 	}
 
 	template<class T>
-	constexpr T tan(const Epic::Radian<T>& value) noexcept
+	constexpr T tan(Epic::Radian<T> value) noexcept
 	{
 		return value.Tan();
 	}
 
 	template<class T>
-	constexpr T sin(const Epic::Degree<T>& value) noexcept
+	constexpr T sin(Epic::Degree<T> value) noexcept
 	{
 		return value.Sin();
 	}
 
 	template<class T>
-	constexpr T cos(const Epic::Degree<T>& value) noexcept
+	constexpr T cos(Epic::Degree<T> value) noexcept
 	{
 		return value.Cos();
 	}
 
 	template<class T>
-	constexpr T tan(const Epic::Degree<T>& value) noexcept
+	constexpr T tan(Epic::Degree<T> value) noexcept
 	{
 		return value.Tan();
 	}
