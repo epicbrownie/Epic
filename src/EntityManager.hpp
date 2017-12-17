@@ -21,7 +21,6 @@
 #include <Epic/detail/EntityComponentView.hpp>
 #include <Epic/detail/EntityManagerFwd.hpp>
 #include <Epic/Entity.hpp>
-#include <Epic/EntityController.hpp>
 #include <Epic/EntitySystem.hpp>
 #include <Epic/Event.hpp>
 #include <Epic/StringHash.hpp>
@@ -47,8 +46,6 @@ private:
 	using EntityList = Epic::STLVector<EntityPtr>;
 	using EntityNameMap = Epic::STLUnorderedMap<Epic::StringHash, EntityPtr::pointer>;
 	using EntityIDMap = Epic::STLUnorderedMap<EntityID, EntityPtr::pointer>;
-	using ControllerPtr = Epic::UniquePtr<EntityController>;
-	using ControllerList = Epic::STLVector<ControllerPtr>;
 	using SystemPtr = Epic::UniquePtr<EntitySystem>;
 	using SystemList = Epic::STLVector<SystemPtr>;
 
@@ -57,7 +54,6 @@ private:
 	EntityList m_Entities;
 	EntityNameMap m_NameEntityMap;
 	EntityIDMap m_IDEntityMap;
-	ControllerList m_Controllers;
 	SystemList m_Systems;
 
 public:
@@ -97,12 +93,6 @@ private:
 			m_Entities.erase(it);
 	}
 
-	inline auto _GetControllerByPtr(ControllerPtr::pointer p) noexcept
-	{
-		return std::find_if(std::begin(m_Controllers), std::end(m_Controllers),
-							[&] (const ControllerPtr& pController) { return pController.get() == p; });
-	}
-
 	inline auto _GetSystemByPtr(SystemPtr::pointer p) noexcept
 	{
 		return std::find_if(std::begin(m_Systems), std::end(m_Systems),
@@ -139,11 +129,6 @@ public:
 	inline size_t GetEntityCount() const noexcept
 	{
 		return m_Entities.size();
-	}
-
-	inline size_t GetControllerCount() const noexcept
-	{
-		return m_Controllers.size();
 	}
 
 	inline size_t GetSystemCount() const noexcept
@@ -193,35 +178,6 @@ public:
 			return m_Entities[index].get();
 
 		return nullptr;
-	}
-
-public:
-	inline ControllerPtr::pointer GetControllerByIndex(size_t index) noexcept
-	{
-		if (index >= 0 && index < m_Controllers.size())
-			return m_Controllers[index].get();
-
-		return nullptr;
-	}
-
-	inline const ControllerPtr::pointer GetControllerByIndex(size_t index) const noexcept
-	{
-		if (index >= 0 && index < m_Controllers.size())
-			return m_Controllers[index].get();
-
-		return nullptr;
-	}
-
-	template<class Controller>
-	inline Controller* GetControllerByIndexAs(size_t index) noexcept
-	{
-		return static_cast<Controller*>(GetControllerByIndex(index));
-	}
-
-	template<class Controller>
-	inline const Controller* GetControllerByIndexAs(size_t index) const noexcept
-	{
-		return static_cast<Controller*>(GetControllerByIndex(index));
 	}
 
 public:
@@ -312,27 +268,6 @@ public:
 
 		m_Entities.clear();
 		m_NextID = 1;
-	}
-
-public:
-	template<class Controller, class... Args>
-	Controller* CreateController(Args&&... args)
-	{
-		m_Controllers.emplace_back(Epic::MakeImpl<EntityController, Controller>(this, std::forward<Args>(args)...));
-
-		return static_cast<Controller*>(m_Controllers.back().get());
-	}
-
-	void DestroyController(ControllerPtr::pointer pController) noexcept
-	{
-		auto it = _GetControllerByPtr(pController);
-		if (it != std::end(m_Controllers))
-			m_Controllers.erase(it);
-	}
-
-	void DestroyControllers() noexcept
-	{
-		m_Controllers.clear();
 	}
 
 public:
@@ -488,17 +423,9 @@ public:
 public:
 	void Update()
 	{
-		// Update Controllers (Pre-System Update)
-		for (auto& pController : m_Controllers)
-			pController->PreUpdate();
-
 		// Update Systems
 		for (auto& pSystem : m_Systems)
 			pSystem->Update();
-
-		// Update Controllers (Post-System Update)
-		for (auto& pController : m_Controllers)
-			pController->PostUpdate();
 
 		// Update Entity list
 		m_Entities.erase(std::remove_if(

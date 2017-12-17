@@ -470,9 +470,6 @@
     <ClInclude Include="src\EntitySystem.hpp">
       <Filter>Core\Entity</Filter>
     </ClInclude>
-    <ClInclude Include="src\EntityController.hpp">
-      <Filter>Core\Entity</Filter>
-    </ClInclude>
     <ClInclude Include="src\Math\detail\SwizzlerFwd.hpp">
       <Filter>Math\detail</Filter>
     </ClInclude>
