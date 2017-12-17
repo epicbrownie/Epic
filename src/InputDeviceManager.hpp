@@ -51,7 +51,7 @@ public:
 	
 public:
 	template<class DeviceType, class... Args>
-	DeviceType* CreateDevice(const Epic::StringHash& deviceName, Args&&... args)
+	DeviceType* CreateDevice(Epic::StringHash deviceName, Args&&... args)
 	{
 		auto pDevice = Epic::MakeImpl<Epic::InputDevice, DeviceType>(deviceName, std::forward<Args>(args)...);
 		auto pDevicePtr = static_cast<DeviceType*>(pDevice.get());
@@ -62,7 +62,7 @@ public:
 		return pDevicePtr;
 	}
 	
-	void DestroyDevice(const Epic::StringHash& deviceName) noexcept
+	void DestroyDevice(Epic::StringHash deviceName) noexcept
 	{
 		for(auto it = std::begin(m_Devices); it != std::end(m_Devices); ++it)
 		{
@@ -75,7 +75,7 @@ public:
 	}
 
 public:
-	DevicePtr::pointer GetDeviceByName(const Epic::StringHash& deviceName) const noexcept
+	DevicePtr::pointer GetDeviceByName(Epic::StringHash deviceName) const noexcept
 	{
 		for (auto& pDevice : m_Devices)
 		{
@@ -86,7 +86,7 @@ public:
 		return nullptr;
 	}
 
-	DevicePtr::pointer GetDeviceByAttribute(const Epic::StringHash& attribute, uint64_t value) const noexcept
+	DevicePtr::pointer GetDeviceByAttribute(Epic::StringHash attribute, uint64_t value) const noexcept
 	{
 		for (auto& pDevice : m_Devices)
 		{

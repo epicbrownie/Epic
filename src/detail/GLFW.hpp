@@ -52,9 +52,7 @@ public:
 private:
 	static void OnError(int errCode, const char* description) noexcept
 	{
-		std::cerr << "ERROR in GLFW"
-				  << std::endl
-				  << "\tError "
+		std::cerr << "ERROR in GLFW\n\tError "
 				  << errCode
 				  << " - "
 				  << description

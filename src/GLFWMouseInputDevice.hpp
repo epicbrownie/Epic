@@ -85,7 +85,7 @@ private:
 	Epic::GLFWWindow* m_pWindow;
 
 public:
-	GLFWMouseInputDevice(const Epic::StringHash& deviceName, Epic::GLFWWindow* pWindow) noexcept
+	GLFWMouseInputDevice(Epic::StringHash deviceName, Epic::GLFWWindow* pWindow) noexcept
 		: Base{ deviceName }, m_pWindow{ pWindow }
 	{
 		// Connect to window events
@@ -107,7 +107,7 @@ public:
 	}
 
 public:
-	const uint64_t GetDeviceAttribute(const Epic::StringHash& attrib) const noexcept override
+	uint64_t GetDeviceAttribute(Epic::StringHash attrib) const noexcept override
 	{
 		if (attrib == Epic::Hash("Type"))
 			return static_cast<uint64_t>(Epic::Hash("Mouse").Value());

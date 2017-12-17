@@ -25,8 +25,12 @@
 
 namespace Epic::detail
 {
+	class EntityComponentIteratorBase;
+
 	template<class... Components>
 	class EntityComponentIterator;
+
+	class ConstEntityComponentIteratorBase;
 
 	template<class... Components>
 	class ConstEntityComponentIterator;
@@ -34,26 +38,56 @@ namespace Epic::detail
 
 //////////////////////////////////////////////////////////////////////////////
 
-// EntityComponentIterator<Components>
-template<class... Components>
-class Epic::detail::EntityComponentIterator
+// EntityComponentIteratorBase
+class Epic::detail::EntityComponentIteratorBase
 {
 public:
-	using Type = Epic::detail::EntityComponentIterator<Components...>;
+	using Type = Epic::detail::EntityComponentIteratorBase;
 	using ValueType = Epic::Entity*;
 
-private:
+protected:
 	size_t m_Index;
 	Epic::EntityManager* m_pManager;
 	bool m_AtEnd;
 	bool m_IncludeDestroyed;
 
 public:
-	EntityComponentIterator(Epic::EntityManager* pManager, size_t index, bool includeDestroyed) noexcept
-		: m_pManager{ pManager }, m_Index{ index }, m_AtEnd{ false }, m_IncludeDestroyed{ includeDestroyed }
+	EntityComponentIteratorBase(Epic::EntityManager* pManager, size_t index, bool includeDestroyed) noexcept
+		: m_pManager{ pManager }, m_Index{ index }, m_AtEnd{ true }, m_IncludeDestroyed{ includeDestroyed }
+	{ }
+
+public:
+	bool IncludeDestroyed() const noexcept
 	{
-		if (m_Index >= m_pManager->GetEntityCount())
-			m_AtEnd = true;
+		return m_IncludeDestroyed;
+	}
+
+	size_t GetIndex() const noexcept
+	{
+		return m_Index;
+	}
+
+	const Epic::EntityManager* GetEntityManager() const noexcept
+	{
+		return m_pManager;
+	}
+};
+
+// EntityComponentIterator<Components>
+template<class... Components>
+class Epic::detail::EntityComponentIterator : public Epic::detail::EntityComponentIteratorBase
+{
+public:
+	using Type = Epic::detail::EntityComponentIterator<Components...>;
+	
+private:
+	using Base = Epic::detail::EntityComponentIteratorBase;
+
+public:
+	EntityComponentIterator(Epic::EntityManager* pManager, size_t index, bool includeDestroyed) noexcept
+		: Base(pManager, index, includeDestroyed)
+	{
+		m_AtEnd = (m_Index >= m_pManager->GetEntityCount());
 	}
 
 public:
@@ -105,50 +139,64 @@ public:
 		return AtEnd() ? nullptr : m_pManager->GetEntityByIndex(m_Index);
 	}
 
-public:
 	inline bool AtEnd() const noexcept
 	{
 		return m_AtEnd || m_Index >= m_pManager->GetEntityCount();
-	}
-
-	constexpr bool IncludeDestroyed() const noexcept
-	{
-		return m_IncludeDestroyed;
-	}
-
-	constexpr size_t GetIndex() const noexcept
-	{
-		return m_Index;
-	}
-
-	constexpr Epic::EntityManager* GetEntityManager() const noexcept
-	{
-		return m_pManager;
 	}
 };
 
 //////////////////////////////////////////////////////////////////////////////
 
-// ConstEntityComponentIterator<Components>
-template<class... Components>
-class Epic::detail::ConstEntityComponentIterator
+// ConstEntityComponentIteratorBase
+class Epic::detail::ConstEntityComponentIteratorBase
 {
 public:
-	using Type = Epic::detail::ConstEntityComponentIterator<Components...>;
+	using Type = Epic::detail::ConstEntityComponentIteratorBase;
 	using ValueType = const Epic::Entity*;
 
-private:
+protected:
 	size_t m_Index;
 	const Epic::EntityManager* m_pManager;
 	bool m_AtEnd;
 	bool m_IncludeDestroyed;
 
 public:
-	ConstEntityComponentIterator(const Epic::EntityManager* pManager, size_t index, bool includeDestroyed) noexcept
-		: m_pManager{ pManager }, m_Index{ index }, m_AtEnd{ false }, m_IncludeDestroyed{ includeDestroyed }
+	ConstEntityComponentIteratorBase(const Epic::EntityManager* pManager, size_t index, bool includeDestroyed) noexcept
+		: m_pManager{ pManager }, m_Index{ index }, m_AtEnd{ true }, m_IncludeDestroyed{ includeDestroyed }
+	{ }
+
+public:
+	bool IncludeDestroyed() const noexcept
 	{
-		if (m_Index >= m_pManager->GetEntityCount())
-			m_AtEnd = true;
+		return m_IncludeDestroyed;
+	}
+
+	size_t GetIndex() const noexcept
+	{
+		return m_Index;
+	}
+
+	const Epic::EntityManager* GetEntityManager() const noexcept
+	{
+		return m_pManager;
+	}
+};
+
+// ConstEntityComponentIterator<Components>
+template<class... Components>
+class Epic::detail::ConstEntityComponentIterator : public Epic::detail::ConstEntityComponentIteratorBase
+{
+public:
+	using Type = Epic::detail::ConstEntityComponentIterator<Components...>;
+	
+private:
+	using Base = Epic::detail::ConstEntityComponentIteratorBase;
+
+public:
+	ConstEntityComponentIterator(const Epic::EntityManager* pManager, size_t index, bool includeDestroyed) noexcept
+		: Base(pManager, index, includeDestroyed)
+	{
+		m_AtEnd = (m_Index >= m_pManager->GetEntityCount());
 	}
 
 public:
@@ -200,24 +248,8 @@ public:
 		return AtEnd() ? nullptr : m_pManager->GetEntityByIndex(m_Index);
 	}
 
-public:
 	inline bool AtEnd() const noexcept
 	{
 		return m_AtEnd || m_Index >= m_pManager->GetEntityCount();
-	}
-
-	constexpr bool IncludeDestroyed() const noexcept
-	{
-		return m_IncludeDestroyed;
-	}
-
-	constexpr size_t GetIndex() const noexcept
-	{
-		return m_Index;
-	}
-
-	constexpr const Epic::EntityManager* GetEntityManager() const noexcept
-	{
-		return m_pManager;
 	}
 };

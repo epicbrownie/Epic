@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 //
-//            Copyright (c) 2016 Ronnie Brohn (EpicBrownie)      
+//            Copyright (c) 2017 Ronnie Brohn (EpicBrownie)      
 //
 //                Distributed under The MIT License (MIT).
 //             (See accompanying file License.txt or copy at 
@@ -13,121 +13,111 @@
 
 #pragma once
 
-#include <Epic/STL/Vector.hpp>
-#include <Epic/STL/String.hpp>
 #include <Epic/StringHash.hpp>
+#include <Epic/STL/String.hpp>
+#include <Epic/STL/Vector.hpp>
 #include <variant>
 
 //////////////////////////////////////////////////////////////////////////////
 
 namespace Epic::EON
 {
-	struct Variable;
-	struct Variant;
+	struct EONArray;
+	struct EONBoolean;
+	struct EONFloat;
+	struct EONInteger;
+	struct EONObject;
+	struct EONString;
+	struct EONVariable;
+	struct EONVariant;
 
-	struct Object;
-	struct Array;
-	struct String;
-	struct Integer;
-	struct Float;
-	struct Boolean;
+	using EONName = STLString<char>;
+	using EONNameHash = Epic::StringHash;
+	using EONArrayMemberList = STLVector<EONVariant>;
+	using EONObjectMemberList = STLVector<EONVariable>;
+	using EONStringValueType = STLString<wchar_t>;
+	using EONVariantValueType = std::variant<EONInteger, EONFloat, EONBoolean, EONString, EONArray, EONObject>;
 
-	using Name = Epic::STLString<char>;
-	using NameHash = Epic::BasicStringHash<char>;
+	enum class eEONVariantType : size_t
+	{ 
+		Any = 0,
+		Integer	= (1 << 0), 
+		Float	= (1 << 1), 
+		Boolean	= (1 << 2), 
+		String	= (1 << 3), 
+		Array	= (1 << 4), 
+		Object	= (1 << 5)
+	};
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-// Object
-struct Epic::EON::Object
+struct Epic::EON::EONArray
 {
-	Epic::STLVector<EON::Variable> Members;
+	EONArrayMemberList Members;
 };
 
-//////////////////////////////////////////////////////////////////////////////
-
-// Array
-struct Epic::EON::Array
-{
-	Epic::STLVector<EON::Variant> Members;
-};
-
-//////////////////////////////////////////////////////////////////////////////
-
-// String
-struct Epic::EON::String
-{
-	using ValueType = Epic::STLString<wchar_t>;
-	
-	ValueType Value;
-
-	operator ValueType() const
-	{
-		return Value;
-	}
-};
-
-//////////////////////////////////////////////////////////////////////////////
-
-// Integer
-struct Epic::EON::Integer
-{
-	using ValueType = std::int64_t;
-	
-	ValueType Value;
-
-	operator ValueType() const
-	{
-		return Value;
-	}
-};
-
-//////////////////////////////////////////////////////////////////////////////
-
-// Float
-struct Epic::EON::Float
-{
-	using ValueType = std::float_t;
-	
-	ValueType Value;
-
-	operator ValueType() const
-	{
-		return Value;
-	}
-};
-
-//////////////////////////////////////////////////////////////////////////////
-
-// Boolean
-struct Epic::EON::Boolean
+struct Epic::EON::EONBoolean
 {
 	using ValueType = bool;
-	
+
 	ValueType Value;
 
-	operator ValueType() const
-	{
-		return Value;
-	}
+	operator ValueType& () { return Value; }
+	operator const ValueType& () const { return Value; }
+};
+
+struct Epic::EON::EONFloat
+{
+	using ValueType = double;
+
+	ValueType Value;
+
+	operator ValueType& () { return Value; }
+	operator const ValueType& () const { return Value; }
+};
+
+struct Epic::EON::EONInteger
+{
+	using ValueType = long;
+
+	ValueType Value;
+
+	operator ValueType& () { return Value; }
+	operator const ValueType& () const { return Value; }
+};
+
+struct Epic::EON::EONObject
+{
+	EONObjectMemberList Members;
+};
+
+struct Epic::EON::EONString
+{
+	using ValueType = EONStringValueType;
+
+	ValueType Value;
+
+	operator ValueType& () { return Value; }
+	operator const ValueType& () const { return Value; }
 };
 
 //////////////////////////////////////////////////////////////////////////////
 
-// Variant
-struct Epic::EON::Variant
+struct Epic::EON::EONVariant
 {
-	using VariantType = std::variant<EON::Object, EON::Array, EON::String, EON::Float, EON::Integer, EON::Boolean>;
-	VariantType Data;
+	using ValueType = EONVariantValueType;
+
+	ValueType Data;
+
+	operator ValueType& () { return Data; }
+	operator const ValueType& () const { return Data; }
 };
 
-//////////////////////////////////////////////////////////////////////////////
-
-// Variable
-struct Epic::EON::Variable
+struct Epic::EON::EONVariable
 {
-	EON::NameHash NameHash;
-	EON::Name Name;
-	EON::Name Parent;
-	EON::Variant Value;
+	EONName Name;
+	EONVariant Value;
+	EONName Parent;
+	EONNameHash NameHash;
 };

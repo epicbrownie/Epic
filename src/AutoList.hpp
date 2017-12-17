@@ -102,13 +102,8 @@ public:
 		{	/* CS */
 			std::lock_guard<MutexType> lock(s_Mutex);
 
-			auto it = ListStore::Begin();
-			while (it != ListStore::End())
-			{
-				const auto itNext = ListStore::Next(it);
+			for(auto it = ListStore::SafeBegin(); it != ListStore::SafeEnd(); ++it)
 				fn(*it);
-				it = itNext;
-			}
 		}
 	}
 
@@ -149,6 +144,48 @@ private:
 	using ListType = Epic::STLList<T, Allocator>;
 	
 private:
+	struct SafeIterator
+	{
+		using Iterator = typename ListType::iterator;
+		using ConstIterator = typename ListType::const_iterator;
+
+		Iterator itThis;
+		Iterator itNext;
+		ConstIterator itEnd;
+
+		SafeIterator(const Iterator& iterThis, const ConstIterator& iterEnd)
+			: itThis(iterThis), itEnd(iterEnd)
+		{
+			itNext = (itThis != itEnd) ? std::next(itThis) : itThis;
+		}
+
+		inline auto operator*() { return *itThis; }
+		
+		inline bool operator== (const SafeIterator& other) const noexcept
+		{
+			if (itThis == itEnd)
+				return other.itThis == other.itEnd;
+
+			return itThis == other.itThis;
+		}
+		
+		inline bool operator!= (const SafeIterator& other) const noexcept
+		{
+			return !(this->operator== (other));
+		}
+
+		inline SafeIterator& operator++ () noexcept
+		{
+			itThis = itNext;
+			
+			if (itThis != itEnd)
+				itNext = std::next(itThis);
+
+			return *this;
+		}
+	};
+
+private:
 	static ListType s_Data;
 
 public:
@@ -157,14 +194,19 @@ public:
 		return std::begin(s_Data);
 	}
 
-	static inline auto Next(decltype(Begin()) it) noexcept
-	{
-		return std::next(it);
-	}
-
 	static inline auto End() noexcept
 	{
 		return std::end(s_Data);
+	}
+
+	static inline auto SafeBegin() noexcept
+	{
+		return SafeIterator{ std::begin(s_Data), std::cend(s_Data) };
+	}
+
+	static inline auto SafeEnd() noexcept
+	{
+		return SafeIterator{ std::end(s_Data), std::cend(s_Data) };
 	}
 
 public:
@@ -203,7 +245,49 @@ public:
 
 private:
 	using ListType = Epic::STLVector<T, Allocator>;
-	
+
+private:
+	struct SafeIterator
+	{
+		using Index = typename ListType::size_type;
+
+		Index indexThis;
+		Index lastSize;
+		ListType* pList;
+		
+		SafeIterator(ListType* lst, Index n)
+			: pList(lst), indexThis(n), lastSize(lst->size())
+		{ }
+
+		inline auto operator*() { return pList->at(indexThis); }
+
+		inline bool operator== (const SafeIterator& other) const noexcept
+		{
+			if (indexThis >= pList->size())
+				return other.indexThis >= other.pList->size();
+
+			return indexThis == other.indexThis;
+		}
+
+		inline bool operator!= (const SafeIterator& other) const noexcept
+		{
+			return !(this->operator== (other));
+		}
+
+		inline SafeIterator& operator++ () noexcept
+		{
+			if (indexThis >= pList->size())
+				return *this;
+
+			if (lastSize == pList->size())
+				++indexThis;
+
+			lastSize = pList->size();
+
+			return *this;
+		}
+	};
+
 private:
 	static ListType s_Data;
 
@@ -213,14 +297,19 @@ public:
 		return std::begin(s_Data);
 	}
 
-	static inline auto Next(decltype(Begin()) it) noexcept
-	{
-		return std::next(it);
-	}
-
 	static inline auto End() noexcept
 	{
 		return std::end(s_Data);
+	}
+
+	static inline auto SafeBegin() noexcept
+	{
+		return SafeIterator{ &s_Data, 0 };
+	}
+
+	static inline auto SafeEnd() noexcept
+	{
+		return SafeIterator{ &s_Data, std::size(s_Data) };
 	}
 
 public:

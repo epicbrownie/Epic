@@ -58,7 +58,7 @@ struct Epic::detail::AudA
 template<class A, class Tag, class OldTag>
 struct Epic::detail::AudA<Epic::detail::GlobalAllocatorImpl<A, OldTag>, Tag>
 {
-	using _unwrapped = typename detail::UnwrapGlobalAllocator<A>::Type;
+	using _unwrapped = typename detail::UnwrapGlobal<A>::Type;
 	using _aligned = Epic::ForceAlignAllocator<_unwrapped, AudioAlignment>;
 	using _affixed = Epic::AffixAllocator<_aligned, Epic::detail::AudPre>;
 

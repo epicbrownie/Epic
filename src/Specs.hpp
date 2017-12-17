@@ -13,7 +13,7 @@
 
 #pragma once
 
-#include <Epic/OS.h>
+#include <Epic/OS.hpp>
 #include <Epic/STL/UniquePtr.hpp>
 #include <Epic/STL/Vector.hpp>
 #include <cstdint>
@@ -200,6 +200,9 @@ namespace Epic
 		///
 		Epic::MemorySpecs GetMemorySpecs() noexcept
 		{
+			static_assert(OS == eOS::Windows, 
+				"GetMemorySpecs() isn't implemented on this OS");
+
 			Epic::MemorySpecs ms;
 
 			// This is OS specific
@@ -216,8 +219,6 @@ namespace Epic
 				ms.uiAvailPagingMem = status.ullAvailPageFile;
 				ms.uiExtendedMem = status.ullAvailExtendedVirtual;
 				ms.uiMemoryLoad = status.dwMemoryLoad;
-			#else
-				#error GetMemorySpecs() is not implemented for this OS				
 			#endif
 
 			return ms;
@@ -230,6 +231,9 @@ namespace Epic
 		///
 		Epic::CPUSpecs GetCPUSpecs() noexcept
 		{
+			static_assert(OS == eOS::Windows, 
+				"GetMemorySpecs() isn't implemented on this OS");
+
 			Epic::CPUSpecs cs;
 			cs.uiCPUCount = 0;
 
@@ -238,7 +242,7 @@ namespace Epic
 				DWORD dwSpeed;
 				wchar_t szKey[256];
 
-				DWORD dwCalculated = 0;		// The current key # to open
+				DWORD dwCalculated = 0; // The current key # to open
 				Epic::STLVector<DWORD> lstSpeeds;
 
 				// Keep trying to read processor speeds until we fail
@@ -251,7 +255,7 @@ namespace Epic
 					#pragma warning (default : 4996)
 
 					// Open the key
-					if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
+					if (RegOpenKeyExW(HKEY_LOCAL_MACHINE,
 						szKey, 0, KEY_QUERY_VALUE, &hKey) != ERROR_SUCCESS)
 					{
 						// Failed to open the key.
@@ -260,7 +264,7 @@ namespace Epic
 
 					// Read the value
 					DWORD dwLen = 4;
-					if (RegQueryValueEx(hKey, L"~MHz", NULL, NULL,
+					if (RegQueryValueExW(hKey, L"~MHz", NULL, NULL,
 						(LPBYTE)&dwSpeed, &dwLen) != ERROR_SUCCESS)
 					{
 						// Failed to read speed.
@@ -282,10 +286,8 @@ namespace Epic
 				auto it = std::begin(lstSpeeds);
 				for (DWORD c = 0; c < dwCalculated; ++c, ++it)
 					cs.pCPUCaps.get()[c].uiCPUSpeed = *it;
-			#else
-				#error GetCPUSpecs() isn't implemented on this OS
 			#endif
-
+			
 			return cs;
 		}
 	}

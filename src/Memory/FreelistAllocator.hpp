@@ -108,7 +108,7 @@ public:
 	FreelistAllocatorImpl(const Type&) = delete;
 
 	/* Move constructor is disabled in a shared context if the backing allocator is not shared */
-	template<typename = std::enable_if_t<(std::is_move_constructible<A>::value) && (!IsShared || (IsShared && A::IsShareable))>>
+	template<typename = std::enable_if_t<std::is_move_constructible<A>::value && (!IsShared || (IsShared && A::IsShareable))>>
 	FreelistAllocatorImpl(Type&& obj) noexcept(std::is_nothrow_move_constructible<A>::value)
 		: m_Allocator{ std::move(obj.m_Allocator) }, m_pChunks{ nullptr }, m_pFreeList{ nullptr }
 	{
@@ -134,10 +134,11 @@ private:
 		// Allocate a chunk of memory from the backing allocator
 		Blk chunk;
 
-		if (IsAligned)
-			chunk = detail::AllocateAlignedIf<A>::apply(m_Allocator, ChunkSize, Alignment);
-		else
-			chunk = detail::AllocateIf<A>::apply(m_Allocator, ChunkSize);
+		if constexpr (IsAligned && detail::CanAllocateAligned<A>::value)
+			chunk = m_Allocator.AllocateAligned(ChunkSize, Alignment);
+		
+		else if constexpr (!IsAligned && detail::CanAllocate<A>::value)
+			chunk = m_Allocator.Allocate(ChunkSize);
 
 		if (!chunk) 
 			return false;
@@ -149,8 +150,8 @@ private:
 		m_pChunks = pNewChunk;
 
 		// Break the remaining chunk space into free blocks and add them to the freelist
-		const size_t remainingBlocks = BatchSize - ChunkInfoBlocks;
-		char* pFreeBlocks = reinterpret_cast<char*>(chunk.Ptr) + (ChunkInfoBlocks * BlockSize);
+		constexpr size_t remainingBlocks = BatchSize - ChunkInfoBlocks;
+		auto pFreeBlocks = reinterpret_cast<unsigned char*>(chunk.Ptr) + (ChunkInfoBlocks * BlockSize);
 		
 		for (size_t i = 0; i < remainingBlocks; ++i)
 		{
@@ -166,23 +167,27 @@ private:
 
 	void FreeChunks()
 	{
-		if (detail::CanDeallocateAll<A>::value)
+		if constexpr (detail::CanDeallocateAll<A>::value)
 		{
-			// Static-If: Deallocate all chunks at once
-			detail::DeallocateAllIf<A>::apply(m_Allocator);
+			m_Allocator.DeallocateAll();
 			m_pChunks = nullptr;
 		}
 		else
 		{
-			// Static-If: Deallocate one at a time
 			while (m_pChunks)
 			{
 				auto pNext = m_pChunks->pNext;
 
-				if (IsAligned)
-					detail::DeallocateAlignedIf<A>::apply(m_Allocator, m_pChunks->Mem);
+				if constexpr (IsAligned)
+				{
+					if constexpr (detail::CanDeallocateAligned<A>::value)
+						m_Allocator.DeallocateAligned(m_pChunks->Mem);
+				}
 				else
-					detail::DeallocateIf<A>::apply(m_Allocator, m_pChunks->Mem);
+				{
+					if constexpr (detail::CanDeallocate<A>::value)
+						m_Allocator.Deallocate(m_pChunks->Mem);
+				}
 
 				m_pChunks = pNext;
 			}
@@ -210,7 +215,7 @@ private:
 
 		// If the blk was allocated aligned, the alignment must be removed
 		const size_t alignPad = BlockSize - blk.Size;
-		char* pPtr = reinterpret_cast<char*>(blk.Ptr) - alignPad;
+		auto pPtr = reinterpret_cast<unsigned char*>(blk.Ptr) - alignPad;
 
 		// Push the adjusted pointer
 		auto pNewHead = reinterpret_cast<FreelistBlock*>(pPtr);
@@ -235,7 +240,7 @@ private:
 
 		while (pChunk)
 		{
-			const void* pEnd = static_cast<const void*>(reinterpret_cast<const char*>(pChunk->Mem.Ptr) + pChunk->Mem.Size));
+			auto pEnd = static_cast<const void*>(reinterpret_cast<const unsigned char*>(pChunk->Mem.Ptr) + pChunk->Mem.Size));
 
 			if (blk.Ptr >= pChunk->Mem.Ptr && blk.Ptr < pEnd)
 				return true;
@@ -249,7 +254,7 @@ private:
 public:
 	/* Returns a block of uninitialized memory at least as big as sz.
 	   If sz is zero, the returned block's pointer is null. */
-	Blk Allocate(const size_t sz) noexcept
+	Blk Allocate(size_t sz) noexcept
 	{
 		// Verify that the requested size is within our allowed bounds
 		if (sz == 0 || sz < MinAllocSize || sz > MaxAllocSize)
@@ -273,7 +278,7 @@ public:
 
 	/* Returns a block of uninitialized memory at least as big as sz (aligned to alignment).
 	   If sz is zero, the returned block's pointer is null. */
-	Blk AllocateAligned(const size_t sz, const size_t alignment = Alignment) noexcept
+	Blk AllocateAligned(size_t sz, size_t alignment = Alignment) noexcept
 	{
 		// Verify that the alignment is acceptable
 		if (!detail::IsGoodAlignment(alignment))

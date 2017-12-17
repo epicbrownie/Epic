@@ -88,7 +88,7 @@ private:
 	size_t m_TimerID;
 
 private:
-	using TimerList = Epic::STLVector<Epic::UniquePtr<OneShotTimer>>;
+	using TimerList = Epic::STLVector<Epic::UniquePtr<Type>>;
 
 	static TimerList s_Timers;
 	static size_t s_TimerID;

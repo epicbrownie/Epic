@@ -45,8 +45,8 @@ public:
 	static_assert(detail::IsGoodAlignment(Alignment), "Error: Invalid Alignment");
 
 private:
-	char* _pCursor;
-	alignas(Alignment) char _Memory[MemorySize];
+	unsigned char* _pCursor;
+	alignas(Alignment) unsigned char _Memory[MemorySize];
 
 public:
 	constexpr StackAllocator() noexcept 
@@ -60,12 +60,12 @@ public:
 	StackAllocator& operator = (Type&&) = delete;
 
 private:
-	char* _End() noexcept
+	unsigned char* _End() noexcept
 	{
 		return _Memory + MemorySize;
 	}
 
-	constexpr const char* _End() const noexcept
+	constexpr const unsigned char* _End() const noexcept
 	{
 		return _Memory + MemorySize;
 	}
@@ -90,7 +90,7 @@ public:
 public:
 	/* Returns a block of uninitialized memory.
 	   If sz is zero, the returned block's pointer is null. */
-	Blk Allocate(const size_t sz) noexcept
+	Blk Allocate(size_t sz) noexcept
 	{
 		// Verify that the requested size is within our allowed bounds
 		if (sz == 0 || sz < MinAllocSize || sz > MaxAllocSize)
@@ -140,9 +140,9 @@ public:
 		assert(Owns(blk) && "StackAllocator::Deallocate - Attempted to free a block that was not allocated by this allocator");
 		
 		// If this block was the last block available (obtained via AllocateAll()), free it
-		if (reinterpret_cast<char*>(blk.Ptr) + blk.Size == _End())
+		if (reinterpret_cast<unsigned char*>(blk.Ptr) + blk.Size == _End())
 		{
-			_pCursor = reinterpret_cast<char*>(blk.Ptr);
+			_pCursor = reinterpret_cast<unsigned char*>(blk.Ptr);
 			return;
 		}
 
@@ -150,8 +150,8 @@ public:
 		const size_t sz = detail::RoundToAligned(blk.Size, Alignment);
 
 		// If this block was the last allocated block, free it
-		if (reinterpret_cast<char*>(blk.Ptr) + sz == _pCursor)
-			_pCursor = reinterpret_cast<char*>(blk.Ptr);
+		if (reinterpret_cast<unsigned char*>(blk.Ptr) + sz == _pCursor)
+			_pCursor = reinterpret_cast<unsigned char*>(blk.Ptr);
 	}
 
 	/* Free all of this allocator's memory */

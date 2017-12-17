@@ -14,7 +14,7 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
+#include <type_traits>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -37,69 +37,46 @@ namespace Epic
 
 namespace Epic
 {
-	class HashedString;
-
 	template<typename CharType = char, StringHashAlgorithms Algorithm = StringHashAlgorithms::Default>
-	class StringHashAlgorithm;
+	struct StringHashAlgorithm;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
 /// StringHashAlgorithm<C, PaulLarson>
 template<typename C>
-class Epic::StringHashAlgorithm<C, Epic::StringHashAlgorithms::PaulLarson>
+struct Epic::StringHashAlgorithm<C, Epic::StringHashAlgorithms::PaulLarson>
 {
-public:
 	using CharType = C;
-	using HashType = uint64_t;
+	using HashType = std::uint32_t;
 
 	static constexpr Epic::StringHashAlgorithms Algorithm = Epic::StringHashAlgorithms::PaulLarson;
-
-private:
 	static constexpr HashType DefaultSeed{ 2166136261 };
 
-public:
-	StringHashAlgorithm() = delete;
-
-	static constexpr HashType Hash(std::nullptr_t, const HashType seed = DefaultSeed) noexcept
+	static constexpr HashType Hash(HashType seed = DefaultSeed) noexcept
 	{
 		return seed;
 	}
 
-	static inline HashType Hash(const CharType* __restrict str = nullptr, const HashType seed = DefaultSeed) noexcept
+	static constexpr HashType Hash(const CharType* const __restrict str, size_t length, HashType seed = DefaultSeed) noexcept
 	{
 		HashType hash = seed;
 
-		while (*str != 0)
-			hash = hash * 101 + *str++;
+		for(size_t i = 0; i < length; ++i)
+			hash = hash * 101 + str[i];
 
 		return hash;
 	}
 
-private:
-	template<size_t N, size_t I>
-	struct _FoldHash
+	template<size_t N, typename = std::enable_if_t<(N > 0)>>
+	static constexpr HashType Hash(const CharType(&str)[N], HashType seed = DefaultSeed) noexcept
 	{
-		static constexpr HashType apply(const CharType(&str)[N], const HashType seed) noexcept
-		{
-			return (_FoldHash<N, (I - 1)>::apply(str, seed) * 101) + str[I - 1];
-		}
-	};
+		HashType hash = seed;
 
-	template<size_t N>
-	struct _FoldHash<N, 0>
-	{
-		static constexpr HashType apply(const CharType(&str)[N], const HashType seed) noexcept
-		{
-			return seed;
-		}
-	};
+		for (size_t i = 0; i < (N - 1); ++i)
+			hash = (hash * 101) + str[i];
 
-public:
-	template<size_t N>
-	static constexpr HashType FoldHash(const CharType(&str)[N], const HashType seed = DefaultSeed) noexcept
-	{
-		return _FoldHash<N, (N - 1)>::apply(str, seed);
+		return hash;
 	}
 };
 
@@ -107,59 +84,38 @@ public:
 
 /// StringHashAlgorithm<C, FNV-1a>
 template<typename C>
-class Epic::StringHashAlgorithm<C, Epic::StringHashAlgorithms::FNV1a>
+struct Epic::StringHashAlgorithm<C, Epic::StringHashAlgorithms::FNV1a>
 {
-public:
 	using CharType = C;
-	using HashType = uint64_t;
+	using HashType = std::uint32_t;
 
 	static constexpr Epic::StringHashAlgorithms Algorithm = Epic::StringHashAlgorithms::FNV1a;
-
-private:
 	static constexpr HashType DefaultSeed{ 2166136261 };
 	static constexpr HashType DefaultPrime{ 16777619 };
 
-public:
-	StringHashAlgorithm() = delete;
-
-	static constexpr HashType Hash(std::nullptr_t, const HashType seed = DefaultSeed, const HashType = DefaultPrime) noexcept
+	static constexpr HashType Hash(HashType seed = DefaultSeed)
 	{
 		return seed;
 	}
 
-	static inline HashType Hash(const CharType* __restrict str, const HashType seed = DefaultSeed, const HashType prime = DefaultPrime) noexcept
+	static constexpr HashType Hash(const CharType* const __restrict str, size_t length, HashType seed = DefaultSeed, HashType prime = DefaultPrime) noexcept
 	{
 		HashType hash = seed;
 		
-		while (*str != 0)
-			hash = (hash ^ *str++) * prime;
+		for (size_t i = 0; i < length; ++i)
+			hash = (hash ^ str[i]) * prime;
 
 		return hash;
 	}
 
-private:
-	template<size_t N, size_t I>
-	struct _FoldHash
+	template<size_t N, typename = std::enable_if_t<(N > 0)>>
+	static constexpr HashType Hash(const char(&str)[N], HashType seed = DefaultSeed, HashType prime = DefaultPrime) noexcept
 	{
-		static constexpr HashType apply(const CharType(&str)[N], const HashType seed, const HashType prime) noexcept
-		{
-			return (_FoldHash<N, (I - 1)>::apply(str, seed, prime) ^ str[I - 1]) * prime;
-		}
-	};
+		HashType hash = seed;
 
-	template<size_t N>
-	struct _FoldHash<N, 0>
-	{
-		static constexpr HashType apply(const CharType(&str)[N], const HashType seed, const HashType /* prime */) noexcept
-		{
-			return seed;
-		}
-	};
+		for (size_t i = 0; i < N - 1; ++i)
+			hash = (hash ^ str[i]) * prime;
 
-public:
-	template<size_t N>
-	static constexpr HashType FoldHash(const CharType(&str)[N], const HashType seed = DefaultSeed, const HashType prime = DefaultPrime) noexcept
-	{
-		return _FoldHash<N, (N - 1)>::apply(str, seed, prime);
+		return hash;
 	}
 };

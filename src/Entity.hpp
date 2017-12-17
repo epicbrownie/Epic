@@ -17,12 +17,12 @@
 
 #pragma once
 
-#include <Epic/EntityComponent.hpp>
+#include <Epic/EntityComponentTraits.hpp>
+#include <Epic/detail/EntityComponent.hpp>
 #include <Epic/Event.hpp>
 #include <Epic/StringHash.hpp>
 #include <Epic/STL/Map.hpp>
 #include <Epic/STL/UniquePtr.hpp>
-#include <Epic/detail/EntityComponentContainer.hpp>
 #include <Epic/detail/EntityManagerFwd.hpp>
 #include <functional>
 
@@ -49,7 +49,7 @@ public:
 	constexpr static Epic::StringHash NoEntityName = Epic::Hash("");
 
 private:
-	using ComponentPtr = Epic::UniquePtr<Epic::detail::EntityComponentContainerBase>;
+	using ComponentPtr = Epic::UniquePtr<Epic::detail::EntityComponentBase>;
 	using ComponentMap = Epic::STLUnorderedMap<Epic::EntityComponentID, ComponentPtr>;
 
 private:
@@ -67,7 +67,7 @@ public:
 	ComponentAttachmentDelegate ComponentDetached;
 
 public:
-	inline Entity(Epic::EntityManager* pSystem, const Epic::StringHash& name, const EntityID id) noexcept
+	inline Entity(Epic::EntityManager* pSystem, Epic::StringHash name, EntityID id) noexcept
 		: m_pEntityManager{ pSystem }, m_Name{ name }, m_ID{ id }, m_DestroyPending { false }
 	{ }
 
@@ -77,22 +77,27 @@ public:
 	}
 
 public:
-	constexpr Epic::EntityManager* GetEntityManager() const noexcept
+	Epic::EntityManager* GetEntityManager() noexcept
 	{
 		return m_pEntityManager;
 	}
 
-	constexpr const Epic::StringHash& GetName() const
+	const Epic::EntityManager* GetEntityManager() const noexcept
+	{
+		return m_pEntityManager;
+	}
+
+	Epic::StringHash GetName() const
 	{
 		return m_Name;
 	}
 
-	constexpr const EntityID GetID() const noexcept
+	EntityID GetID() const noexcept
 	{
 		return m_ID;
 	}
 
-	constexpr bool IsDestroyPending() const
+	bool IsDestroyPending() const
 	{
 		return m_DestroyPending;
 	}
@@ -160,7 +165,7 @@ public:
 
 		if (it != std::end(m_Components))
 		{
-			auto pContainer = static_cast<detail::EntityComponentContainer<Component>*>((*it).second.get());
+			auto pContainer = static_cast<detail::EntityComponent<Component>*>((*it).second.get());
 			pContainer->Component = Component{ std::forward<Args>(args)... };
 			
 			this->ComponentAttached(this, Epic::EntityComponentTraits<Component>::ID);
@@ -170,10 +175,10 @@ public:
 		else
 		{
 			auto pContainerBase 
-				= Epic::MakeImpl<detail::EntityComponentContainerBase, 
-								 detail::EntityComponentContainer<Component>>
+				= Epic::MakeImpl<detail::EntityComponentBase, 
+								 detail::EntityComponent<Component>>
 									 (Component{ std::forward<Args>(args)... });
-			auto pContainer = static_cast<detail::EntityComponentContainer<Component>*>(pContainerBase.get());
+			auto pContainer = static_cast<detail::EntityComponent<Component>*>(pContainerBase.get());
 			
 			m_Components[Epic::EntityComponentTraits<Component>::ID] = std::move(pContainerBase);
 			this->ComponentAttached(this, Epic::EntityComponentTraits<Component>::ID);
@@ -217,7 +222,7 @@ public:
 		auto it = m_Components.find(Epic::EntityComponentTraits<Component>::ID);
 		assert(it != std::end(m_Components));
 
-		auto pContainer = static_cast<detail::EntityComponentContainer<Component>*>((*it).second.get());
+		auto pContainer = static_cast<detail::EntityComponent<Component>*>((*it).second.get());
 		return pContainer->Component;
 	}
 
@@ -230,7 +235,7 @@ public:
 		auto it = m_Components.find(Epic::EntityComponentTraits<Component>::ID);
 		assert(it != std::end(m_Components));
 
-		auto pContainer = static_cast<detail::EntityComponentContainer<Component>*>((*it).second.get());
+		auto pContainer = static_cast<detail::EntityComponent<Component>*>((*it).second.get());
 		return pContainer->Component;
 	}
 

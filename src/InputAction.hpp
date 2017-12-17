@@ -59,7 +59,7 @@ public:
 	InputAction(const Type&) = delete;
 	Type& operator = (const Type&) = delete;
 	
-	inline explicit InputAction(const Epic::StringHash& actionName) noexcept
+	inline explicit InputAction(Epic::StringHash actionName) noexcept
 		: m_ActionName{ actionName }
 	{ }
 
@@ -70,7 +70,7 @@ public:
 	{ }
 	
 public:
-	inline const Epic::StringHash& GetActionName() const noexcept
+	inline Epic::StringHash GetActionName() const noexcept
 	{
 		return m_ActionName;
 	}
@@ -119,7 +119,7 @@ public:
 
 public:
 	// Rebind 'slot' to 'pResolver'
-	inline bool Bind(Slot slot, InputResolverPtr pResolver) noexcept
+	inline bool Bind(Slot slot, InputResolverPtr&& pResolver) noexcept
 	{
 		assert(slot < Slots);	
 		m_Resolvers[slot] = std::move(pResolver);
@@ -127,7 +127,7 @@ public:
 	}
 
 	// Bind the first available slot to 'pResolver'
-	bool Bind(FirstAvailableSlotTag, InputResolverPtr pResolver) noexcept
+	bool Bind(FirstAvailableSlotTag, InputResolverPtr&& pResolver) noexcept
 	{
 		for (Slot s = 0; s < Slots; ++s)
 		{

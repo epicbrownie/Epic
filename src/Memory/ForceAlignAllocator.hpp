@@ -99,69 +99,75 @@ public:
 
 public:
 	/* Returns a block of uninitialized memory (aligned to ForcedAlignment). */
-	Blk Allocate(const size_t sz) noexcept
+	Blk Allocate(size_t sz) noexcept
 	{
 		// Verify that the requested size is within our allowed bounds
 		if (sz == 0 || sz < MinAllocSize || sz > MaxAllocSize)
-			return{ nullptr, 0 };
+			return { nullptr, 0 };
 
 		// Allocate the block
-		Blk blk;
-
-		if (detail::CanAllocateAligned<A>::value)
+		if constexpr (detail::CanAllocateAligned<A>::value)
 		{
-			blk = detail::AllocateAlignedIf<A>::apply(m_Allocator, sz, Alignment);
-			if (blk) return blk;
+			if (auto blk = m_Allocator.AllocateAligned(sz, Alignment); blk)
+				return blk;
+			else
+				return { nullptr 0 };
 		}
 
-		// Allocating aligned failed. Force a normal allocation to be aligned.
-		const size_t blockSpace = sz + Alignment - 1;
-		const size_t newsz = blockSpace + sizeof(detail::ForceAlignSuffix);
-		
-		blk = detail::AllocateIf<A>::apply(m_Allocator, newsz);
-		if (!blk) return{ nullptr, 0 };
-		
-		// Calculate an aligned region
-		size_t space = blockSpace;
-		void* pAlignedRegion = blk.Ptr;
+		else if constexpr (detail::CanAllocate<A>::value)
+		{
+			// Allocating aligned failed. Force a normal allocation to be aligned.
+			const size_t blockSpace = sz + Alignment - 1;
+			const size_t newsz = blockSpace + sizeof(detail::ForceAlignSuffix);
 
-		pAlignedRegion = std::align(Alignment, sz, pAlignedRegion, space);
-		assert(pAlignedRegion != nullptr); // Alignment should never fail here
+			if (auto blk = m_Allocator.Allocate(newsz); blk)
+			{
+				// Calculate an aligned region
+				size_t space = blockSpace;
+				void* pAlignedRegion = blk.Ptr;
 
-		// Store alignment padding value in our suffix
-		detail::ForceAlignSuffix::Set(blk, blockSpace - space);
-		
-		return{ pAlignedRegion, space };
+				pAlignedRegion = std::align(Alignment, sz, pAlignedRegion, space);
+				assert(pAlignedRegion != nullptr); // Alignment should never fail here
+
+				// Store alignment padding value in our suffix
+				detail::ForceAlignSuffix::Set(blk, blockSpace - space);
+
+				return { pAlignedRegion, space };
+			}
+
+			return { nullptr, 0 };
+		}
+
+		else
+			return { nullptr, 0 };
 	}
 
 	/* Returns a block of uninitialized memory (aligned to alignment).
 	   ForcedAlignment will not be enforced. */
 	template<typename = std::enable_if_t<detail::CanAllocateAligned<A>::value>>
-	Blk AllocateAligned(const size_t sz, const size_t alignment = Alignment) noexcept
+	Blk AllocateAligned(size_t sz, size_t alignment = Alignment) noexcept
 	{
 		return m_Allocator.AllocateAligned(sz, alignment);
 	}
 
 	/* Attempts to reallocate the memory of blk to the new size sz (aligned to ForcedAlignment). */
-	bool Reallocate(Blk& blk, const size_t sz)
+	bool Reallocate(Blk& blk, size_t sz)
 	{
 		// If the block isn't valid, delegate to Allocate
 		if (!blk)
 		{
-			blk = detail::AllocateIf<Type>::apply(*this, sz);
-			return (bool)blk;
+			if constexpr (detail::CanAllocate<Type>::value)
+				return (bool)(blk = Allocate(sz));
 		}
 
 		// If the requested size is zero, delegate to Deallocate
 		if (sz == 0)
 		{
-			if (detail::CanDeallocate<Type>::value)
-			{
-				detail::DeallocateIf<Type>::apply(*this, blk);
-				blk = { nullptr, 0 };
-			}
-
-			return detail::CanDeallocate<Type>::value;
+			if constexpr (detail::CanDeallocate<Type>::value)
+				Deallocate(blk);
+			
+			blk = { nullptr, 0 };
+			return true;
 		}
 
 		// Verify that the requested size is within our allowed bounds
@@ -174,7 +180,7 @@ public:
 	/* Attempts to reallocate the memory of blk (aligned to alignment) to the new size sz. 
 	   ForcedAlignment will not be enforced. */
 	template<typename = std::enable_if_t<detail::CanReallocateAligned<A>::value>>
-	bool ReallocateAligned(Blk& blk, const size_t sz, const size_t alignment = Alignment)
+	bool ReallocateAligned(Blk& blk, size_t sz, size_t alignment = Alignment)
 	{
 		return m_Allocator.ReallocateAligned(blk, sz, alignment);
 	}
@@ -187,23 +193,28 @@ public:
 		// Allocate the block
 		Blk blk;
 
-		if (detail::CanAllocateAllAligned<A>::value)
+		if constexpr (detail::CanAllocateAllAligned<A>::value)
 		{
-			blk = detail::AllocateAllAlignedIf<A>::apply(m_Allocator, Alignment);
-			if (blk) return blk;
+			if (blk = m_Allocator.AllocateAllAligned(Alignment))
+				return blk;
 		}
 
 		// Allocating aligned failed. Force a normal allocation to be aligned.
-		blk = detail::AllocateAllIf<A>::apply(m_Allocator);
+		if constexpr (detail::CanAllocateAll<A>::value)
+			blk = m_Allocator.AllocateAll();
+
+		// Verify that a block has been allocated
 		if (!blk) return{ nullptr, 0 };
 
 		// Make sure this block is large enough to store our prefix and a byte
-		const size_t spaceReq = 1 + sizeof(detail::ForceAlignSuffix);
+		constexpr size_t spaceReq = 1 + sizeof(detail::ForceAlignSuffix);
 
 		if (blk.Size < spaceReq)
 		{
-			detail::DeallocateIf<A>::apply(m_Allocator, blk);
-			return{ nullptr,0 };
+			if constexpr (detail::CanDeallocate<A>::value)
+				m_Allocator.Deallocate(blk);
+
+			return{ nullptr, 0 };
 		}
 
 		// Attempt to align the block
@@ -212,7 +223,9 @@ public:
 
 		if (!std::align(Alignment, 1, pAlignedRegion, space))
 		{
-			detail::DeallocateIf<A>::apply(m_Allocator, blk);
+			if constexpr (detail::CanDeallocate<A>::value)
+				m_Allocator.Deallocate(blk);
+
 			return{ nullptr, 0 };
 		}
 		
@@ -226,7 +239,7 @@ public:
 	   of available memory (aligned to alignment).
 	   ForcedAlignment will not be enforced. */
 	template<typename = std::enable_if_t<detail::CanAllocateAllAligned<A>::value>>
-	Blk AllocateAllAligned(const size_t alignment = Alignment) noexcept
+	Blk AllocateAllAligned(size_t alignment = Alignment) noexcept
 	{
 		return m_Allocator.AllocateAllAligned(alignment);
 	}
@@ -239,10 +252,12 @@ public:
 
 		assert(Owns(blk) && "ForceAlignAllocator::Deallocate - Attempted to free a block that was not allocated by this allocator");
 
-		if (detail::CanAllocateAligned<A>::value)
+		if constexpr (detail::CanAllocateAligned<A>::value)
 		{
 			// AllocateAligned() was used
-			detail::DeallocateAlignedIf<A>::apply(m_Allocator, blk);
+			if constexpr (detail::CanDeallocateAligned<A>::value)
+				m_Allocator.DeallocateAligned(blk);
+
 			return;
 		}
 
@@ -251,12 +266,13 @@ public:
 
 		Blk actualblk = 
 		{
-			static_cast<void*>(reinterpret_cast<char*>(blk.Ptr) - alignPad),
+			static_cast<void*>(reinterpret_cast<unsigned char*>(blk.Ptr) - alignPad),
 			blk.Size + alignPad + sizeof(detail::ForceAlignSuffix)
 		};
 
 		// Free the block
-		detail::DeallocateIf<A>::apply(m_Allocator, actualblk);
+		if constexpr (detail::CanDeallocate<A>::value)
+			m_Allocator.Deallocate(actualblk);
 	}
 
 	/* Frees the memory for blk. This should only be called if AllocateAligned() 

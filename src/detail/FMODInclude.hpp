@@ -38,8 +38,7 @@ namespace Epic
 							  << file
 							  << "\" on line "
 							  << line
-							  << std::endl
-							  << "\tError "
+							  << "\n\tError "
 							  << errCode
 							  << " - "
 							  << FMOD_ErrorString(errCode)

@@ -78,7 +78,7 @@ protected:
 	}
 
 public:
-	const Epic::AudioParameter& operator [] (const Epic::StringHash& id) const
+	const Epic::AudioParameter& operator [] (Epic::StringHash id) const
 	{
 		auto it = m_Params.find(id);
 		if (it == std::end(m_Params))
@@ -87,7 +87,7 @@ public:
 		return *(*it).second;
 	}
 
-	Epic::AudioParameter& operator [] (const Epic::StringHash& id)
+	Epic::AudioParameter& operator [] (Epic::StringHash id)
 	{
 		auto it = m_Params.find(id);
 		if (it == std::end(m_Params))

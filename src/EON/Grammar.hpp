@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 //
-//            Copyright (c) 2016 Ronnie Brohn (EpicBrownie)      
+//            Copyright (c) 2017 Ronnie Brohn (EpicBrownie)      
 //
 //                Distributed under The MIT License (MIT).
 //             (See accompanying file License.txt or copy at 
@@ -31,68 +31,68 @@ namespace Epic::EON
 
 // Grammar
 template<class Iterator>
-class Epic::EON::Grammar : public boost::spirit::qi::grammar<Iterator, EON::Object(), boost::spirit::qi::standard_wide::space_type>
+class Epic::EON::Grammar : public boost::spirit::qi::grammar<Iterator, EONObject(), boost::spirit::qi::standard_wide::space_type>
 {
 public:
 	using Skipper = boost::spirit::qi::standard_wide::space_type;
 
 private:
-	static void IdentifierToName(EON::Name& name, const EON::String::ValueType& identifier)
+	static void IdentifierToName(EONName& name, const EONString::ValueType& identifier)
 	{
 		using CodeCVT = std::codecvt_utf8<wchar_t>;
-		using Converter = std::wstring_convert<CodeCVT, wchar_t, EON::String::ValueType::allocator_type, EON::Name::allocator_type>;
+		using Converter = std::wstring_convert<CodeCVT, wchar_t, EONString::ValueType::allocator_type, EONName::allocator_type>;
 
 		name = Converter().to_bytes(identifier);
 	}
 
-	static void AddVariantToArray(EON::Array& arr, const EON::Variant& var)
+	static void AddVariantToArray(EONArray& arr, const EONVariant& var)
 	{
 		arr.Members.emplace_back(var);
 	}
 
-	static void AddVariableToObject(EON::Object& obj, const EON::Variable& variable)
+	static void AddVariableToObject(EONObject& obj, const EONVariable& variable)
 	{
 		obj.Members.push_back(variable);
 	}
 
-	static void SetIntegerValue(EON::Integer& var, const EON::Integer::ValueType& value)
+	static void SetIntegerValue(EONInteger& var, const EONInteger::ValueType& value)
 	{
 		var.Value = value;
 	}
 
-	static void SetFloatValue(EON::Float& var, const EON::Float::ValueType& value)
+	static void SetFloatValue(EONFloat& var, const EONFloat::ValueType& value)
 	{
 		var.Value = value;
 	}
 
-	static void SetBooleanValue(EON::Boolean& var, const EON::Boolean::ValueType& value)
+	static void SetBooleanValue(EONBoolean& var, const EONBoolean::ValueType& value)
 	{
 		var.Value = value;
 	}
 
-	static void SetStringValue(EON::String& var, const EON::String::ValueType& value)
+	static void SetStringValue(EONString& var, const EONString::ValueType& value)
 	{
 		var.Value = value;
 	}
 
-	static void SetVariableName(EON::Variable& variable, const EON::Name& name)
+	static void SetVariableName(EONVariable& variable, const EONName& name)
 	{
 		variable.Name = name;
 		variable.NameHash = name;
 	}
 	
-	static void SetVariableValue(EON::Variable& variable, const EON::Variant& var)
+	static void SetVariableValue(EONVariable& variable, const EONVariant& var)
 	{
 		variable.Value = var;
 	}
 
-	static void SetVariableParent(EON::Variable& variable, const EON::Name& sourceName)
+	static void SetVariableParent(EONVariable& variable, const EONName& sourceName)
 	{
 		variable.Parent = sourceName;
 	}
 
 	template<typename T>
-	static void SetVariantData(EON::Variant& var, const T& value)
+	static void SetVariantData(EONVariant& var, const T& value)
 	{
 		var.Data = value;
 	}
@@ -322,8 +322,9 @@ public:
 		// EON document
 		r_Root = *(r_Comment | r_Variable[bind(Grammar::AddVariableToObject, _val, _1)] | r_Terminator);
 		
-		// Line terminator
-		r_Terminator = qi::lit(L';');
+		// Literals
+		r_Terminator = qi::lit(L',') | qi::lit(L';');
+		r_Separator = qi::lit(L',');
 
 		// Comment
 		r_Comment = r_LineComment | r_BlockComment;
@@ -366,12 +367,12 @@ public:
 		// Variants (value)
 		r_Variant = r_PrimitiveVariant | r_ArrayVariant | r_ObjectVariant;
 
-		r_PrimitiveVariant = r_String[bind(Grammar::SetVariantData<EON::String>, _val, _1)]
-						   | r_Float[bind(Grammar::SetVariantData<EON::Float>, _val, _1)]
-						   | r_Integer[bind(Grammar::SetVariantData<EON::Integer>, _val, _1)]
-						   | r_Boolean[bind(Grammar::SetVariantData<EON::Boolean>, _val, _1)];
-		r_ArrayVariant = r_Array[bind(Grammar::SetVariantData<EON::Array>, _val, _1)];
-		r_ObjectVariant = r_Object[bind(Grammar::SetVariantData<EON::Object>, _val, _1)];
+		r_PrimitiveVariant = r_String[bind(Grammar::SetVariantData<EONString>, _val, _1)]
+						   | r_Float[bind(Grammar::SetVariantData<EONFloat>, _val, _1)]
+						   | r_Integer[bind(Grammar::SetVariantData<EONInteger>, _val, _1)]
+						   | r_Boolean[bind(Grammar::SetVariantData<EONBoolean>, _val, _1)];
+		r_ArrayVariant = r_Array[bind(Grammar::SetVariantData<EONArray>, _val, _1)];
+		r_ObjectVariant = r_Object[bind(Grammar::SetVariantData<EONObject>, _val, _1)];
 		
 		// Variant types
 		r_Float = r_CustomFloat[bind(Grammar::SetFloatValue, _val, _1)] >> -(qi::lit(L'f') | qi::lit(L'F'));
@@ -382,11 +383,11 @@ public:
 		r_Array = qi::lit(L'[')
 			   >> *r_Comment
 			   >> -r_Variant[bind(Grammar::AddVariantToArray, _val, _1)]
-			   >> *(-qi::lit(L',') >> *r_Comment >> r_Variant[bind(Grammar::AddVariantToArray, _val, _1)])
+			   >> *(-r_Separator >> *r_Comment >> r_Variant[bind(Grammar::AddVariantToArray, _val, _1)])
 			   >> *r_Comment
 			   >> qi::lit(L']');
 		r_Object = qi::lit(L'{') 
-				>> *(r_Comment | r_Variable[bind(Grammar::AddVariableToObject, _val, _1)]) 
+				>> *(r_Comment | r_Variable[bind(Grammar::AddVariableToObject, _val, _1)])
 				>> qi::lit(L'}');
 
 		// String types
@@ -405,7 +406,7 @@ public:
 
 private:
 	// Primary rule results in an unnamed Object
-	boost::spirit::qi::rule<Iterator, EON::Object(), Skipper> r_Root;
+	boost::spirit::qi::rule<Iterator, EONObject(), Skipper> r_Root;
 
 	// Comments are denoted by "# ... eol", "// ... eol", or "/* ... */"
 	// All comments are ignored
@@ -414,28 +415,31 @@ private:
 	// Terminators denote the end of a statement
 	boost::spirit::qi::rule<Iterator> r_Terminator;
 
+	// Separators denote the separation of siblings
+	boost::spirit::qi::rule<Iterator> r_Separator;
+
 	// Variables are Name:Variant pairs
-	boost::spirit::qi::rule<Iterator, EON::Variable(), Skipper> r_Variable, r_PrimitiveVariable, r_ArrayVariable, r_ObjectVariable;
-	boost::spirit::qi::rule<Iterator, EON::Name(), Skipper> r_VariableName;
-	boost::spirit::qi::rule<Iterator, EON::String::ValueType(), Skipper> r_VariableIdentifier;
-	boost::spirit::qi::rule<Iterator, EON::Name(), Skipper> r_VariableInheritor;
-	boost::spirit::qi::rule<Iterator, EON::String::ValueType(), Skipper> r_VariablePath;
+	boost::spirit::qi::rule<Iterator, EONVariable(), Skipper> r_Variable, r_PrimitiveVariable, r_ArrayVariable, r_ObjectVariable;
+	boost::spirit::qi::rule<Iterator, EONName(), Skipper> r_VariableName;
+	boost::spirit::qi::rule<Iterator, EONString::ValueType(), Skipper> r_VariableIdentifier;
+	boost::spirit::qi::rule<Iterator, EONName(), Skipper> r_VariableInheritor;
+	boost::spirit::qi::rule<Iterator, EONString::ValueType(), Skipper> r_VariablePath;
 	boost::spirit::qi::rule<Iterator, Skipper> r_VariableSeparator;
-	boost::spirit::qi::rule<Iterator, EON::Variant(), Skipper> r_Variant, r_PrimitiveVariant, r_ArrayVariant, r_ObjectVariant;
+	boost::spirit::qi::rule<Iterator, EONVariant(), Skipper> r_Variant, r_PrimitiveVariant, r_ArrayVariant, r_ObjectVariant;
 
 	// Variant types
-	boost::spirit::qi::rule<Iterator, EON::Object(), Skipper> r_Object;
-	boost::spirit::qi::rule<Iterator, EON::Array(), Skipper> r_Array;
-	boost::spirit::qi::rule<Iterator, EON::Float()> r_Float;
-	boost::spirit::qi::rule<Iterator, EON::Integer()> r_Integer;
-	boost::spirit::qi::rule<Iterator, EON::Boolean()> r_Boolean;
-	boost::spirit::qi::rule<Iterator, EON::String()> r_String;
+	boost::spirit::qi::rule<Iterator, EONObject(), Skipper> r_Object;
+	boost::spirit::qi::rule<Iterator, EONArray(), Skipper> r_Array;
+	boost::spirit::qi::rule<Iterator, EONFloat()> r_Float;
+	boost::spirit::qi::rule<Iterator, EONInteger()> r_Integer;
+	boost::spirit::qi::rule<Iterator, EONBoolean()> r_Boolean;
+	boost::spirit::qi::rule<Iterator, EONString()> r_String;
 	
 	// Custom parser components
-	boost::spirit::qi::real_parser<EON::Integer::ValueType, IntegerPolicies<EON::Integer::ValueType>> r_CustomInteger;
-	boost::spirit::qi::real_parser<EON::Float::ValueType, FloatPolicies<EON::Float::ValueType>> r_CustomFloat;
-	boost::spirit::qi::bool_parser<EON::Boolean::ValueType, BoolPolicies<EON::Boolean::ValueType>> r_CustomBool;
-	boost::spirit::qi::rule<Iterator, EON::String::ValueType()> r_SingleQuotedString, r_DoubleQuotedString;
+	boost::spirit::qi::real_parser<EONInteger::ValueType, IntegerPolicies<EONInteger::ValueType>> r_CustomInteger;
+	boost::spirit::qi::real_parser<EONFloat::ValueType, FloatPolicies<EONFloat::ValueType>> r_CustomFloat;
+	boost::spirit::qi::bool_parser<EONBoolean::ValueType, BoolPolicies<EONBoolean::ValueType>> r_CustomBool;
+	boost::spirit::qi::rule<Iterator, EONString::ValueType()> r_SingleQuotedString, r_DoubleQuotedString;
 
 	boost::spirit::qi::symbols<const wchar_t, const wchar_t> s_EscapeChars;
 };

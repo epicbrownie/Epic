@@ -74,7 +74,7 @@ struct Epic::detail::Deleter
 		: m_Extent{ 0 }, m_pDeleteFn{ nullptr } 
 	{ }
 
-	Deleter(const size_t extent, TypeErasedDeleterFn pfnDelete) noexcept
+	Deleter(size_t extent, TypeErasedDeleterFn pfnDelete) noexcept
 		: m_Extent{ extent }, m_pDeleteFn{ pfnDelete } 
 	{ }
 
@@ -129,7 +129,7 @@ namespace Epic
 	template<class T, class A = Epic::DefaultAllocatorFor<T, Epic::eAllocatorFor::UniquePtr>> 
 		inline typename std::enable_if<std::is_array<T>::value && std::extent<T>::value == 0, 
 									   Epic::UniquePtr<T>>::type
-	MakeUnique(const size_t Count)
+	MakeUnique(size_t Count)
 	{
 		using Elem = std::remove_extent_t<T>;
 		using AllocatorType = Epic::STLAllocator<Elem, A>;

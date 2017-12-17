@@ -39,24 +39,24 @@ private:
 public:
 	Axis2DResolver() noexcept = delete;
 
-	Axis2DResolver(InputDataID axis0ID, InputDataID axis1ID, const Epic::StringHash& device)
+	Axis2DResolver(InputDataID axis0ID, InputDataID axis1ID, Epic::StringHash device)
 		: m_Data1ID{ axis0ID }, m_Data2ID{ axis1ID }, m_DeviceName{ device }
 	{ }
 
 	virtual ~Axis2DResolver() noexcept = default;
 
 public:
-	inline const InputDataID GetAxis0ID() const noexcept
+	inline InputDataID GetAxis0ID() const noexcept
 	{
 		return m_Data1ID;
 	}
 
-	inline const InputDataID GetAxis1ID() const noexcept
+	inline InputDataID GetAxis1ID() const noexcept
 	{
 		return m_Data2ID;
 	}
 
-	inline const Epic::StringHash& GetDeviceName() const noexcept
+	inline Epic::StringHash GetDeviceName() const noexcept
 	{
 		return m_DeviceName;
 	}

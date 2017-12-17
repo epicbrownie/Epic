@@ -5,9 +5,6 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="Utility\Ext">
-      <UniqueIdentifier>{47262769-ec3f-4ed9-94fe-df50e4f44dd9}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Utility\TMP">
       <UniqueIdentifier>{6eecafbc-75b0-49f6-a10b-275f6ed11691}</UniqueIdentifier>
     </Filter>
@@ -86,13 +83,13 @@
     <Filter Include="Core\Graphics\detail">
       <UniqueIdentifier>{594e0832-119f-4fb7-8062-90b668a77d4b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Import">
+      <UniqueIdentifier>{9290df80-b92f-42ae-ad1f-d80caf70e7e6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Singleton.hpp">
       <Filter>Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Ext\Erase.hpp">
-      <Filter>Utility\Ext</Filter>
     </ClInclude>
     <ClInclude Include="src\TMP\PowerOf2.hpp">
       <Filter>Utility\TMP</Filter>
@@ -141,9 +138,6 @@
     </ClInclude>
     <ClInclude Include="src\Memory\LinearSegregatorAllocator.hpp">
       <Filter>Memory\Allocators - Behavioral</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Memory\SegregatorBucket.hpp">
-      <Filter>Memory</Filter>
     </ClInclude>
     <ClInclude Include="src\TMP\List.hpp">
       <Filter>Utility\TMP</Filter>
@@ -254,33 +248,6 @@
     <ClInclude Include="src\AutoList.hpp">
       <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="src\EON\Types.hpp">
-      <Filter>Utility\EON</Filter>
-    </ClInclude>
-    <ClInclude Include="src\EON\Grammar.hpp">
-      <Filter>Utility\EON</Filter>
-    </ClInclude>
-    <ClInclude Include="src\EON\Bin.hpp">
-      <Filter>Utility\EON</Filter>
-    </ClInclude>
-    <ClInclude Include="src\EON\Convert.hpp">
-      <Filter>Utility\EON</Filter>
-    </ClInclude>
-    <ClInclude Include="src\EON\Bind.hpp">
-      <Filter>Utility\EON</Filter>
-    </ClInclude>
-    <ClInclude Include="src\EON\detail\Assign.hpp">
-      <Filter>Utility\EON\detail</Filter>
-    </ClInclude>
-    <ClInclude Include="src\EON\detail\Utility.hpp">
-      <Filter>Utility\EON\detail</Filter>
-    </ClInclude>
-    <ClInclude Include="src\EON\Selector.hpp">
-      <Filter>Utility\EON</Filter>
-    </ClInclude>
-    <ClInclude Include="src\EON\Extractor.hpp">
-      <Filter>Utility\EON</Filter>
-    </ClInclude>
     <ClInclude Include="src\TMP\Sequence.hpp">
       <Filter>Utility\TMP</Filter>
     </ClInclude>
@@ -289,12 +256,6 @@
     </ClInclude>
     <ClInclude Include="src\Math\Vector.hpp">
       <Filter>Math</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Math\VectorSwizzler.hpp">
-      <Filter>Math</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Math\detail\VectorSwizzlerFwd.hpp">
-      <Filter>Math\detail</Filter>
     </ClInclude>
     <ClInclude Include="src\Math\detail\VectorHelpers.hpp">
       <Filter>Math\detail</Filter>
@@ -342,9 +303,6 @@
       <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Event.hpp">
-      <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="src\OS.h">
       <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Specs.hpp">
@@ -470,9 +428,6 @@
     <ClInclude Include="src\Entity.hpp">
       <Filter>Core\Entity</Filter>
     </ClInclude>
-    <ClInclude Include="src\detail\EntityComponentContainer.hpp">
-      <Filter>Core\Entity\detail</Filter>
-    </ClInclude>
     <ClInclude Include="src\detail\EntityComponentView.hpp">
       <Filter>Core\Entity\detail</Filter>
     </ClInclude>
@@ -509,20 +464,98 @@
     <ClInclude Include="src\VertexAttribute.hpp">
       <Filter>Core\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="src\EntityComponent.hpp">
-      <Filter>Core\Entity</Filter>
-    </ClInclude>
     <ClInclude Include="src\detail\VertexSkin.hpp">
       <Filter>Core\Graphics\detail</Filter>
     </ClInclude>
     <ClInclude Include="src\EntitySystem.hpp">
       <Filter>Core\Entity</Filter>
     </ClInclude>
-    <ClInclude Include="src\EntityController.hpp">
+    <ClInclude Include="src\Math\detail\SwizzlerFwd.hpp">
+      <Filter>Math\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\Swizzler.hpp">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\SVector.hpp">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\detail\Assign.hpp">
+      <Filter>Utility\EON\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\detail\Traits.hpp">
+      <Filter>Utility\EON\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\detail\TypeConvert.hpp">
+      <Filter>Utility\EON\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\detail\Utility.hpp">
+      <Filter>Utility\EON\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\detail\Visitors.hpp">
+      <Filter>Utility\EON\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\Bin.hpp">
+      <Filter>Utility\EON</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\Convert.hpp">
+      <Filter>Utility\EON</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\Error.hpp">
+      <Filter>Utility\EON</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\Extractor.hpp">
+      <Filter>Utility\EON</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\Grammar.hpp">
+      <Filter>Utility\EON</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\Parser.hpp">
+      <Filter>Utility\EON</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\Selector.hpp">
+      <Filter>Utility\EON</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\Types.hpp">
+      <Filter>Utility\EON</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\detail\ParserFwd.hpp">
+      <Filter>Utility\EON\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\ResultPolicy.hpp">
+      <Filter>Utility\EON</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\Attribute.hpp">
+      <Filter>Utility\EON</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\Adapter.hpp">
+      <Filter>Utility\EON</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON.hpp">
+      <Filter>Import</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math.hpp">
+      <Filter>Import</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\detail\SVectorFwd.hpp">
+      <Filter>Math\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Memory\SegBucket.hpp">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="src\OS.hpp">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EON\detail\Tags.hpp">
+      <Filter>Utility\EON\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EntityComponentTraits.hpp">
       <Filter>Core\Entity</Filter>
     </ClInclude>
-    <ClInclude Include="src\Ext\Sort.hpp">
-      <Filter>Utility\Ext</Filter>
+    <ClInclude Include="src\detail\EntityComponent.hpp">
+      <Filter>Core\Entity\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Preprocessor.hpp">
+      <Filter>Utility</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

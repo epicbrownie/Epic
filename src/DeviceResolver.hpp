@@ -38,14 +38,14 @@ private:
 public:
 	DeviceResolver() noexcept = delete;
 
-	explicit DeviceResolver(const Epic::StringHash& device)
+	explicit DeviceResolver(Epic::StringHash device)
 		: m_DeviceName{ device }
 	{ }
 
 	virtual ~DeviceResolver() noexcept = default;
 
 public:
-	inline const Epic::StringHash& GetDeviceName() const noexcept
+	inline Epic::StringHash GetDeviceName() const noexcept
 	{
 		return m_DeviceName;
 	}

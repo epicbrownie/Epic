@@ -43,19 +43,19 @@ private:
 	Epic::StringHash m_DeviceName;
 
 public:
-	explicit InputDevice(const Epic::StringHash& deviceName) noexcept
+	explicit InputDevice(Epic::StringHash deviceName) noexcept
 		: m_DeviceName(deviceName)
 	{ }
 
 	virtual ~InputDevice() noexcept = default;
 
 public:
-	inline const Epic::StringHash& GetDeviceName() const noexcept
+	inline Epic::StringHash GetDeviceName() const noexcept
 	{
 		return m_DeviceName;
 	}
 
-	virtual const uint64_t GetDeviceAttribute(const Epic::StringHash& attrib) const noexcept = 0
+	virtual uint64_t GetDeviceAttribute(Epic::StringHash attrib) const noexcept = 0
 	{
 		if (attrib == Epic::Hash("Name"))
 			return static_cast<uint64_t>(m_DeviceName);

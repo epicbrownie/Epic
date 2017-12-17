@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 //
-//            Copyright (c) 2016 Ronnie Brohn (EpicBrownie)      
+//            Copyright (c) 2017 Ronnie Brohn (EpicBrownie)      
 //
 //                Distributed under The MIT License (MIT).
 //             (See accompanying file License.txt or copy at 
@@ -13,584 +13,471 @@
 
 #pragma once
 
-#include <Epic/EON/Convert.hpp>
-#include <Epic/EON/Types.hpp>
-#include <Epic/STL/Vector.hpp>
-#include <Epic/TMP/TypeTraits.hpp>
-#include <type_traits>
-#include <utility>
-#include <variant>
+#include <Epic/EON/Selector.hpp>
+#include <Epic/EON/Attribute.hpp>
+#include <Epic/EON/detail/ParserFwd.hpp>
+#include <Epic/EON/detail/Utility.hpp>
+#include <Epic/EON/detail/Tags.hpp>
+#include <Epic/EON/detail/Traits.hpp>
+#include <Epic/EON/detail/Visitors.hpp>
+#include <Epic/STL/UniquePtr.hpp>
 
 //////////////////////////////////////////////////////////////////////////////
 
 namespace Epic::EON::detail
 {
-	// Assign<DestType> - Assigns a value
-	//    Explicitly Convertible: Constructs a DestType from the source and assigns it; Returns true
-	//    Implicitly Convertible: Static casts the source into DestType and assigns it; Returns true
-	//    Non-Convertible: Delegates to Convert<SourceType, DestType>
-	template<class DestType>
-	struct Assign;
+	template<class T>
+	struct Assigner;
 
-	// SafeCast<From, To> - Cast a From value to a To value
-	template<class From, class To>
-	struct SafeCast;
+	template<class T, class U, class Converter>
+	struct MemberAssigner;
 
-	// Default<DestType, DefaultType> - Assigns a default value if DefaultType != void
-	template<class DestType, class DefaultType = DestType>
-	struct Default;
+	template<class T, class U, class E, class Converter>
+	struct MemberObjectAssigner;
 
-	// DefaultFail - Assigns no default value and returns failure
-	struct DefaultFail;
+	template<class T, class U, class Converter>
+	struct MemberAttributeAssigner;
 
-	// AssignIf<Function, SrcType, DestType> 
-	//		Attempts to invoke user-supplied assignment function for src and dest types.
-	//		The user-supplied assignment function should have the signature: bool (const SrcType&, DestType&)
-	//		If the user-supplied assignment function cannot accept the arguments, Assign is used.
-	template<class Function, class SrcType, class DestType,
-		bool Enabled = Epic::TMP::IsCallable<Function(const SrcType&, DestType&), bool>::value>
-	struct AssignIf;
+	template<class I, class T, class U, class IConverter, class UConverter>
+	struct MemberAdapter;
 
-	// NamedAssignIf<Function, SrcType, DestType>
-	//		Attempts to invoke user-supplied assignment function for src and dest types.
-	//		The user-supplied assignment function should have the signature: bool (const Epic::EON::Name&, const SrcType&, DestType&)
-	//		If the user-supplied assignment function cannot accept the arguments, Assign is used (dropping the Name argument).
-	template<class Function, class SrcType, class DestType,
-		bool Enabled = Epic::TMP::IsCallable<Function(const Epic::EON::Name&, const SrcType&, DestType&), bool>::value>
-	struct NamedAssignIf;
-
-	// DefaultIf<Function, DestType>
-	//		Attempts to invoke user-supplied default assignment function for dest type.
-	//		The user-supplied assignment function should have the signature: bool (DestType&)
-	//		If the user-supplied default assignment function cannot accept the argument, Default<DestType, void> is used instead.
-	template<class Function, class DestType, 
-		bool Enabled = Epic::TMP::IsCallable<Function(DestType&), bool>::value>
-	struct DefaultIf;
-
-	// ObjectAssignVisitor<DestType, Function>
-	//		Visits an EON::Variant variant to be used as the source type for an invoked assignment.
-	//		This visitor is invoked by AssignVisitor when an EON::Object type is being assigned.
-	template<class DestType, class Function>
-	struct ObjectAssignVisitor;
-
-	// ArrayAssignVisitor<DestType, Function>
-	//		Visits an EON::Variant variant to be used as the source type for an invoked assignment.
-	//		This visitor is invoked by AssignVisitor when an EON::Array type is being assigned.
-	template<class DestType, class Function>
-	struct ArrayAssignVisitor;
-
-	// AssignVisitor<DestType, Function>
-	//		Visits an EON::Variant variant to be used as the source type for an invoked assignment.
-	template<class DestType, class Function>
-	struct AssignVisitor;
+	template<class I, class T, class U, class E, class IConverter, class UConverter>
+	struct MemberObjectAdapter;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-template<class From, class To>
-struct Epic::EON::detail::SafeCast
+// Helpers
+namespace Epic::EON::detail
 {
-	static inline auto Apply(const From& from)
+	namespace
 	{
-		return std::move(static_cast<To>(from));
-	}
-};
-
-template<>
-struct Epic::EON::detail::SafeCast<Epic::EON::Float, bool>
-{
-	static inline auto Apply(const Epic::EON::Float& from)
-	{
-		return from.Value != 0;
-	}
-};
-
-template<>
-struct Epic::EON::detail::SafeCast<Epic::EON::Integer, bool>
-{
-	static inline auto Apply(const Epic::EON::Integer& from)
-	{
-		return from.Value != 0;
-	}
-};
-
-//////////////////////////////////////////////////////////////////////////////
-
-// Assign<DestType>
-template<class DestType>
-struct Epic::EON::detail::Assign
-{
-	struct DirectAssignTag { };
-	struct CastAssignTag { };
-	struct ConvertAssignTag { };
-	struct EnumAssignTag { };
-
-	template<class SrcType>
-	struct SelectTag
-	{
-		using Type =
-			std::conditional_t<
-				std::is_enum<DestType>::value && std::is_same<SrcType, Epic::EON::Integer>::value,
-				EnumAssignTag,
-				std::conditional_t<
-					!std::is_convertible<SrcType, DestType>::value,
-					ConvertAssignTag,
-					std::conditional_t<
-						Epic::TMP::IsExplicitlyConvertible<SrcType, DestType>::value,
-						DirectAssignTag,
-						CastAssignTag
-					>
-				>
-			>;
-	};
-
-	// Named assign dispatches to the best method of assignment (dropping Name argument)
-	template<class SrcType>
-	inline bool operator() (const Epic::EON::Name&, const SrcType& src, DestType& dest) const
-	{
-		return _Assign(src, dest, SelectTag<SrcType>::Type());
-	}
-
-	// Assign dispatches to the best method of assignment
-	template<class SrcType>
-	inline bool operator() (const SrcType& src, DestType& dest) const
-	{
-		return _Assign(src, dest, SelectTag<SrcType>::Type());
-	}
-
-private:
-	template<class SrcType>
-	inline bool _Assign(const SrcType& src, DestType& dest, DirectAssignTag) const
-	{
-		dest = DestType{ src };
-		return true;
-	}
-
-	template<class SrcType>
-	inline bool _Assign(const SrcType& src, DestType& dest, CastAssignTag) const
-	{
-		dest = SafeCast<SrcType, DestType>::Apply(src);
-		return true;
-	}
-
-	template<class SrcType>
-	inline bool _Assign(const SrcType& src, DestType& dest, ConvertAssignTag) const
-	{
-		return Epic::EON::Convert<SrcType, DestType>::Apply(src, dest);
-	}
-
-	inline bool _Assign(const Epic::EON::Integer& src, DestType& dest, EnumAssignTag) const
-	{
-		dest = static_cast<DestType>(static_cast<std::underlying_type<DestType>::type>(src.Value));
-		return true;
-	}
-};
-
-// Assign<Container<DestType, Alloc>>
-template<class DestType, class Alloc, template<class, class> class Container>
-struct Epic::EON::detail::Assign<Container<DestType, Alloc>>
-{
-	using ContainerType = Container<DestType, Alloc>;
-
-	struct DirectAssignTag { };
-	struct CastAssignTag { };
-	struct ConvertAssignTag { };
-	struct EnumAssignTag { };
-
-	template<class SrcType>
-	struct SelectTag
-	{
-		using Type =
-			std::conditional_t<
-				std::is_enum<DestType>::value && std::is_same<SrcType, Epic::EON::Integer>::value,
-				EnumAssignTag,
-				std::conditional_t<
-					!std::is_convertible<SrcType, DestType>::value,
-					ConvertAssignTag,
-					std::conditional_t<
-						Epic::TMP::IsExplicitlyConvertible<SrcType, DestType>::value,
-						DirectAssignTag,
-						CastAssignTag
-					>
-				>
-			>;
-	};
-
-	// Named assign dispatches to the best method of assignment (dropping Name argument)
-	template<class SrcType>
-	inline bool operator() (const Epic::EON::Name&, const SrcType& src, ContainerType& dest) const
-	{
-		return _Assign(src, dest, SelectTag<SrcType>::Type());
-	}
-
-	// Assign dispatches to the best method of assignment
-	template<class SrcType>
-	inline bool operator() (const SrcType& src, ContainerType& dest) const
-	{
-		return _Assign(src, dest, SelectTag<SrcType>::Type());
-	}
-
-private:
-	template<class SrcType>
-	inline bool _Assign(const SrcType& src, ContainerType& dest, DirectAssignTag) const
-	{
-		dest.emplace_back(src);
-		return true;
-	}
-
-	template<class SrcType>
-	inline bool _Assign(const SrcType& src, ContainerType& dest, CastAssignTag) const
-	{
-		dest.emplace_back(SafeCast<SrcType, DestType>::Apply(src));
-		return true;
-	}
-
-	template<class SrcType>
-	inline bool _Assign(const SrcType& src, ContainerType& dest, ConvertAssignTag) const
-	{
-		DestType value;
-		if (Epic::EON::Convert<SrcType, DestType>::Apply(src, value))
+		template<class T, class Converter>
+		bool DoConvertAssign(T& to, Selector selector, Converter fnConvert, const EONVariant& scope, const EONObject& globalScope)
 		{
-			dest.emplace_back(std::move(value));
+			auto vars = selector.Evaluate(&scope);
+			if (std::empty(vars))
+				return selector.IsOptional();
+
+			for (const auto& var : vars)
+				if (!std::visit(ConversionVisitor<T, Converter>(to, std::move(fnConvert), globalScope), var.second->Data))
+					return false;
+
 			return true;
 		}
 
-		return false;
+		template<class T, class E, class Converter>
+		bool DoScalarAssign(T& to, Selector selector, Parser<E> parser, Converter fnConvert, 
+							const EONVariant& scope, const EONObject& globalScope)
+		{
+			static_assert(std::is_default_constructible_v<E>, "Parsed type must be default constructible.");
+
+			auto vars = selector.Evaluate(&scope);
+			if (std::empty(vars))
+				return selector.IsOptional();
+
+			for (const auto& var : vars)
+			{
+				const auto pAsObject = std::get_if<EONObject>(&var.second->Data);
+				if (!pAsObject)
+					return false;
+
+				if constexpr (std::is_same_v<T, E>)
+				{
+					if (!parser.Assign(to, *var.second, globalScope))
+						return false;
+				}
+				else
+				{
+					E extracted;
+
+					if (!parser.Assign(extracted, *var.second, globalScope))
+						return false;
+
+					if (!ConvertIf(std::move(fnConvert), to, std::move(extracted)))
+						return false;
+				}
+			}
+
+			return true;
+		}
+
+		template<class T, class E, class Converter>
+		bool DoArrayAssign(T& to, Selector selector, Parser<E> parser, Converter fnConvert, 
+						   const EONVariant& scope, const EONObject& globalScope)
+		{
+			using Item = typename T::value_type;
+
+			static_assert(std::is_default_constructible_v<E>, "Parsed type must be default constructible.");
+			static_assert(std::is_default_constructible_v<Item>, "Array value type must be default constructible.");
+
+			auto vars = selector.Evaluate(&scope);
+			if (std::empty(vars))
+				return selector.IsOptional();
+
+			for (const auto& var : vars)
+			{
+				const auto pAsArray = std::get_if<EONArray>(&var.second->Data);
+				if (!pAsArray)
+					return false;
+
+				for (const auto& vm : pAsArray->Members)
+				{
+					const auto pAsObject = std::get_if<EONObject>(&vm.Data);
+					if (!pAsObject)
+						return false;
+
+					Item item;
+
+					if constexpr (std::is_same_v<Item, E>)
+					{
+						if (!parser.Assign(item, vm, globalScope))
+							return false;
+					}
+					else
+					{
+						E extracted;
+						if (!parser.Assign(extracted, vm, globalScope))
+							return false;
+
+						if (!ConvertIf(std::move(fnConvert), item, std::move(extracted)))
+							return false;
+					}
+
+					to.emplace_back(std::move(item));
+				}
+			}
+
+			return true;
+		}
+
+		template<class T, class E, class Converter>
+		bool DoSetAssign(T& to, Selector selector, Parser<E> parser, Converter fnConvert, 
+						 const EONVariant& scope, const EONObject& globalScope)
+		{
+			using Item = typename T::key_type;
+
+			static_assert(std::is_default_constructible_v<E>, "Parsed type must be default constructible.");
+			static_assert(std::is_default_constructible_v<Item>, "Set key type must be default constructible.");
+
+			auto vars = selector.Evaluate(&scope);
+			if (std::empty(vars))
+				return selector.IsOptional();
+
+			for (const auto& var : vars)
+			{
+				const auto pAsArray = std::get_if<EONArray>(&var.second->Data);
+				if (!pAsArray)
+					return false;
+
+				for (const auto& vm : pAsArray->Members)
+				{
+					const auto pAsObject = std::get_if<EONObject>(&vm.Data);
+					if (!pAsObject)
+						return false;
+
+					Item item;
+					
+					if constexpr (std::is_same_v<Item, E>)
+					{
+						if (!parser.Assign(item, vm, globalScope))
+							return false;
+					}
+					else
+					{
+						E extracted;
+						if (!parser.Assign(extracted, vm, globalScope))
+							return false;
+
+						if (!ConvertIf(std::move(fnConvert), item, std::move(extracted)))
+							return false;
+					}
+
+					to.emplace(std::move(item));
+				}
+			}
+
+			return true;
+		}
+
+		template<class T, class E, class Converter>
+		bool DoMapAssign(T& to, Selector selector, Parser<E> parser, Converter fnConvert, 
+						 const EONVariant& scope, const EONObject& globalScope)
+		{
+			using Key = typename T::key_type;
+			using Item = typename T::mapped_type;
+
+			static_assert(std::is_default_constructible_v<E>, "Parsed type must be default constructible.");
+			static_assert(std::is_default_constructible_v<Key>, "Map key type must be default constructible.");
+			static_assert(std::is_default_constructible_v<Item>, "Map mapped type must be default constructible.");
+
+			auto vars = selector.Evaluate(&scope);
+			if (std::empty(vars))
+				return selector.IsOptional();
+
+			for (const auto& var : vars)
+			{
+				const auto pAsObject = std::get_if<EONObject>(&var.second->Data);
+				if (!pAsObject)
+					return false;
+
+				for (const auto& vm : pAsObject->Members)
+				{
+					const auto pItemAsObject = std::get_if<EONObject>(&vm.Value.Data);
+					if (!pItemAsObject)
+						return false;
+
+					Key key;
+					
+					if (!ConvertIf(fnConvert, key, vm.Name))
+						return false;
+
+					Item item;
+					
+					if constexpr (std::is_same_v<Item, E>)
+					{
+						if (!parser.Assign(item, vm.Value, globalScope))
+							return false;
+					}
+					else
+					{
+						E extracted;
+						if (!parser.Assign(extracted, vm.Value, globalScope))
+							return false;
+
+						if (!ConvertIf(std::move(fnConvert), item, std::move(extracted)))
+							return false;
+					}
+
+					to.emplace(std::move(key), std::move(item));
+				}
+			}
+
+			return true;
+		}
 	}
-
-	inline bool _Assign(const Epic::EON::Integer& src, ContainerType& dest, EnumAssignTag) const
-	{
-		dest.emplace_back(static_cast<DestType>(static_cast<std::underlying_type<DestType>::type>(src.Value)));
-		return true;
-	}
-};
-
-// Assign<Container<KeyType, DestType, HashFn, CompareFn, Alloc>>
-// Implicit support for unordered maps
-template<class DestType, class KeyType, class HashFn, class CompareFn, class Alloc, template<class, class, class, class, class> class Container>
-struct Epic::EON::detail::Assign<Container<KeyType, DestType, HashFn, CompareFn, Alloc>>
-{
-	using ContainerType = Container<KeyType, DestType, HashFn, CompareFn, Alloc>;
-
-	// Named assign attempts to default construct a KeyType and DestType, delegate 
-	// their assignments to Assign<KeyType> and Assign<DestType>, and then adds them
-	// to the container.
-	template<class SrcType>
-	inline bool operator() (const Epic::EON::Name& name, const SrcType& src, ContainerType& dest) const
-	{
-		KeyType key;
-		DestType value;
-
-		if (Assign<KeyType>() (name, key) && Assign<DestType>() (src, value))
-			return (dest.emplace(std::make_pair(key, value)).first != std::end(dest));
-
-		return false;
-	}
-
-	// Unnamed assign always fails
-	template<class SrcType>
-	inline bool operator() (const SrcType&, ContainerType&) const
-	{
-		return false;
-	}
-};
-
-// Assign<Container<KeyType, DestType, CompareFn, Alloc>>
-// Implicit support for maps
-template<class DestType, class KeyType, class CompareFn, class Alloc, template<class, class, class, class> class Container>
-struct Epic::EON::detail::Assign<Container<KeyType, DestType, CompareFn, Alloc>>
-{
-	using ContainerType = Container<KeyType, DestType, CompareFn, Alloc>;
-
-	// Named assign attempts to default construct a KeyType and DestType, delegate 
-	// their assignments to Assign<KeyType> and Assign<DestType>, and then adds them
-	// to the container.
-	template<class SrcType>
-	inline bool operator() (const Epic::EON::Name& name, const SrcType& src, ContainerType& dest) const
-	{
-		KeyType key;
-		DestType value;
-
-		if (Assign<KeyType>() (name, key) && Assign<DestType>() (src, value))
-			return (dest.emplace(std::make_pair(key, value)).first != std::end(dest));
-
-		return false;
-	}
-
-	// Unnamed assign always fails
-	template<class SrcType>
-	inline bool operator() (const SrcType&, ContainerType&) const
-	{
-		return false;
-	}
-};
-
-// Assign<SmallVector<DestType, N, Alloc>>
-// Explicit support for Epic::SmallVector
-template<class DestType, size_t N, class Alloc>
-struct Epic::EON::detail::Assign<boost::container::small_vector<DestType, N, Alloc>>
-{
-	using ContainerType = boost::container::small_vector_base<DestType, Alloc>;
-
-	// Named assign delegates to Assign<Container>
-	template<class SrcType>
-	inline bool operator() (const Epic::EON::Name& name, const SrcType& src, ContainerType& dest) const
-	{
-		return Assign<ContainerType>() (name, src, dest);
-	}
-
-	// Assign delegates to Assign<Container>
-	template<class SrcType>
-	inline bool operator() (const SrcType& src, ContainerType& dest) const
-	{
-		return Assign<ContainerType>() (src, dest);
-	}
-};
-
-//////////////////////////////////////////////////////////////////////////////
-
-// Default<DestType, DefaultType>
-template<class DestType, class DefaultType>
-struct Epic::EON::detail::Default
-{
-	struct DirectAssignTag { };
-	struct CastAssignTag { };
-	struct ConvertAssignTag { };
-	
-	template<class SrcType>
-	struct SelectTag
-	{
-		using Type =
-			std::conditional_t<
-				!std::is_convertible<SrcType, DestType>::value,
-				ConvertAssignTag,
-				std::conditional_t<
-					Epic::TMP::IsExplicitlyConvertible<SrcType, DestType>::value,
-					DirectAssignTag,
-					CastAssignTag>
-			>;
-	};
-
-	const DefaultType _DefaultValue;
-
-	explicit Default(const DefaultType& defaultValue)
-		: _DefaultValue{ defaultValue } { }
-
-	// Default dispatches to the best method of assignment
-	inline bool operator() (DestType& dest) const
-	{
-		return _Assign(dest, SelectTag<DefaultType>::Type());
-	}
-
-private:
-	inline bool _Assign(DestType& dest, DirectAssignTag) const
-	{
-		dest = _DefaultValue;
-		return true;
-	}
-
-	inline bool _Assign(DestType& dest, CastAssignTag) const
-	{
-		dest = SafeCast<DefaultType, DestType>::Apply(_DefaultValue);
-		return true;
-	}
-
-	inline bool _Assign(DestType& dest, ConvertAssignTag) const
-	{
-		return Epic::EON::Convert<DefaultType, DestType>::Apply(_DefaultValue, dest);
-	}
-};
-
-// Default<DestType, void>
-template<class DestType>
-struct Epic::EON::detail::Default<DestType, void>
-{
-	inline bool operator() (DestType&) const
-	{
-		return true;
-	}
-};
-
-// DefaultFail
-struct Epic::EON::detail::DefaultFail
-{
-	template<class DestType>
-	inline bool operator() (DestType&) const
-	{
-		return false;
-	}
-};
-
-//////////////////////////////////////////////////////////////////////////////
-
-namespace Epic::EON::detail
-{
-	template<class DestType>
-	using NoDefault = Default<DestType, void>;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-// AssignIf<false>
-template<class Function, class SrcType, class DestType, bool Enabled>
-struct Epic::EON::detail::AssignIf
+// Assigner
+template<class T>
+struct Epic::EON::detail::Assigner
 {
-	static inline bool Apply(Function&, const SrcType& src, DestType& dest)
-	{
-		// User-supplied assignment function has no function with signature:
-		// bool (const SrcType& src, DestType& dest)
-		// Default to using Assign::operator()
+	virtual bool Assign(T& to, Selector selector, const EONVariant& scope, const EONObject& globalScope) const = 0;
+};
 
-		return Assign<DestType>() (src, dest);
+// MemberAssigner
+template<class T, class U, class Converter>
+struct Epic::EON::detail::MemberAssigner : public Assigner<T>
+{
+	U T::* pDest;
+	Converter fnConvert;
+	
+	MemberAssigner(U T::* dest, Converter convertFn)
+		: pDest(dest), fnConvert(std::move(convertFn)) { }
+
+	bool Assign(T& to, Selector selector, const EONVariant& scope, const EONObject& globalScope) const override
+	{
+		return DoConvertAssign(to.*pDest, std::move(selector), fnConvert, scope, globalScope);
 	}
 };
 
-// AssignIf<true>
-template<class Function, class SrcType, class DestType>
-struct Epic::EON::detail::AssignIf<Function, SrcType, DestType, true>
+// MemberObjectAssigner
+template<class T, class U, class E, class Converter>
+struct Epic::EON::detail::MemberObjectAssigner : public Assigner<T>
 {
-	static inline bool Apply(Function& assignFn, const SrcType& src, DestType& dest)
+public:
+	U T::* pDest;
+	Parser<E> Ext;
+	Converter fnConvert;
+
+private:
+	using Traits = EONTraits<U>;
+
+	using MakeAssignTag =
+		std::conditional_t<!Traits::IsContainer, ScalarTag,
+		std::conditional_t<Traits::IsVectorLike, ArrayTag,
+		std::conditional_t<Traits::IsSetLike, SetTag,
+		std::conditional_t<Traits::IsMapLike, MapTag,
+		FailTag>>>>;
+
+private:
+	bool DoAssign(T&, Selector, const EONVariant&, const EONObject&, FailTag) const
 	{
-		// User-supplied assignment function works for these arguments
-		return assignFn(src, dest);
+		return false;
+	}
+
+	bool DoAssign(T& to, Selector selector, const EONVariant& scope, 
+				  const EONObject& globalScope, ScalarTag) const
+	{
+		return DoScalarAssign(to.*pDest, std::move(selector), Ext, fnConvert, scope, globalScope);
+	}
+
+	bool DoAssign(T& to, Selector selector, const EONVariant& scope, const EONObject& globalScope, ArrayTag) const
+	{
+		return DoArrayAssign(to.*pDest, std::move(selector), Ext, fnConvert, scope, globalScope);
+	}
+
+	bool DoAssign(T& to, Selector selector, const EONVariant& scope, const EONObject& globalScope, SetTag) const
+	{
+		return DoSetAssign(to.*pDest, std::move(selector), Ext, fnConvert, scope, globalScope);
+	}
+
+	bool DoAssign(T& to, Selector selector, const EONVariant& scope, const EONObject& globalScope, MapTag) const
+	{
+		return DoMapAssign(to.*pDest, std::move(selector), Ext, fnConvert, scope, globalScope);
+	}
+
+public:
+	MemberObjectAssigner(U T::* dest, Parser<E> extractor, Converter convert)
+		: pDest(dest), Ext(std::move(extractor)), fnConvert(std::move(convert)) { }
+
+	bool Assign(T& to, Selector selector, const EONVariant& scope, const EONObject& globalScope) const override
+	{
+		return DoAssign(to, std::move(selector), scope, globalScope, MakeAssignTag());
 	}
 };
 
-// NamedAssignIf<false>
-template<class Function, class SrcType, class DestType, bool Enabled>
-struct Epic::EON::detail::NamedAssignIf
+// MemberAttributeAssigner
+template<class T, class U, class Converter>
+struct Epic::EON::detail::MemberAttributeAssigner : public Assigner<T>
 {
-	static inline bool Apply(Function& assignFn, const Epic::EON::Name&, const SrcType& src, DestType& dest)
+	U T::* pDest;
+	eAttribute Attribute;
+	Converter fnConvert;
+
+	MemberAttributeAssigner(eAttribute attr, U T::* dest, Converter convertFn)
+		: Attribute(attr), pDest(dest), fnConvert(std::move(convertFn)) { }
+
+	bool Assign(T& to, Selector, const EONVariant& scope, const EONObject& globalScope) const override
 	{
-		// User-supplied assignment function has no function with signature:
-		// bool (const EON::Name&, const SrcType& src, DestType& dest)
-		// Default will try dropping the Name argument
+		auto [isValid, pVariable, index] = GetAttributes(&scope, globalScope);
 
-		return AssignIf<Function, SrcType, DestType>::Apply(assignFn, src, dest);
-	}
-};
+		if (!isValid) return false;
 
-// NamedAssignIf<true>
-template<class Function, class SrcType, class DestType>
-struct Epic::EON::detail::NamedAssignIf<Function, SrcType, DestType, true>
-{
-	static inline bool Apply(Function& assignFn, const Epic::EON::Name& name, const SrcType& src, DestType& dest)
-	{
-		// User-supplied assignment function will work for these arguments
-		return assignFn(name, src, dest);
-	}
-};
-
-// DefaultIf<false>
-template<class Function, class DestType, bool Enabled>
-struct Epic::EON::detail::DefaultIf
-{
-	static inline bool Apply(Function&, DestType& dest)
-	{
-		// User-supplied default assignment function has no function with signature:
-		// bool (DestType& dest)
-		// Default to using Default<DestType, void>::operator()
-
-		return Default<DestType, void>() (dest);
-	}
-};
-
-// DefaultIf<true>
-template<class Function, class DestType>
-struct Epic::EON::detail::DefaultIf<Function, DestType, true>
-{
-	static inline bool Apply(Function& defaultFn, DestType& dest)
-	{
-		// User-supplied default assignment function will work with this argument
-		return defaultFn(dest);
-	}
-};
-
-//////////////////////////////////////////////////////////////////////////////
-
-template<class DestType, class Function>
-struct Epic::EON::detail::ObjectAssignVisitor
-{
-	// NOTE: These parameters are stored internally rather than by passing via
-	//		 std::bind to help prevent warning C4503
-
-	DestType& _Dest;
-	Function& _AssignFn;
-	const Epic::EON::Name& _Name;
-
-	ObjectAssignVisitor(DestType& dest, Function& assignFn, const Epic::EON::Name& name)
-		: _Dest{ dest }, _AssignFn{ assignFn }, _Name{ name } { }
-
-	template<class SrcType>
-	inline bool operator() (const SrcType& src) const
-	{
-		return NamedAssignIf<Function, SrcType, DestType>::Apply(_AssignFn, _Name, src, _Dest);
-	}
-};
-
-template<class DestType, class Function>
-struct Epic::EON::detail::ArrayAssignVisitor
-{
-	// NOTE: These parameters are stored internally rather than by passing via
-	//		 std::bind to help prevent warning C4503
-
-	DestType& _Dest;
-	Function& _AssignFn;
-
-	ArrayAssignVisitor(DestType& dest, Function& assignFn)
-		: _Dest{ dest }, _AssignFn{ assignFn } { }
-
-	template<class SrcType>
-	inline bool operator() (const SrcType& src) const
-	{
-		return AssignIf<Function, SrcType, DestType>::Apply(_AssignFn, src, _Dest);
-	}
-};
-
-template<class DestType, class Function>
-struct Epic::EON::detail::AssignVisitor
-{
-	// NOTE: These parameters are stored internally rather than by passing via
-	//		 std::bind to help prevent warning C4503
-
-	DestType& _Dest;
-	Function& _AssignFn;
-
-	AssignVisitor(DestType& dest, Function& assignFn)
-		: _Dest{ dest }, _AssignFn{ assignFn } { }
-
-	template<class SrcType>
-	inline bool operator() (const SrcType& src) const
-	{
-		return AssignIf<Function, SrcType, DestType>::Apply(_AssignFn, src, _Dest);
-	}
-
-	inline bool operator() (const Epic::EON::Object& src) const
-	{
-		bool assigned = src.Members.empty();
-
-		for (auto& var : src.Members)
+		switch (Attribute)
 		{
-			auto vsAssign = ObjectAssignVisitor<DestType, Function>{ _Dest, _AssignFn, var.Name };
-			if (std::visit(vsAssign, var.Value.Data))
-				assigned = true;
+			case eAttribute::Name:
+				if (!ConvertIf(fnConvert, to.*pDest, pVariable->Name))
+					return false;
+				break;
+
+			case eAttribute::Type:
+				if (!ConvertIf(fnConvert, to.*pDest, std::visit(TypeNameVisitor(), scope.Data)))
+					return false;
+				break;
+
+			case eAttribute::Index:
+				if (!ConvertIf(fnConvert, to.*pDest, std::move(index)))
+					return false;
+				break;
+
+			case eAttribute::Parent:
+				if (!ConvertIf(fnConvert, to.*pDest, pVariable->Parent))
+					return false;
+				break;
+
+			default:
+				return false;
 		}
 
-		return assigned;
+		return true;
+	}
+};
+
+// MemberAdapter
+template<class I, class T, class U, class IConverter, class UConverter>
+struct Epic::EON::detail::MemberAdapter : public Assigner<T>
+{
+	U T::* pDest;
+	IConverter fnConvertI;
+	UConverter fnConvertU;
+
+	MemberAdapter(U T::* dest, IConverter convertI, UConverter convertU)
+		: pDest(dest), fnConvertI(std::move(convertI)), fnConvertU(std::move(convertU))
+	{ }
+
+	bool Assign(T& to, Selector selector, const EONVariant& scope, const EONObject& globalScope) const override
+	{
+		// Create an intermediate type and assign to it
+		I intermediate;
+
+		if (!DoConvertAssign(intermediate, std::move(selector), fnConvertI, scope, globalScope))
+			return false;
+
+		// Convert the intermediate type to the target type
+		return ConvertIf(fnConvertU, to.*pDest, std::move(intermediate));
+	}
+};
+
+// MemberObjectAdapter
+template<class I, class T, class U, class E, class IConverter, class UConverter>
+struct Epic::EON::detail::MemberObjectAdapter : public Assigner<T>
+{
+public:
+	U T::* pDest;
+	Parser<E> Ext;
+	IConverter fnConvertI;
+	UConverter fnConvertU;
+
+private:
+	using Traits = EONTraits<I>;
+
+	struct FailTag { };
+	struct ScalarTag { };
+	struct ArrayTag { };
+	struct SetTag { };
+	struct MapTag { };
+
+	using MakeAssignTag =
+		std::conditional_t<!Traits::IsContainer, ScalarTag,
+		std::conditional_t<Traits::IsVectorLike, ArrayTag,
+		std::conditional_t<Traits::IsSetLike, SetTag,
+		std::conditional_t<Traits::IsMapLike, MapTag,
+		FailTag>>>>;
+
+private:
+	bool DoAssign(I&, Selector, const EONVariant&, const EONObject&, FailTag) const
+	{
+		return false;
 	}
 
-	inline bool operator() (const Epic::EON::Array& src) const
+	bool DoAssign(I& to, Selector selector, const EONVariant& scope, 
+				  const EONObject& globalScope, ScalarTag) const
 	{
-		bool assigned = src.Members.empty();
+		return DoScalarAssign(to, std::move(selector), Ext, fnConvertI, scope, globalScope);
+	}
 
-		// Assign each array value individually
-		for (auto& var : src.Members)
-		{
-			auto vsAssign = ArrayAssignVisitor<DestType, Function>{ _Dest, _AssignFn };
-			if (std::visit(vsAssign, var.Data))
-				assigned = true;
-		}
+	bool DoAssign(I& to, Selector selector, const EONVariant& scope, const EONObject& globalScope, ArrayTag) const
+	{
+		return DoArrayAssign(to, std::move(selector), Ext, fnConvertI, scope, globalScope);
+	}
 
-		return assigned;
+	bool DoAssign(I& to, Selector selector, const EONVariant& scope, const EONObject& globalScope, SetTag) const
+	{
+		return DoSetAssign(to, std::move(selector), Ext, fnConvertI, scope, globalScope);
+	}
+
+	bool DoAssign(I& to, Selector selector, const EONVariant& scope, const EONObject& globalScope, MapTag) const
+	{
+		return DoMapAssign(to, std::move(selector), Ext, fnConvertI, scope, globalScope);
+	}
+
+public:
+	MemberObjectAdapter(U T::* dest, Parser<E> extractor, IConverter convertI, UConverter convertU)
+		: pDest(dest), Ext(std::move(extractor)), fnConvertI(std::move(convertI)), fnConvertU(std::move(convertU))
+	{ }
+
+	bool Assign(T& to, Selector selector, const EONVariant& scope, const EONObject& globalScope) const override
+	{
+		// Create an intermediate type and assign to it
+		I intermediate;
+
+		if (!DoAssign(intermediate, std::move(selector), scope, globalScope, MakeAssignTag()))
+			return false;
+
+		// Convert the intermediate type to the target type
+		return ConvertIf(fnConvertU, to.*pDest, std::move(intermediate));
 	}
 };
