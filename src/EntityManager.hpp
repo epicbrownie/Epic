@@ -64,7 +64,6 @@ public:
 	~EntityManager() noexcept
 	{
 		DestroySystems();
-		DestroyControllers();
 		DestroyEntities();
 	}
 
