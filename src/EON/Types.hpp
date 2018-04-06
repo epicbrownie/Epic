@@ -35,7 +35,7 @@ namespace Epic::EON
 	using EONNameHash = Epic::StringHash;
 	using EONArrayMemberList = STLVector<EONVariant>;
 	using EONObjectMemberList = STLVector<EONVariable>;
-	using EONStringValueType = STLString<wchar_t>;
+	using EONStringValueType = STLString<char>;
 	using EONVariantValueType = std::variant<EONInteger, EONFloat, EONBoolean, EONString, EONArray, EONObject>;
 
 	enum class eEONVariantType : size_t
