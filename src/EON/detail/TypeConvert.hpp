@@ -18,8 +18,6 @@
 #include <Epic/Math/Vector.hpp>
 #include <Epic/Math/Quaternion.hpp>
 #include <Epic/TMP/TypeTraits.hpp>
-#include <cwchar>
-#include <codecvt>
 #include <clocale>
 #include <sstream>
 #include <string>
@@ -48,34 +46,6 @@ public:
 	bool operator() (T& to, const std::basic_string<C, Tr, A>& from)
 	{
 		std::basic_istringstream<C, Tr, A>(from) >> to;
-		return true;
-	}
-
-	// string -> wstring (via wstring_convert)
-	template<class AllocB, class AllocW>
-	bool operator() (std::basic_string<wchar_t, std::char_traits<wchar_t>, AllocW>& to,
-					 const std::basic_string<char, std::char_traits<char>, AllocB>& from)
-	{
-		// Convert a byte string to a wide string
-		using CodeCVT = std::codecvt_utf8<wchar_t>;
-		using Converter = std::wstring_convert<CodeCVT, wchar_t, AllocW, AllocB>;
-
-		to = Converter().from_bytes(from);
-
-		return true;
-	};
-
-	// wstring -> string (via wstring_convert)
-	template<class AllocB, class AllocW>
-	bool operator() (std::basic_string<char, std::char_traits<char>, AllocB>& to,
-					 const std::basic_string<wchar_t, std::char_traits<wchar_t>, AllocW>& from)
-	{
-		// Convert a wide string to a string
-		using CodeCVT = std::codecvt_utf8<wchar_t>;
-		using Converter = std::wstring_convert<CodeCVT, wchar_t, AllocW, AllocB>;
-
-		to = Converter().to_bytes(from);
-
 		return true;
 	}
 

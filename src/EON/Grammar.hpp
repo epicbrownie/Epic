@@ -31,18 +31,15 @@ namespace Epic::EON
 
 // Grammar
 template<class Iterator>
-class Epic::EON::Grammar : public boost::spirit::qi::grammar<Iterator, EONObject(), boost::spirit::qi::standard_wide::space_type>
+class Epic::EON::Grammar : public boost::spirit::qi::grammar<Iterator, EONObject(), boost::spirit::qi::standard::space_type>
 {
 public:
-	using Skipper = boost::spirit::qi::standard_wide::space_type;
+	using Skipper = boost::spirit::qi::standard::space_type;
 
 private:
 	static void IdentifierToName(EONName& name, const EONString::ValueType& identifier)
 	{
-		using CodeCVT = std::codecvt_utf8<wchar_t>;
-		using Converter = std::wstring_convert<CodeCVT, wchar_t, EONString::ValueType::allocator_type, EONName::allocator_type>;
-
-		name = Converter().to_bytes(identifier);
+		name = identifier;
 	}
 
 	static void AddVariantToArray(EONArray& arr, const EONVariant& var)
@@ -55,24 +52,16 @@ private:
 		obj.Members.push_back(variable);
 	}
 
-	static void SetIntegerValue(EONInteger& var, const EONInteger::ValueType& value)
+	template<class T>
+	static void SetVariantValue(T& var, const T::ValueType& value)
 	{
 		var.Value = value;
 	}
 
-	static void SetFloatValue(EONFloat& var, const EONFloat::ValueType& value)
+	template<typename T>
+	static void SetVariantData(EONVariant& var, const T& value)
 	{
-		var.Value = value;
-	}
-
-	static void SetBooleanValue(EONBoolean& var, const EONBoolean::ValueType& value)
-	{
-		var.Value = value;
-	}
-
-	static void SetStringValue(EONString& var, const EONString::ValueType& value)
-	{
-		var.Value = value;
+		var.Data = value;
 	}
 
 	static void SetVariableName(EONVariable& variable, const EONName& name)
@@ -89,12 +78,6 @@ private:
 	static void SetVariableParent(EONVariable& variable, const EONName& sourceName)
 	{
 		variable.Parent = sourceName;
-	}
-
-	template<typename T>
-	static void SetVariantData(EONVariant& var, const T& value)
-	{
-		var.Data = value;
 	}
 
 private:
@@ -131,7 +114,7 @@ private:
 				Iterator itMemento = first;
 				unsigned int group;
 
-				while (qi::parse(first, last, qi::lit(L',')) && qi::parse(first, last, GroupParser, group))
+				while (qi::parse(first, last, qi::lit(',')) && qi::parse(first, last, GroupParser, group))
 				{
 					result = (result * 1000) + group;
 					itMemento = first;
@@ -230,7 +213,7 @@ private:
 				Iterator itMemento = first;
 				unsigned int group;
 
-				while (qi::parse(first, last, qi::lit(L',')) && qi::parse(first, last, GroupParser, group))
+				while (qi::parse(first, last, qi::lit(',')) && qi::parse(first, last, GroupParser, group))
 				{
 					result = (result * 1000) + group;
 					itMemento = first;
@@ -280,9 +263,9 @@ private:
 		{
 			namespace qi = boost::spirit::qi;
 
-			if (qi::detail::string_parse(L"TRUE", L"true", first, last, qi::unused) ||
-				qi::detail::string_parse(L"YES", L"yes", first, last, qi::unused) ||
-				qi::detail::string_parse(L"ON", L"on", first, last, qi::unused))
+			if (qi::detail::string_parse("TRUE", "true", first, last, qi::unused) ||
+				qi::detail::string_parse("YES", "yes", first, last, qi::unused) ||
+				qi::detail::string_parse("ON", "on", first, last, qi::unused))
 			{
 				boost::spirit::traits::assign_to(true, attr);
 				return true;
@@ -296,9 +279,9 @@ private:
 		{
 			namespace qi = boost::spirit::qi;
 
-			if (qi::detail::string_parse(L"FALSE", L"false", first, last, qi::unused) ||
-				qi::detail::string_parse(L"NO", L"no", first, last, qi::unused) ||
-				qi::detail::string_parse(L"OFF", L"off", first, last, qi::unused))
+			if (qi::detail::string_parse("FALSE", "false", first, last, qi::unused) ||
+				qi::detail::string_parse("NO", "no", first, last, qi::unused) ||
+				qi::detail::string_parse("OFF", "off", first, last, qi::unused))
 			{
 				boost::spirit::traits::assign_to(false, attr);
 				return true;
@@ -316,20 +299,20 @@ public:
 		using boost::spirit::_1;
 
 		namespace qi = boost::spirit::qi;
-		namespace wide = qi::standard_wide;
+		namespace ctype = qi::standard;
 		namespace phx = boost::phoenix;
 		
 		// EON document
 		r_Root = *(r_Comment | r_Variable[bind(Grammar::AddVariableToObject, _val, _1)] | r_Terminator);
 		
 		// Literals
-		r_Terminator = qi::lit(L',') | qi::lit(L';');
-		r_Separator = qi::lit(L',');
+		r_Terminator = qi::lit(',') | qi::lit(';');
+		r_Separator = qi::lit(',');
 
 		// Comment
 		r_Comment = r_LineComment | r_BlockComment;
-		r_LineComment = (qi::lit(L'#') | qi::lit(L"//")) >> *(wide::char_ - qi::eol) >> -qi::eol;
-		r_BlockComment = qi::lit(L"/*") >> *(wide::char_ - qi::lit(L"*/")) >> -qi::lit(L"*/");
+		r_LineComment = (qi::lit('#') | qi::lit("//")) >> *(ctype::char_ - qi::eol) >> -qi::eol;
+		r_BlockComment = qi::lit("/*") >> *(ctype::char_ - qi::lit("*/")) >> -qi::lit("*/");
 
 		// Variable (key/value)
 		r_Variable = (r_PrimitiveVariable | r_ArrayVariable | r_ObjectVariable) >> *r_Terminator;
@@ -355,14 +338,14 @@ public:
 
 		// Variable name (key)
 		r_VariableName = r_VariableIdentifier[bind(Grammar::IdentifierToName, _val, _1)];
-		r_VariableIdentifier = qi::lexeme[wide::char_(L"A-Za-z_") >> *wide::char_(L"A-Za-z0-9_")];
+		r_VariableIdentifier = qi::lexeme[ctype::char_("A-Za-z_") >> *ctype::char_("A-Za-z0-9_")];
 
 		// Separator between key and value
-		r_VariableSeparator = qi::lit(L'=') | qi::lit(L':');
+		r_VariableSeparator = qi::lit('=') | qi::lit(':');
 
 		// Inheritance classifier
-		r_VariableInheritor = qi::lit(L'<') >> r_VariablePath[bind(Grammar::IdentifierToName, _val, _1)] >> qi::lit(L'>');
-		r_VariablePath = -r_VariableIdentifier >> *(wide::char_(L'.') >> r_VariableIdentifier);
+		r_VariableInheritor = qi::lit('<') >> r_VariablePath[bind(Grammar::IdentifierToName, _val, _1)] >> qi::lit('>');
+		r_VariablePath = -r_VariableIdentifier >> *(ctype::char_('.') >> r_VariableIdentifier);
 
 		// Variants (value)
 		r_Variant = r_PrimitiveVariant | r_ArrayVariant | r_ObjectVariant;
@@ -375,33 +358,33 @@ public:
 		r_ObjectVariant = r_Object[bind(Grammar::SetVariantData<EONObject>, _val, _1)];
 		
 		// Variant types
-		r_Float = r_CustomFloat[bind(Grammar::SetFloatValue, _val, _1)] >> -(qi::lit(L'f') | qi::lit(L'F'));
-		r_Integer = r_CustomInteger[bind(Grammar::SetIntegerValue, _val, _1)];
-		r_Boolean = qi::no_case[r_CustomBool][bind(Grammar::SetBooleanValue, _val, _1)];
-		r_String = r_DoubleQuotedString[bind(Grammar::SetStringValue, _val, _1)] 
-				 | r_SingleQuotedString[bind(Grammar::SetStringValue, _val, _1)];
-		r_Array = qi::lit(L'[')
+		r_Float = r_CustomFloat[bind(Grammar::SetVariantValue<EONFloat>, _val, _1)] >> -(qi::lit('f') | qi::lit('F'));
+		r_Integer = r_CustomInteger[bind(Grammar::SetVariantValue<EONInteger>, _val, _1)];
+		r_Boolean = qi::no_case[r_CustomBool][bind(Grammar::SetVariantValue<EONBoolean>, _val, _1)];
+		r_String = r_DoubleQuotedString[bind(Grammar::SetVariantValue<EONString>, _val, _1)] 
+				 | r_SingleQuotedString[bind(Grammar::SetVariantValue<EONString>, _val, _1)];
+		r_Array = qi::lit('[')
 			   >> *r_Comment
 			   >> -r_Variant[bind(Grammar::AddVariantToArray, _val, _1)]
 			   >> *(-r_Separator >> *r_Comment >> r_Variant[bind(Grammar::AddVariantToArray, _val, _1)])
 			   >> *r_Comment
-			   >> qi::lit(L']');
-		r_Object = qi::lit(L'{') 
+			   >> qi::lit(']');
+		r_Object = qi::lit('{') 
 				>> *(r_Comment | r_Variable[bind(Grammar::AddVariableToObject, _val, _1)])
-				>> qi::lit(L'}');
+				>> qi::lit('}');
 
 		// String types
-		r_DoubleQuotedString = qi::lit(L'"')
-			>> *(s_EscapeChars | (qi::lit(L"\\x") >> qi::hex) | (wide::char_ - qi::lit(L'"')))
-			>> qi::lit(L'"');
-		r_SingleQuotedString = qi::lit(L'\'')
-			>> *(s_EscapeChars | (qi::lit(L"\\x") >> qi::hex) | (wide::char_ - qi::lit(L'\'')))
-			>> qi::lit(L'\'');
+		r_DoubleQuotedString = qi::lit('"')
+			>> *(s_EscapeChars | (qi::lit("\\x") >> qi::hex) | (ctype::char_ - qi::lit('"')))
+			>> qi::lit('"');
+		r_SingleQuotedString = qi::lit('\'')
+			>> *(s_EscapeChars | (qi::lit("\\x") >> qi::hex) | (ctype::char_ - qi::lit('\'')))
+			>> qi::lit('\'');
 
 		// String escape characters
-		s_EscapeChars.add(L"\\a", L'\a')(L"\\b", L'\b')(L"\\f", L'\f')
-			(L"\\n", L'\n')(L"\\r", L'\r')(L"\\t", L'\t')(L"\\v", L'\v')
-			(L"\\\\", L'\\')(L"\\\'", L'\'')(L"\\\"", L'\"');
+		s_EscapeChars.add("\\a", '\a')("\\b", '\b')("\\f", '\f')
+			("\\n", '\n')("\\r", '\r')("\\t", '\t')("\\v", '\v')
+			("\\\\", '\\')("\\\'", '\'')("\\\"", '\"');
 	}
 
 private:
@@ -441,5 +424,5 @@ private:
 	boost::spirit::qi::bool_parser<EONBoolean::ValueType, BoolPolicies<EONBoolean::ValueType>> r_CustomBool;
 	boost::spirit::qi::rule<Iterator, EONString::ValueType()> r_SingleQuotedString, r_DoubleQuotedString;
 
-	boost::spirit::qi::symbols<const wchar_t, const wchar_t> s_EscapeChars;
+	boost::spirit::qi::symbols<const char, const char> s_EscapeChars;
 };
