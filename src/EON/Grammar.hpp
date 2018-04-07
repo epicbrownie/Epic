@@ -53,7 +53,7 @@ private:
 	}
 
 	template<class T>
-	static void SetVariantValue(T& var, const T::ValueType& value)
+	static void SetVariantValue(T& var, const typename T::ValueType& value)
 	{
 		var.Value = value;
 	}
