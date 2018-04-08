@@ -42,7 +42,7 @@ struct Epic::Math::XForm::detail::SineImpl
 	{
 		const T tprime = SinFilter(t);
 
-		return sin(tprime);
+		return std::sin(tprime);
 	}
 };
 

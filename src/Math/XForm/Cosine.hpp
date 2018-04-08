@@ -42,7 +42,7 @@ struct Epic::Math::XForm::detail::CosineImpl
 	{
 		const T tprime = CosFilter(t);
 
-		return cos(tprime);
+		return std::cos(tprime);
 	}
 };
 
