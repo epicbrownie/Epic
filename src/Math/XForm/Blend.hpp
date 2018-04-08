@@ -54,17 +54,17 @@ template<class F, class S>
 struct Epic::Math::XForm::Blend
 	: public detail::XFormImpl2<F, S, detail::BlendImpl> { };
 
-template<template<class, class...> class F, class S, class... FArgs>
+template<template<class...> class F, class S, class... FArgs>
 struct Epic::Math::XForm::Blend<F<FArgs...>, S>
 	: public detail::XFormImpl2<F<FArgs...>, S, detail::BlendImpl> { };
 
-template<class F, template<class, class...> class S, class... SArgs>
+template<class F, template<class...> class S, class... SArgs>
 struct Epic::Math::XForm::Blend<F, S<SArgs...>>
 	: public detail::XFormImpl2<F, S<SArgs...>, detail::BlendImpl>{};
 
 template<
-	template<class, class...> class F, 
-	template<class, class...> class S,
+	template<class...> class F, 
+	template<class...> class S,
 	class... FArgs, class... SArgs>
 struct Epic::Math::XForm::Blend<F<FArgs...>, S<SArgs...>>
 	: public detail::XFormImpl2<F<FArgs...>, S<SArgs...>, detail::BlendImpl> { };

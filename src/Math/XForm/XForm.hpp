@@ -31,6 +31,7 @@
 #include <Epic/Math/XForm/Blend.hpp>
 #include <Epic/Math/XForm/Clamp.hpp>
 #include <Epic/Math/XForm/Cosine.hpp>
+#include <Epic/Math/XForm/Custom.hpp>
 #include <Epic/Math/XForm/Divide.hpp>
 #include <Epic/Math/XForm/Fade.hpp>
 #include <Epic/Math/XForm/Flip.hpp>
