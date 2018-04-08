@@ -23,6 +23,9 @@
 // Chainable
 #include <Epic/Math/XForm/Angle.hpp>
 #include <Epic/Math/XForm/Arch.hpp>
+#include <Epic/Math/XForm/BackIn.hpp>
+#include <Epic/Math/XForm/BackOut.hpp>
+#include <Epic/Math/XForm/BackInOut.hpp>
 #include <Epic/Math/XForm/Bell.hpp>
 #include <Epic/Math/XForm/Bezier.hpp>
 #include <Epic/Math/XForm/Blend.hpp>
@@ -60,44 +63,3 @@ namespace Epic::Math::XForm
 	template<class Desc, class T = float>
 	using XForm = typename detail::ImplOf<Desc, T>::Type;
 }
-
-//		inline float BackIn(float t) const noexcept
-//		{
-//			const float s = 1.70158f;
-//			return t * t * ((s + 1.0f) * t - s);
-//		}
-//
-//		inline float BackOut(float t) const noexcept
-//		{
-//			const float s = 1.70158f;
-//			const float x = t - 1.0f;
-//			return x * x * ((s + 1.0f) * x + s) + 1.0f;
-//		}
-//
-//		inline float BackInOut(float t) const noexcept
-//		{
-//			return (t > 0.5f) ?
-//				0.5f + BackOut(t * 2.0f - 1.0f) * 0.5f :
-//				BackIn(t * 2.0f) * 0.5f;
-//		}
-//
-//		inline float BounceOut(float t) const noexcept
-//		{
-//			const float s = 7.5625f;
-//			const float t1 = 1.0f / 2.75f;
-//			const float t2 = 1.5f / 2.75f;
-//			const float t3 = 2.0f / 2.75f;
-//			const float m1 = 2.25f / 2.75f;
-//			const float m2 = 2.5f / 2.75f;
-//			const float m3 = 2.625f / 2.75f;
-//			const float b1 = 0.75f;
-//			const float b2 = 0.9375f;
-//			const float b3 = 0.984375f;
-//
-//			return (t < t1) ? s * t * t :
-//				(t < t2) ? s * (t - m1) * (t - m1) + b1 :
-//				(t < t3) ? s * (t - m2) * (t - m2) + b2 :
-//				s * (t - m3) * (t - m3) + b3;
-//		}
-//	}
-//}

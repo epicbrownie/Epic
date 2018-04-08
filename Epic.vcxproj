@@ -105,6 +105,9 @@
     <ClInclude Include="src\Math\detail\VectorHelpers.hpp" />
     <ClInclude Include="src\Math\detail\VectorFwd.hpp" />
     <ClInclude Include="src\Math\detail\SwizzlerFwd.hpp" />
+    <ClInclude Include="src\Math\XForm\BackInOut.hpp" />
+    <ClInclude Include="src\Math\XForm\BackIn.hpp" />
+    <ClInclude Include="src\Math\XForm\BackOut.hpp" />
     <ClInclude Include="src\Math\XForm\Bezier.hpp" />
     <ClInclude Include="src\Math\XForm\Clamp.hpp" />
     <ClInclude Include="src\Math\XForm\Custom.hpp" />

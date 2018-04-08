@@ -686,6 +686,15 @@
     <ClInclude Include="src\Math\XForm\Hesitate.hpp">
       <Filter>Math\XForm\Chainable</Filter>
     </ClInclude>
+    <ClInclude Include="src\Math\XForm\BackInOut.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\BackIn.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\BackOut.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Memory\NullAllocator.cpp">
