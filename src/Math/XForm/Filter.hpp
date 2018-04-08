@@ -13,32 +13,22 @@
 
 #pragma once
 
-#include <Epic/Math/XForm/detail/Implementation.hpp>
-#include <Epic/Math/XForm/Filter.hpp>
-#include <Epic/Math/XForm/XForms.hpp>
-
 //////////////////////////////////////////////////////////////////////////////
 
 namespace Epic::Math::XForm
 {
-	template<class Descriptor, class T = float>
-	using XForm = typename detail::ImplOf<Descriptor, T>::Type;
-
-	template<class Descriptor, class T = float>
-	class XFormFilter;
+	template<class T = float>
+	class IFilter;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-template<class Descriptor, class T>
-class Epic::Math::XForm::XFormFilter :
-	public IFilter<T>,
-	public XForm<Descriptor, T>
+template<class T>
+class Epic::Math::XForm::IFilter
 {
-	using XFormBase = XForm<Descriptor, T>;
+public:
+	virtual ~IFilter() { };
 
-	inline T Apply(T t) const noexcept override
-	{
-		return XFormBase::operator() (t);
-	}
+public:
+	virtual T Apply(T) const noexcept = 0;
 };

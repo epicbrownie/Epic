@@ -114,6 +114,7 @@
     <ClInclude Include="src\Math\XForm\detail\BezierHelpers.hpp" />
     <ClInclude Include="src\Math\XForm\Divide.hpp" />
     <ClInclude Include="src\Math\XForm\Double.hpp" />
+    <ClInclude Include="src\Math\XForm\Filter.hpp" />
     <ClInclude Include="src\Math\XForm\Half.hpp" />
     <ClInclude Include="src\Math\XForm\Hesitate.hpp" />
     <ClInclude Include="src\Math\XForm\Map.hpp" />
@@ -151,6 +152,7 @@
     <ClInclude Include="src\Math\SVector.hpp" />
     <ClInclude Include="src\Math\Vector.hpp" />
     <ClInclude Include="src\Math\Swizzler.hpp" />
+    <ClInclude Include="src\Math\XForm\XForms.hpp" />
     <ClInclude Include="src\Memory\AffixAllocator.hpp" />
     <ClInclude Include="src\Memory\AlignedMallocator.hpp" />
     <ClInclude Include="src\Memory\AlignedStackAllocator.hpp" />

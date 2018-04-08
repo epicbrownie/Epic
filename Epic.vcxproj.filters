@@ -695,6 +695,12 @@
     <ClInclude Include="src\Math\XForm\BackOut.hpp">
       <Filter>Math\XForm\Chainable</Filter>
     </ClInclude>
+    <ClInclude Include="src\Math\XForm\Filter.hpp">
+      <Filter>Math\XForm</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\XForms.hpp">
+      <Filter>Math\XForm</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Memory\NullAllocator.cpp">
