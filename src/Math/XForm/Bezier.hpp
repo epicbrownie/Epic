@@ -17,7 +17,6 @@
 #include <Epic/Math/XForm/detail/BezierHelpers.hpp>
 #include <Epic/Math/XForm/Linear.hpp>
 #include <array>
-#include <iostream>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -82,6 +81,23 @@ public:
 		return EvalTerms<0>(tprime, Ts, TIs);
 	}
 };
+
+template<class T, class Inner>
+class Epic::Math::XForm::detail::BezierImpl<T, 1, Inner>
+{
+public:
+	Inner BezierFilter;
+
+public:
+	inline T operator() (T t) const noexcept
+	{
+		return BezierFilter(t);
+	}
+};
+
+template<class T, class Inner>
+class Epic::Math::XForm::detail::BezierImpl<T, 0, Inner>
+	: public Epic::Math::XForm::detail::BezierImpl<T, 1, Inner> { };
 
 //////////////////////////////////////////////////////////////////////////////
 

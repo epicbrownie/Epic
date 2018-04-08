@@ -31,6 +31,7 @@
 #include <Epic/Math/XForm/Divide.hpp>
 #include <Epic/Math/XForm/Fade.hpp>
 #include <Epic/Math/XForm/Flip.hpp>
+#include <Epic/Math/XForm/Hesitate.hpp>
 #include <Epic/Math/XForm/Magnify.hpp>
 #include <Epic/Math/XForm/Map.hpp>
 #include <Epic/Math/XForm/Minify.hpp>

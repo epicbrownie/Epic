@@ -112,6 +112,7 @@
     <ClInclude Include="src\Math\XForm\Divide.hpp" />
     <ClInclude Include="src\Math\XForm\Double.hpp" />
     <ClInclude Include="src\Math\XForm\Half.hpp" />
+    <ClInclude Include="src\Math\XForm\Hesitate.hpp" />
     <ClInclude Include="src\Math\XForm\Map.hpp" />
     <ClInclude Include="src\Math\XForm\Mirror.hpp" />
     <ClInclude Include="src\Math\XForm\MirrorBottom.hpp" />
