@@ -15,6 +15,8 @@
 
 // Terminal
 #include <Epic/Math/XForm/Constant.hpp>
+#include <Epic/Math/XForm/Double.hpp>
+#include <Epic/Math/XForm/Half.hpp>
 #include <Epic/Math/XForm/Inverse.hpp>
 #include <Epic/Math/XForm/Linear.hpp>
 
@@ -22,9 +24,11 @@
 #include <Epic/Math/XForm/Angle.hpp>
 #include <Epic/Math/XForm/Arch.hpp>
 #include <Epic/Math/XForm/Bell.hpp>
+#include <Epic/Math/XForm/Bezier.hpp>
 #include <Epic/Math/XForm/Blend.hpp>
 #include <Epic/Math/XForm/Clamp.hpp>
 #include <Epic/Math/XForm/Cosine.hpp>
+#include <Epic/Math/XForm/Divide.hpp>
 #include <Epic/Math/XForm/Fade.hpp>
 #include <Epic/Math/XForm/Flip.hpp>
 #include <Epic/Math/XForm/Magnify.hpp>
@@ -32,15 +36,19 @@
 #include <Epic/Math/XForm/Minify.hpp>
 #include <Epic/Math/XForm/MirrorBottom.hpp>
 #include <Epic/Math/XForm/MirrorTop.hpp>
+#include <Epic/Math/XForm/Multiply.hpp>
 #include <Epic/Math/XForm/Modulate.hpp>
 #include <Epic/Math/XForm/Scale.hpp>
 #include <Epic/Math/XForm/Sine.hpp>
 #include <Epic/Math/XForm/SmoothStart.hpp>
 #include <Epic/Math/XForm/SmoothStop.hpp>
+#include <Epic/Math/XForm/SmoothStartSine.hpp>
+#include <Epic/Math/XForm/SmoothStopSine.hpp>
 
 // Composite
 #include <Epic/Math/XForm/Mirror.hpp>
 #include <Epic/Math/XForm/Smooth.hpp>
+#include <Epic/Math/XForm/SmoothSine.hpp>
 #include <Epic/Math/XForm/SmoothStartArch.hpp>
 #include <Epic/Math/XForm/SmoothStopArch.hpp>
 
@@ -52,60 +60,6 @@ namespace Epic::Math::XForm
 	using XForm = typename detail::ImplOf<Desc, T>::Type;
 }
 
-//		inline float SineIn(float t) const noexcept
-//		{
-//			return 1.0f - std::cos(t * Epic::HalfPi<float>);
-//		}
-//
-//		inline float SineOut(float t) const noexcept
-//		{
-//			return std::sin(t * Epic::HalfPi<float>);
-//		}
-//
-//		inline float SineInOut(float t) const noexcept
-//		{
-//			return (1.0f + std::sin(t * Epic::Pi<float> -Epic::HalfPi<float>)) * 0.5f;
-//		}
-//
-//
-//		inline float ExpoIn(float t) const noexcept
-//		{
-//			return (t == 0.0f) ? 0.0f : std::pow(2.0f, 10.0f * t - 10.0f);
-//		}
-//
-//		inline float ExpoOut(float t) const noexcept
-//		{
-//			return (t == 1.0f) ? 1.0f : 1.0f - std::pow(2.0f, -10.0f * t);
-//		}
-//
-//		inline float ExpoInOut(float t) const noexcept
-//		{
-//			return (t == 0.0f) ? 0.0f :
-//				(t == 1.0f) ? 1.0f :
-//				(t > 0.5f) ? 1.0f - (0.5f * std::pow(2.0f, 10.0f + t * -20.0f)) :
-//				0.5f * std::pow(2.0f, 20.0f * t - 10.0f);
-//		}
-//
-//
-//		inline float CircularIn(float t) const noexcept
-//		{
-//			return 1.0f - std::sqrt(1.0f - t * t);
-//		}
-//
-//		inline float CircularOut(float t) const noexcept
-//		{
-//			const float x = t - 1.0f;
-//			return std::sqrt(1.0f - x * x);
-//		}
-//
-//		inline float CircularInOut(float t) const noexcept
-//		{
-//			return (t > 0.5f) ?
-//				0.5f + (std::sqrt(-3.0f - 4.0f * t * (t - 2.0f)) * 0.5f) :
-//				0.5f - (std::sqrt(1.0f - 4.0f * t * t) * 0.5f);
-//		}
-//
-//
 //		inline float BackIn(float t) const noexcept
 //		{
 //			const float s = 1.70158f;

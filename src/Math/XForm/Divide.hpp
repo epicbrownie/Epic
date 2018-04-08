@@ -15,7 +15,6 @@
 
 #include <Epic/Math/XForm/detail/Implementation.hpp>
 #include <Epic/Math/XForm/Linear.hpp>
-#include <Epic/Math/Constants.hpp>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -23,44 +22,55 @@ namespace Epic::Math::XForm
 {
 	namespace detail
 	{
-		template<class T, class Inner>
-		struct AngleImpl;
+		template<class T, size_t N, class Inner>
+		struct DivideImpl;
 	}
 
-	template<class Inner = Linear>
-	struct Angle;
+	template<size_t N, class Inner = Linear>
+	struct Divide;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-template<class T, class Inner>
-struct Epic::Math::XForm::detail::AngleImpl
+template<class T, size_t N, class Inner>
+struct Epic::Math::XForm::detail::DivideImpl
 {
-	Inner AngleFilter;
+	Inner DivideFilter;
 
 	// NOTE: Equivalent to Scale<Inner>
 	constexpr T operator() (T t) const noexcept
 	{
-		return Pi<T> * AngleFilter(t);
+		const T tprime = DivideFilter(t);
+
+		return tprime / T(N);
 	}
 };
 
-template<class T>
-struct Epic::Math::XForm::detail::AngleImpl<T, Epic::Math::XForm::detail::LinearImpl<T>>
+template<class T, size_t N>
+struct Epic::Math::XForm::detail::DivideImpl<T, N, Epic::Math::XForm::detail::LinearImpl<T>>
 {
 	// NOTE: Equivalent to Scale<Linear>
 	constexpr T operator() (T t) const noexcept
 	{
-		return Pi<T> * t;
+		return t / T(N);
 	}
 };
 
 //////////////////////////////////////////////////////////////////////////////
 
-template<class Inner>
-struct Epic::Math::XForm::Angle
-	: public detail::XFormImpl1<Inner, detail::AngleImpl> { };
+template<size_t N, class Inner>
+struct Epic::Math::XForm::Divide
+	: public detail::XFormNImpl1<N, Inner, detail::DivideImpl> { };
 
-template<template<class...> class Inner, class... InnerArgs>
-struct Epic::Math::XForm::Angle<Inner<InnerArgs...>>
-	: public detail::XFormImpl1<Inner<InnerArgs...>, detail::AngleImpl> { };
+template<size_t N, template<class...> class Inner, class... InnerArgs>
+struct Epic::Math::XForm::Divide<N, Inner<InnerArgs...>>
+	: public detail::XFormNImpl1<N, Inner<InnerArgs...>, detail::DivideImpl> { };
+
+//////////////////////////////////////////////////////////////////////////////
+
+namespace Epic::Math::XForm
+{
+	using Divide2 = Divide<2>;
+	using Divide3 = Divide<3>;
+	using Divide4 = Divide<4>;
+}

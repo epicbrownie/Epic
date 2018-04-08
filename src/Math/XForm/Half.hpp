@@ -14,8 +14,6 @@
 #pragma once
 
 #include <Epic/Math/XForm/detail/Implementation.hpp>
-#include <Epic/Math/XForm/Linear.hpp>
-#include <Epic/Math/Constants.hpp>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -23,44 +21,26 @@ namespace Epic::Math::XForm
 {
 	namespace detail
 	{
-		template<class T, class Inner>
-		struct AngleImpl;
+		template<class T>
+		struct HalfImpl;
 	}
 
-	template<class Inner = Linear>
-	struct Angle;
+	struct Half;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-template<class T, class Inner>
-struct Epic::Math::XForm::detail::AngleImpl
-{
-	Inner AngleFilter;
-
-	// NOTE: Equivalent to Scale<Inner>
-	constexpr T operator() (T t) const noexcept
-	{
-		return Pi<T> * AngleFilter(t);
-	}
-};
-
 template<class T>
-struct Epic::Math::XForm::detail::AngleImpl<T, Epic::Math::XForm::detail::LinearImpl<T>>
+struct Epic::Math::XForm::detail::HalfImpl
 {
-	// NOTE: Equivalent to Scale<Linear>
+	// NOTE: Equivalent to Divide<2, Linear>
 	constexpr T operator() (T t) const noexcept
 	{
-		return Pi<T> * t;
+		return T(0.5) * t;
 	}
 };
 
 //////////////////////////////////////////////////////////////////////////////
 
-template<class Inner>
-struct Epic::Math::XForm::Angle
-	: public detail::XFormImpl1<Inner, detail::AngleImpl> { };
-
-template<template<class...> class Inner, class... InnerArgs>
-struct Epic::Math::XForm::Angle<Inner<InnerArgs...>>
-	: public detail::XFormImpl1<Inner<InnerArgs...>, detail::AngleImpl> { };
+struct Epic::Math::XForm::Half
+	: public detail::XFormImpl0<detail::HalfImpl> { };

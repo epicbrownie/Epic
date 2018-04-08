@@ -15,7 +15,6 @@
 
 #include <Epic/Math/XForm/detail/Implementation.hpp>
 #include <Epic/Math/XForm/Linear.hpp>
-#include <Epic/Math/Constants.hpp>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -23,44 +22,55 @@ namespace Epic::Math::XForm
 {
 	namespace detail
 	{
-		template<class T, class Inner>
-		struct AngleImpl;
+		template<class T, size_t N, class Inner>
+		struct MultiplyImpl;
 	}
 
-	template<class Inner = Linear>
-	struct Angle;
+	template<size_t N, class Inner = Linear>
+	struct Multiply;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-template<class T, class Inner>
-struct Epic::Math::XForm::detail::AngleImpl
+template<class T, size_t N, class Inner>
+struct Epic::Math::XForm::detail::MultiplyImpl
 {
-	Inner AngleFilter;
+	Inner MultiplyFilter;
 
 	// NOTE: Equivalent to Scale<Inner>
 	constexpr T operator() (T t) const noexcept
 	{
-		return Pi<T> * AngleFilter(t);
+		const T tprime = MultiplyFilter(t);
+
+		return T(N) * tprime;
 	}
 };
 
-template<class T>
-struct Epic::Math::XForm::detail::AngleImpl<T, Epic::Math::XForm::detail::LinearImpl<T>>
+template<class T, size_t N>
+struct Epic::Math::XForm::detail::MultiplyImpl<T, N, Epic::Math::XForm::detail::LinearImpl<T>>
 {
 	// NOTE: Equivalent to Scale<Linear>
 	constexpr T operator() (T t) const noexcept
 	{
-		return Pi<T> * t;
+		return T(N) * t;
 	}
 };
 
 //////////////////////////////////////////////////////////////////////////////
 
-template<class Inner>
-struct Epic::Math::XForm::Angle
-	: public detail::XFormImpl1<Inner, detail::AngleImpl> { };
+template<size_t N, class Inner>
+struct Epic::Math::XForm::Multiply
+	: public detail::XFormNImpl1<N, Inner, detail::MultiplyImpl> { };
 
-template<template<class...> class Inner, class... InnerArgs>
-struct Epic::Math::XForm::Angle<Inner<InnerArgs...>>
-	: public detail::XFormImpl1<Inner<InnerArgs...>, detail::AngleImpl> { };
+template<size_t N, template<class...> class Inner, class... InnerArgs>
+struct Epic::Math::XForm::Multiply<N, Inner<InnerArgs...>>
+	: public detail::XFormNImpl1<N, Inner<InnerArgs...>, detail::MultiplyImpl> { };
+
+//////////////////////////////////////////////////////////////////////////////
+
+namespace Epic::Math::XForm
+{
+	using Multiply2 = Multiply<2>;
+	using Multiply3 = Multiply<3>;
+	using Multiply4 = Multiply<4>;
+}

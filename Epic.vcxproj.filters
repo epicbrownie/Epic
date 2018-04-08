@@ -653,6 +653,36 @@
     <ClInclude Include="src\Math\XForm\Mirror.hpp">
       <Filter>Math\XForm\Composite</Filter>
     </ClInclude>
+    <ClInclude Include="src\Math\XForm\Half.hpp">
+      <Filter>Math\XForm\Terminal</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Double.hpp">
+      <Filter>Math\XForm\Terminal</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Divide.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Multiply.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\SmoothStartSine.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\SmoothStopSine.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\SmoothSine.hpp">
+      <Filter>Math\XForm\Composite</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Custom.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Bezier.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\detail\BezierHelpers.hpp">
+      <Filter>Math\XForm\detail</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Memory\NullAllocator.cpp">
