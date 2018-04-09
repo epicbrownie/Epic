@@ -109,12 +109,15 @@
     <ClInclude Include="src\Math\XForm\BackIn.hpp" />
     <ClInclude Include="src\Math\XForm\BackOut.hpp" />
     <ClInclude Include="src\Math\XForm\Bezier.hpp" />
+    <ClInclude Include="src\Math\XForm\Bias.hpp" />
     <ClInclude Include="src\Math\XForm\Clamp.hpp" />
     <ClInclude Include="src\Math\XForm\Custom.hpp" />
     <ClInclude Include="src\Math\XForm\detail\BezierHelpers.hpp" />
     <ClInclude Include="src\Math\XForm\Divide.hpp" />
     <ClInclude Include="src\Math\XForm\Double.hpp" />
     <ClInclude Include="src\Math\XForm\Filter.hpp" />
+    <ClInclude Include="src\Math\XForm\Gain.hpp" />
+    <ClInclude Include="src\Math\XForm\Gamma.hpp" />
     <ClInclude Include="src\Math\XForm\Half.hpp" />
     <ClInclude Include="src\Math\XForm\Hesitate.hpp" />
     <ClInclude Include="src\Math\XForm\Map.hpp" />
@@ -142,6 +145,7 @@
     <ClInclude Include="src\Math\XForm\SmoothStart.hpp" />
     <ClInclude Include="src\Math\XForm\SmoothStartArch.hpp" />
     <ClInclude Include="src\Math\XForm\SmoothStartSine.hpp" />
+    <ClInclude Include="src\Math\XForm\SmoothStep.hpp" />
     <ClInclude Include="src\Math\XForm\SmoothStop.hpp" />
     <ClInclude Include="src\Math\XForm\SmoothStopArch.hpp" />
     <ClInclude Include="src\Math\XForm\SmoothStopSine.hpp" />

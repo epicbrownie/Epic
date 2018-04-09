@@ -64,3 +64,10 @@ struct Epic::Math::XForm::Angle
 template<template<class...> class Inner, class... InnerArgs>
 struct Epic::Math::XForm::Angle<Inner<InnerArgs...>>
 	: public detail::XFormImpl1<Inner<InnerArgs...>, detail::AngleImpl> { };
+
+//////////////////////////////////////////////////////////////////////////////
+
+namespace Epic::Math::XForm
+{
+	using Angle1 = Angle<>;
+}

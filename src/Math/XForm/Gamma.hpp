@@ -14,8 +14,8 @@
 #pragma once
 
 #include <Epic/Math/XForm/detail/Implementation.hpp>
-#include <Epic/Math/XForm/Angle.hpp>
-#include <Epic/Math/Angle.hpp>
+#include <Epic/Math/XForm/Linear.hpp>
+#include <cmath>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -24,41 +24,53 @@ namespace Epic::Math::XForm
 	namespace detail
 	{
 		template<class T, class Inner>
-		struct SineImpl;
+		struct GammaImpl;
 	}
 
-	template<class Inner = Angle<>>
-	struct Sine;
+	template<class Inner = Linear>
+	struct Gamma;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
 template<class T, class Inner>
-struct Epic::Math::XForm::detail::SineImpl
+struct Epic::Math::XForm::detail::GammaImpl
 {
-	Inner SinFilter;
+	T Gamma;
+	Inner GammaFilter;
 
 	constexpr T operator() (T t) const noexcept
 	{
-		const T tprime = SinFilter(t);
+		const T tprime = GammaFilter(t);
 
-		return std::sin(tprime);
+		return std::pow(tprime, (T)1 / Gamma);
+	}
+};
+
+template<class T>
+struct Epic::Math::XForm::detail::GammaImpl<T, Epic::Math::XForm::detail::LinearImpl<T>>
+{
+	T Gamma;
+
+	constexpr T operator() (T t) const noexcept
+	{
+		return std::pow(t, T(1) / Gamma);
 	}
 };
 
 //////////////////////////////////////////////////////////////////////////////
 
 template<class Inner>
-struct Epic::Math::XForm::Sine
-	: public detail::XFormImpl1<Inner, detail::SineImpl> { };
+struct Epic::Math::XForm::Gamma
+	: public detail::XFormImpl1<Inner, detail::GammaImpl> { };
 
 template<template<class...> class Inner, class... InnerArgs>
-struct Epic::Math::XForm::Sine<Inner<InnerArgs...>>
-	: public detail::XFormImpl1<Inner<InnerArgs...>, detail::SineImpl> { };
+struct Epic::Math::XForm::Gamma<Inner<InnerArgs...>>
+	: public detail::XFormImpl1<Inner<InnerArgs...>, detail::GammaImpl> { };
 
 //////////////////////////////////////////////////////////////////////////////
 
 namespace Epic::Math::XForm
 {
-	using Sine1 = Sine<>;
+	using Gamma1 = Gamma<>;
 }

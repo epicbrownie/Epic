@@ -28,6 +28,7 @@
 #include <Epic/Math/XForm/BackInOut.hpp>
 #include <Epic/Math/XForm/Bell.hpp>
 #include <Epic/Math/XForm/Bezier.hpp>
+#include <Epic/Math/XForm/Bias.hpp>
 #include <Epic/Math/XForm/Blend.hpp>
 #include <Epic/Math/XForm/Clamp.hpp>
 #include <Epic/Math/XForm/Cosine.hpp>
@@ -35,6 +36,8 @@
 #include <Epic/Math/XForm/Divide.hpp>
 #include <Epic/Math/XForm/Fade.hpp>
 #include <Epic/Math/XForm/Flip.hpp>
+#include <Epic/Math/XForm/Gain.hpp>
+#include <Epic/Math/XForm/Gamma.hpp>
 #include <Epic/Math/XForm/Hesitate.hpp>
 #include <Epic/Math/XForm/Magnify.hpp>
 #include <Epic/Math/XForm/Map.hpp>
@@ -47,6 +50,7 @@
 #include <Epic/Math/XForm/Sine.hpp>
 #include <Epic/Math/XForm/SmoothStart.hpp>
 #include <Epic/Math/XForm/SmoothStop.hpp>
+#include <Epic/Math/XForm/SmoothStep.hpp>
 #include <Epic/Math/XForm/SmoothStartSine.hpp>
 #include <Epic/Math/XForm/SmoothStopSine.hpp>
 

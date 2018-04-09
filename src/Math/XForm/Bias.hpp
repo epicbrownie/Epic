@@ -14,8 +14,8 @@
 #pragma once
 
 #include <Epic/Math/XForm/detail/Implementation.hpp>
-#include <Epic/Math/XForm/Angle.hpp>
-#include <Epic/Math/Angle.hpp>
+#include <Epic/Math/XForm/Linear.hpp>
+#include <cmath>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -24,41 +24,56 @@ namespace Epic::Math::XForm
 	namespace detail
 	{
 		template<class T, class Inner>
-		struct SineImpl;
+		struct BiasImpl;
 	}
 
-	template<class Inner = Angle<>>
-	struct Sine;
+	template<class Inner = Linear>
+	struct Bias;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
 template<class T, class Inner>
-struct Epic::Math::XForm::detail::SineImpl
+struct Epic::Math::XForm::detail::BiasImpl
 {
-	Inner SinFilter;
+	T Bias;
+	Inner BiasFilter;
 
 	constexpr T operator() (T t) const noexcept
 	{
-		const T tprime = SinFilter(t);
+		const T tprime = BiasFilter(t);
+		const T exp = T(std::log(Bias) / std::log(T(0.5)));
 
-		return std::sin(tprime);
+		return std::pow(tprime, exp);
+	}
+};
+
+template<class T>
+struct Epic::Math::XForm::detail::BiasImpl<T, Epic::Math::XForm::detail::LinearImpl<T>>
+{
+	T Bias;
+
+	constexpr T operator() (T t) const noexcept
+	{
+		const T exp = T(std::log(Bias) / std::log(T(0.5)));
+
+		return std::pow(t, exp);
 	}
 };
 
 //////////////////////////////////////////////////////////////////////////////
 
 template<class Inner>
-struct Epic::Math::XForm::Sine
-	: public detail::XFormImpl1<Inner, detail::SineImpl> { };
+struct Epic::Math::XForm::Bias
+	: public detail::XFormImpl1<Inner, detail::BiasImpl> { };
 
 template<template<class...> class Inner, class... InnerArgs>
-struct Epic::Math::XForm::Sine<Inner<InnerArgs...>>
-	: public detail::XFormImpl1<Inner<InnerArgs...>, detail::SineImpl> { };
+struct Epic::Math::XForm::Bias<Inner<InnerArgs...>>
+	: public detail::XFormImpl1<Inner<InnerArgs...>, detail::BiasImpl> { };
 
 //////////////////////////////////////////////////////////////////////////////
 
 namespace Epic::Math::XForm
 {
-	using Sine1 = Sine<>;
+	using Bias1 = Bias<>;
 }

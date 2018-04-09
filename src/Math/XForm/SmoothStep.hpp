@@ -14,8 +14,7 @@
 #pragma once
 
 #include <Epic/Math/XForm/detail/Implementation.hpp>
-#include <Epic/Math/XForm/Angle.hpp>
-#include <Epic/Math/Angle.hpp>
+#include <Epic/Math/XForm/Linear.hpp>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -24,41 +23,50 @@ namespace Epic::Math::XForm
 	namespace detail
 	{
 		template<class T, class Inner>
-		struct SineImpl;
+		struct SmoothStepImpl;
 	}
 
-	template<class Inner = Angle<>>
-	struct Sine;
+	template<class Inner = Linear>
+	struct SmoothStep;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
 template<class T, class Inner>
-struct Epic::Math::XForm::detail::SineImpl
+struct Epic::Math::XForm::detail::SmoothStepImpl
 {
-	Inner SinFilter;
+	Inner SmoothFilter;
 
 	constexpr T operator() (T t) const noexcept
 	{
-		const T tprime = SinFilter(t);
+		const T tprime = SmoothFilter(t);
 
-		return std::sin(tprime);
+		return tprime * tprime * (T(3) - (T(2) * tprime));
+	}
+};
+
+template<class T>
+struct Epic::Math::XForm::detail::SmoothStepImpl<T, Epic::Math::XForm::detail::LinearImpl<T>>
+{
+	constexpr T operator() (T t) const noexcept
+	{
+		return (t * t * (T(3) - (T(2) * t)));
 	}
 };
 
 //////////////////////////////////////////////////////////////////////////////
 
 template<class Inner>
-struct Epic::Math::XForm::Sine
-	: public detail::XFormImpl1<Inner, detail::SineImpl> { };
+struct Epic::Math::XForm::SmoothStep
+	: public detail::XFormImpl1<Inner, detail::SmoothStepImpl> { };
 
 template<template<class...> class Inner, class... InnerArgs>
-struct Epic::Math::XForm::Sine<Inner<InnerArgs...>>
-	: public detail::XFormImpl1<Inner<InnerArgs...>, detail::SineImpl> { };
+struct Epic::Math::XForm::SmoothStep<Inner<InnerArgs...>>
+	: public detail::XFormImpl1<Inner<InnerArgs...>, detail::SmoothStepImpl> { };
 
 //////////////////////////////////////////////////////////////////////////////
 
 namespace Epic::Math::XForm
 {
-	using Sine1 = Sine<>;
+	using SmoothStep1 = SmoothStep<>;
 }

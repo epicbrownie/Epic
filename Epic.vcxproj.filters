@@ -701,6 +701,18 @@
     <ClInclude Include="src\Math\XForm\XForms.hpp">
       <Filter>Math\XForm</Filter>
     </ClInclude>
+    <ClInclude Include="src\Math\XForm\SmoothStep.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Gamma.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Bias.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Gain.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Memory\NullAllocator.cpp">
