@@ -68,3 +68,10 @@ struct Epic::Math::XForm::Scale
 template<template<class...> class Inner, class... InnerArgs>
 struct Epic::Math::XForm::Scale<Inner<InnerArgs...>>
 	: public detail::XFormImpl1<Inner<InnerArgs...>, detail::ScaleImpl> { };
+
+//////////////////////////////////////////////////////////////////////////////
+
+namespace Epic::Math::XForm
+{
+	using Scale1 = Scale<>;
+}

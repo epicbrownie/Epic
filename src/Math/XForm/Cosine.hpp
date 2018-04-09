@@ -55,3 +55,10 @@ struct Epic::Math::XForm::Cosine
 template<template<class...> class Inner, class... InnerArgs>
 struct Epic::Math::XForm::Cosine<Inner<InnerArgs...>>
 	: public detail::XFormImpl1<Inner<InnerArgs...>, detail::CosineImpl> { };
+
+//////////////////////////////////////////////////////////////////////////////
+
+namespace Epic::Math::XForm
+{
+	using Cosine1 = Cosine<>;
+}

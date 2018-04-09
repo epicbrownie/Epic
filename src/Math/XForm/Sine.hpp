@@ -55,3 +55,10 @@ struct Epic::Math::XForm::Sine
 template<template<class...> class Inner, class... InnerArgs>
 struct Epic::Math::XForm::Sine<Inner<InnerArgs...>>
 	: public detail::XFormImpl1<Inner<InnerArgs...>, detail::SineImpl> { };
+
+//////////////////////////////////////////////////////////////////////////////
+
+namespace Epic::Math::XForm
+{
+	using Sine1 = Sine<>;
+}

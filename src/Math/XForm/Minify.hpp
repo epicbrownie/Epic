@@ -53,3 +53,10 @@ struct Epic::Math::XForm::Minify
 template<template<class...> class Inner, class... InnerArgs>
 struct Epic::Math::XForm::Minify<Inner<InnerArgs...>>
 	: public detail::XFormImpl1<Inner<InnerArgs...>, detail::MinifyImpl> { };
+
+//////////////////////////////////////////////////////////////////////////////
+
+namespace Epic::Math::XForm
+{
+	using Minify1 = Minify<>;
+}
