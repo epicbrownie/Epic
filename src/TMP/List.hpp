@@ -14,6 +14,7 @@
 #pragma once
 
 #include <type_traits>
+#include <tuple>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -21,6 +22,20 @@
 namespace Epic::TMP
 {
 	template<typename...> struct List;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+// ListToTuple<> - Convert list to std::tuple
+namespace Epic::TMP
+{
+	template<class ListType> struct ListToTuple;
+
+	template<typename... Ts>
+	struct ListToTuple<List<Ts...>>
+	{
+		using Type = std::tuple<Ts...>;
+	};
 }
 
 //////////////////////////////////////////////////////////////////////////////

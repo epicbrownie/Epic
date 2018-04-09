@@ -29,6 +29,36 @@ namespace Epic
 {
 	namespace
 	{
+		// Raise to an integer power
+		template<size_t N, class T>
+		constexpr T Power(T t) noexcept
+		{
+			if constexpr (N == 0)
+			{
+				return T(1);
+			}
+			else if constexpr (N % 2 == 0)
+			{
+				const auto x = Power<N / 2>(t);
+				return x * x;
+			}
+			else
+			{
+				const auto x = Power<N / 2>(t);
+				return x * x * t;
+			}
+		}
+
+		// Raise to an integer power
+		template<class T>
+		constexpr T Power(T t, size_t n) noexcept
+		{
+			const auto x = n == 0 ? T(1) : Power(t, n / 2);
+			const auto f = T(n & 1) * t;
+
+			return x * x * f;
+		}
+
 		// Calculate the distance between two Vectors
 		template<class T, class U, size_t Size>
 		inline auto Distance(const Vector<T, Size>& vecA, const Vector<U, Size>& vecB) noexcept

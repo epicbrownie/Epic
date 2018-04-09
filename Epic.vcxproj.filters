@@ -86,6 +86,21 @@
     <Filter Include="Import">
       <UniqueIdentifier>{9290df80-b92f-42ae-ad1f-d80caf70e7e6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Math\XForm">
+      <UniqueIdentifier>{608047cf-38d9-473d-b3a2-605b5fbcb0b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math\XForm\detail">
+      <UniqueIdentifier>{ed2dd0c2-198f-49ab-b13d-cb682617fd02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math\XForm\Terminal">
+      <UniqueIdentifier>{25960312-7833-4b52-b186-3681f80eadc8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math\XForm\Chainable">
+      <UniqueIdentifier>{9d599161-53a4-4640-a5ff-39c38b5309ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math\XForm\Composite">
+      <UniqueIdentifier>{3c3735f2-36f8-4ef4-bd66-91132f45f2c1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Singleton.hpp">
@@ -556,6 +571,147 @@
     </ClInclude>
     <ClInclude Include="src\Preprocessor.hpp">
       <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\detail\Implementation.hpp">
+      <Filter>Math\XForm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\XForm.hpp">
+      <Filter>Math\XForm</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Constant.hpp">
+      <Filter>Math\XForm\Terminal</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Linear.hpp">
+      <Filter>Math\XForm\Terminal</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Smooth.hpp">
+      <Filter>Math\XForm\Composite</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Blend.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Fade.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Flip.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Modulate.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\SmoothStart.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\SmoothStop.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Angle.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Sine.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Cosine.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Inverse.hpp">
+      <Filter>Math\XForm\Terminal</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Scale.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Magnify.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Minify.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Arch.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\SmoothStartArch.hpp">
+      <Filter>Math\XForm\Composite</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\SmoothStopArch.hpp">
+      <Filter>Math\XForm\Composite</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\MirrorBottom.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\MirrorTop.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Bell.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Map.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Clamp.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Mirror.hpp">
+      <Filter>Math\XForm\Composite</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Half.hpp">
+      <Filter>Math\XForm\Terminal</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Double.hpp">
+      <Filter>Math\XForm\Terminal</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Divide.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Multiply.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\SmoothStartSine.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\SmoothStopSine.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\SmoothSine.hpp">
+      <Filter>Math\XForm\Composite</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Custom.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Bezier.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\detail\BezierHelpers.hpp">
+      <Filter>Math\XForm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Hesitate.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\BackInOut.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\BackIn.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\BackOut.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Filter.hpp">
+      <Filter>Math\XForm</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\XForms.hpp">
+      <Filter>Math\XForm</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\SmoothStep.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Gamma.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Bias.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\XForm\Gain.hpp">
+      <Filter>Math\XForm\Chainable</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
