@@ -15,32 +15,46 @@
 
 #include <Epic/Math/XForm/detail/Implementation.hpp>
 #include <Epic/Math/XForm/Filter.hpp>
-#include <Epic/Math/XForm/XForms.hpp>
+#include <Epic/STL/UniquePtr.hpp>
 
 //////////////////////////////////////////////////////////////////////////////
 
 namespace Epic::Math::XForm
 {
-	template<class Descriptor, class T = float>
-	using XForm = typename detail::ImplOf<Descriptor, T>::Type;
+	namespace detail
+	{
+		template<class T>
+		class DynamicImpl;
+	}
 
-	template<class Descriptor, class T = float>
-	class XFormFilter;
+	struct Dynamic;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-template<class Descriptor, class T>
-class Epic::Math::XForm::XFormFilter :
-	public IFilter<T>,
-	public XForm<Descriptor, T>
+template<class T>
+class Epic::Math::XForm::detail::DynamicImpl
 {
+public:
+	Epic::UniquePtr<IFilter<T>> pFilter;
+
 private:
-	using XFormBase = XForm<Descriptor, T>;
+	struct NullFilter : public IFilter<T>
+	{
+		T Apply(T t) const noexcept override { return t; }
+	};
 
 public:
-	inline T Apply(T t) const noexcept override
+	DynamicImpl() : pFilter(Epic::MakeUnique<NullFilter>()) { }
+	
+public:
+	constexpr T operator() (T t) const noexcept
 	{
-		return XFormBase::operator() (t);
+		return pFilter->Apply(t);
 	}
 };
+
+//////////////////////////////////////////////////////////////////////////////
+
+struct Epic::Math::XForm::Dynamic 
+	: public detail::XFormImpl0<detail::DynamicImpl> { };
