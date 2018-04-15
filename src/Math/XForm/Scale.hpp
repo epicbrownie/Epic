@@ -35,13 +35,14 @@ namespace Epic::Math::XForm
 template<class T, class Inner>
 struct Epic::Math::XForm::detail::ScaleImpl
 {
-	Inner ScaleFilter;
 	T Scale = (T)1;
+
+	Inner ScaleInner;
 
 	// NOTE: Equivalent to Modulate<Constant, Inner>
 	constexpr T operator() (T t) const noexcept
 	{
-		const T tprime = ScaleFilter(t);
+		const T tprime = ScaleInner(t);
 
 		return Scale * tprime;
 	}

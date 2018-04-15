@@ -14,8 +14,8 @@
 #pragma once
 
 #include <Epic/Math/XForm/detail/Implementation.hpp>
-#include <Epic/Math/XForm/Angle.hpp>
-#include <Epic/Math/Angle.hpp>
+#include <Epic/Math/XForm/Filter.hpp>
+#include <Epic/STL/UniquePtr.hpp>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -23,42 +23,38 @@ namespace Epic::Math::XForm
 {
 	namespace detail
 	{
-		template<class T, class Inner>
-		struct CosineImpl;
+		template<class T>
+		class DynamicImpl;
 	}
 
-	template<class Inner = Angle<>>
-	struct Cosine;
+	struct Dynamic;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-template<class T, class Inner>
-struct Epic::Math::XForm::detail::CosineImpl
+template<class T>
+class Epic::Math::XForm::detail::DynamicImpl
 {
-	Inner CosInner;
+public:
+	Epic::UniquePtr<IFilter<T>> pFilter;
 
+private:
+	struct NullFilter : public IFilter<T>
+	{
+		T Apply(T t) const noexcept override { return t; }
+	};
+
+public:
+	DynamicImpl() : pFilter(Epic::MakeUnique<NullFilter>()) { }
+	
+public:
 	constexpr T operator() (T t) const noexcept
 	{
-		const T tprime = CosInner(t);
-
-		return std::cos(tprime);
+		return pFilter->Apply(t);
 	}
 };
 
 //////////////////////////////////////////////////////////////////////////////
 
-template<class Inner>
-struct Epic::Math::XForm::Cosine
-	: public detail::XFormImpl1<Inner, detail::CosineImpl> { };
-
-template<template<class...> class Inner, class... InnerArgs>
-struct Epic::Math::XForm::Cosine<Inner<InnerArgs...>>
-	: public detail::XFormImpl1<Inner<InnerArgs...>, detail::CosineImpl> { };
-
-//////////////////////////////////////////////////////////////////////////////
-
-namespace Epic::Math::XForm
-{
-	using Cosine1 = Cosine<>;
-}
+struct Epic::Math::XForm::Dynamic 
+	: public detail::XFormImpl0<detail::DynamicImpl> { };

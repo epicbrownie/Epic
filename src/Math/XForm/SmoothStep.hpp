@@ -35,11 +35,11 @@ namespace Epic::Math::XForm
 template<class T, class Inner>
 struct Epic::Math::XForm::detail::SmoothStepImpl
 {
-	Inner SmoothFilter;
+	Inner SmoothInner;
 
 	constexpr T operator() (T t) const noexcept
 	{
-		const T tprime = SmoothFilter(t);
+		const T tprime = SmoothInner(t);
 
 		return tprime * tprime * (T(3) - (T(2) * tprime));
 	}

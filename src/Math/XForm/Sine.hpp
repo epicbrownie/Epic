@@ -36,11 +36,11 @@ namespace Epic::Math::XForm
 template<class T, class Inner>
 struct Epic::Math::XForm::detail::SineImpl
 {
-	Inner SinFilter;
+	Inner SinInner;
 
 	constexpr T operator() (T t) const noexcept
 	{
-		const T tprime = SinFilter(t);
+		const T tprime = SinInner(t);
 
 		return std::sin(tprime);
 	}

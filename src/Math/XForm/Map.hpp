@@ -35,18 +35,19 @@ namespace Epic::Math::XForm
 template<class T, class Inner>
 struct Epic::Math::XForm::detail::MapImpl
 {
-	Inner MapFilter;
 	T InMin = T(0);
 	T InMax = T(1);
 	T OutMin = T(0);
 	T OutMax = T(1);
+
+	Inner MapInner;
 
 	constexpr T operator() (T t) const noexcept
 	{
 		const T inRange = InMax - InMin;
 		const T outRange = OutMax - OutMin;
 
-		return (MapFilter((t - InMin) / inRange) * outRange) + OutMin;
+		return (MapInner((t - InMin) / inRange) * outRange) + OutMin;
 	}
 };
 

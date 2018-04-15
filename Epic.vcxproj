@@ -115,6 +115,7 @@
     <ClInclude Include="src\Math\XForm\detail\BezierHelpers.hpp" />
     <ClInclude Include="src\Math\XForm\Divide.hpp" />
     <ClInclude Include="src\Math\XForm\Double.hpp" />
+    <ClInclude Include="src\Math\XForm\Dynamic.hpp" />
     <ClInclude Include="src\Math\XForm\Filter.hpp" />
     <ClInclude Include="src\Math\XForm\Gain.hpp" />
     <ClInclude Include="src\Math\XForm\Gamma.hpp" />

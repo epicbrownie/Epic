@@ -35,11 +35,11 @@ namespace Epic::Math::XForm
 template<class T, class Inner>
 struct Epic::Math::XForm::detail::FlipImpl
 {
-	Inner FlipFilter;
+	Inner FlipInner;
 
 	constexpr T operator() (T t) const noexcept
 	{
-		return (T)1 - FlipFilter(t);
+		return (T)1 - FlipInner(t);
 	}
 };
 

@@ -35,12 +35,12 @@ namespace Epic::Math::XForm
 template<class T, size_t N, class Inner>
 struct Epic::Math::XForm::detail::DivideImpl
 {
-	Inner DivideFilter;
+	Inner DivideInner;
 
 	// NOTE: Equivalent to Scale<Inner>
 	constexpr T operator() (T t) const noexcept
 	{
-		const T tprime = DivideFilter(t);
+		const T tprime = DivideInner(t);
 
 		return tprime / T(N);
 	}

@@ -35,12 +35,12 @@ namespace Epic::Math::XForm
 template<class T, class Inner>
 struct Epic::Math::XForm::detail::MinifyImpl
 {
-	Inner MinFilter;
+	Inner MinifyInner;
 
 	// NOTE: Equivalent to Modulate<Linear, Inner>
 	constexpr T operator() (T t) const noexcept
 	{
-		return t * MinFilter(t);
+		return t * MinifyInner(t);
 	}
 };
 

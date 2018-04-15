@@ -36,11 +36,11 @@ namespace Epic::Math::XForm
 template<class T, size_t N, class Inner>
 struct Epic::Math::XForm::detail::BellImpl
 {
-	Inner BellFilter;
+	Inner BellInner;
 
 	constexpr T operator() (T t) const noexcept
 	{
-		const T tprime = BellFilter(t);
+		const T tprime = BellInner(t);
 		const T t2 = tprime * tprime;
 		const T ti = T(1) - tprime;
 		const T t2i = T(1) - t2;

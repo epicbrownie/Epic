@@ -36,12 +36,12 @@ namespace Epic::Math::XForm
 template<class T, class Inner>
 struct Epic::Math::XForm::detail::AngleImpl
 {
-	Inner AngleFilter;
+	Inner AngleInner;
 
 	// NOTE: Equivalent to Scale<Inner>
 	constexpr T operator() (T t) const noexcept
 	{
-		return Pi<T> * AngleFilter(t);
+		return Pi<T> * AngleInner(t);
 	}
 };
 

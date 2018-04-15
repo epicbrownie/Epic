@@ -36,12 +36,12 @@ namespace Epic::Math::XForm
 template<class T, size_t N, class Inner>
 struct Epic::Math::XForm::detail::SmoothStopImpl
 {
-	Inner SmoothFilter;
+	Inner SmoothInner;
 
 	// NOTE: Equivalent to Flip<SmoothStart<Flip<Inner>>>
 	constexpr T operator() (T t) const noexcept
 	{
-		const T tprime = SmoothFilter(t);
+		const T tprime = SmoothInner(t);
 		
 		return T(1) - Power<N>(T(1) - tprime);
 	}

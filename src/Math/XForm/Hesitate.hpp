@@ -40,7 +40,7 @@ private:
 	detail::BezierImpl<T, N + 2, detail::LinearImpl<T>> m_BezierFilter;
 
 public:
-	Inner HesitateFilter;
+	Inner HesitateInner;
 
 public:
 	HesitateImpl()
@@ -52,7 +52,7 @@ public:
 public:
 	inline T operator() (T t) const noexcept
 	{
-		const T tprime = HesitateFilter(t);
+		const T tprime = HesitateInner(t);
 
 		return m_BezierFilter(tprime);
 	}

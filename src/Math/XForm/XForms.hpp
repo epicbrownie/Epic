@@ -16,6 +16,7 @@
 // Terminal
 #include <Epic/Math/XForm/Constant.hpp>
 #include <Epic/Math/XForm/Double.hpp>
+#include <Epic/Math/XForm/Dynamic.hpp>
 #include <Epic/Math/XForm/Half.hpp>
 #include <Epic/Math/XForm/Inverse.hpp>
 #include <Epic/Math/XForm/Linear.hpp>
@@ -44,19 +45,18 @@
 #include <Epic/Math/XForm/Minify.hpp>
 #include <Epic/Math/XForm/MirrorBottom.hpp>
 #include <Epic/Math/XForm/MirrorTop.hpp>
+#include <Epic/Math/XForm/Mirror.hpp>
 #include <Epic/Math/XForm/Multiply.hpp>
 #include <Epic/Math/XForm/Modulate.hpp>
 #include <Epic/Math/XForm/Scale.hpp>
 #include <Epic/Math/XForm/Sine.hpp>
+#include <Epic/Math/XForm/SmoothStep.hpp>
+#include <Epic/Math/XForm/Smooth.hpp>
 #include <Epic/Math/XForm/SmoothStart.hpp>
 #include <Epic/Math/XForm/SmoothStop.hpp>
-#include <Epic/Math/XForm/SmoothStep.hpp>
+#include <Epic/Math/XForm/SmoothStartArch.hpp>
+#include <Epic/Math/XForm/SmoothStopArch.hpp>
+#include <Epic/Math/XForm/SmoothSine.hpp>
 #include <Epic/Math/XForm/SmoothStartSine.hpp>
 #include <Epic/Math/XForm/SmoothStopSine.hpp>
 
-// Composite
-#include <Epic/Math/XForm/Mirror.hpp>
-#include <Epic/Math/XForm/Smooth.hpp>
-#include <Epic/Math/XForm/SmoothSine.hpp>
-#include <Epic/Math/XForm/SmoothStartArch.hpp>
-#include <Epic/Math/XForm/SmoothStopArch.hpp>

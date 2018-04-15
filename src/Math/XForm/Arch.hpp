@@ -36,12 +36,12 @@ namespace Epic::Math::XForm
 template<class T, size_t N, class Inner>
 struct Epic::Math::XForm::detail::ArchImpl
 {
-	Inner ArchFilter;
+	Inner ArchInner;
 
 	// NOTE: Equivalent to Modulate<Inner, Flip<Inner>>
 	constexpr T operator() (T t) const noexcept
 	{
-		const T tprime = ArchFilter(t);
+		const T tprime = ArchInner(t);
 
 		return Power<N>(T(4) * tprime * (T(1) - tprime));
 	}
