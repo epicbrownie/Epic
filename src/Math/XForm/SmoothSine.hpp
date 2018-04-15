@@ -22,21 +22,69 @@
 
 namespace Epic::Math::XForm
 {
-	template<size_t N = 1, class Inner = Linear>
+	namespace detail
+	{
+		template<class T, size_t N, class Inner>
+		class SmoothSineImpl;
+	}
+
+	template<size_t N, class Inner = Linear>
 	struct SmoothSine;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
+template<class T, size_t N, class Inner>
+class Epic::Math::XForm::detail::SmoothSineImpl
+{
+private:
+	detail::SmoothStartSineImpl<T, N, detail::LinearImpl<T>> m_SmoothStartSine;
+	detail::SmoothStopSineImpl<T, N, detail::LinearImpl<T>> m_SmoothStopSine;
+	detail::FadeImpl<T, decltype(m_SmoothStartSine), decltype(m_SmoothStopSine)> m_Fade;
+
+public:
+	Inner SmoothSineFilter;
+
+public:
+	constexpr T operator() (T t) const noexcept
+	{
+		const T tprime = SmoothSineFilter(t);
+
+		return m_Fade(tprime);
+	}
+};
+
+template<class T, size_t N>
+class Epic::Math::XForm::detail::SmoothSineImpl<T, N, Epic::Math::XForm::detail::LinearImpl<T>>
+{
+private:
+	detail::SmoothStartSineImpl<T, N, detail::LinearImpl<T>> m_SmoothStartSine;
+	detail::SmoothStopSineImpl<T, N, detail::LinearImpl<T>> m_SmoothStopSine;
+	detail::FadeImpl<T, decltype(m_SmoothStartSine), decltype(m_SmoothStopSine)> m_Fade;
+
+public:
+	constexpr T operator() (T t) const noexcept
+	{
+		return m_Fade(t);
+	}
+};
+
+//////////////////////////////////////////////////////////////////////////////
+
 template<size_t N, class Inner>
 struct Epic::Math::XForm::SmoothSine
-	: public Fade<SmoothStartSine<N, Inner>, SmoothStopSine<N, Inner>> { };
+	: public detail::XFormNImpl1<N, Inner, detail::SmoothSineImpl> { };
+
+template<size_t N, template<class...> class Inner, class... InnerArgs>
+struct Epic::Math::XForm::SmoothSine<N, Inner<InnerArgs...>>
+	: public detail::XFormNImpl1<N, Inner<InnerArgs...>, detail::SmoothSineImpl> { };
 
 //////////////////////////////////////////////////////////////////////////////
 
 namespace Epic::Math::XForm
 {
-	using SmoothSine1 = SmoothSine<1>;
 	using SmoothSine2 = SmoothSine<2>;
 	using SmoothSine3 = SmoothSine<3>;
+	using SmoothSine4 = SmoothSine<4>;
+	using SmoothSine5 = SmoothSine<5>;
 }

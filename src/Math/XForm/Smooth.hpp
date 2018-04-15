@@ -22,15 +22,62 @@
 
 namespace Epic::Math::XForm
 {
+	namespace detail
+	{
+		template<class T, size_t N, class Inner>
+		class SmoothImpl;
+	}
+
 	template<size_t N, class Inner = Linear>
 	struct Smooth;
 }
 
 //////////////////////////////////////////////////////////////////////////////
- 
+
+template<class T, size_t N, class Inner>
+class Epic::Math::XForm::detail::SmoothImpl
+{
+private:
+	detail::SmoothStartImpl<T, N, detail::LinearImpl<T>> m_SmoothStart;
+	detail::SmoothStopImpl<T, N, detail::LinearImpl<T>> m_SmoothStop;
+	detail::FadeImpl<T, decltype(m_SmoothStart), decltype(m_SmoothStop)> m_Fade;
+
+public:
+	Inner SmoothFilter;
+
+public:
+	constexpr T operator() (T t) const noexcept
+	{
+		const T tprime = SmoothFilter(t);
+
+		return m_Fade(tprime);
+	}
+};
+
+template<class T, size_t N>
+class Epic::Math::XForm::detail::SmoothImpl<T, N, Epic::Math::XForm::detail::LinearImpl<T>>
+{
+private:
+	detail::SmoothStartImpl<T, N, detail::LinearImpl<T>> m_SmoothStart;
+	detail::SmoothStopImpl<T, N, detail::LinearImpl<T>> m_SmoothStop;
+	detail::FadeImpl<T, decltype(m_SmoothStart), decltype(m_SmoothStop)> m_Fade;
+
+public:
+	constexpr T operator() (T t) const noexcept
+	{
+		return m_Fade(t);
+	}
+};
+
+//////////////////////////////////////////////////////////////////////////////
+
 template<size_t N, class Inner>
-struct Epic::Math::XForm::Smooth 
-	: public Fade<SmoothStart<N, Inner>, SmoothStop<N, Inner>> { };
+struct Epic::Math::XForm::Smooth
+	: public detail::XFormNImpl1<N, Inner, detail::SmoothImpl> { };
+
+template<size_t N, template<class...> class Inner, class... InnerArgs>
+struct Epic::Math::XForm::Smooth<N, Inner<InnerArgs...>>
+	: public detail::XFormNImpl1<N, Inner<InnerArgs...>, detail::SmoothImpl> { };
 
 //////////////////////////////////////////////////////////////////////////////
 
