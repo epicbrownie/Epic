@@ -40,7 +40,7 @@ private:
 	detail::BezierImpl<T, 4, detail::LinearImpl<T>> m_BezierFilter;
 
 public:
-	Inner BackInOutFilter;
+	Inner BackInOutInner;
 
 public:
 	BackInOutImpl()
@@ -55,7 +55,7 @@ public:
 public:
 	inline T operator() (T t) const noexcept
 	{
-		const T tprime = BackInOutFilter(t);
+		const T tprime = BackInOutInner(t);
 
 		return m_BezierFilter(tprime);
 	}

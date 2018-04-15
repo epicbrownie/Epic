@@ -36,12 +36,12 @@ namespace Epic::Math::XForm
 template<class T, size_t N, class Inner>
 struct Epic::Math::XForm::detail::SmoothStopSineImpl
 {
-	Inner SineFilter;
+	Inner SmoothInner;
 
 	// NOTE: Equivalent to Sine<Angle<Divide<2, SmoothStop<N, Inner>>>>
 	constexpr T operator() (T t) const noexcept
 	{
-		const T tprime = SineFilter(t);
+		const T tprime = SmoothInner(t);
 
 		return std::sin(HalfPi<T> * (T(1) - Power<N>(T(1) - tprime)));
 	}

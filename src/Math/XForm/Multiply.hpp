@@ -35,12 +35,12 @@ namespace Epic::Math::XForm
 template<class T, size_t N, class Inner>
 struct Epic::Math::XForm::detail::MultiplyImpl
 {
-	Inner MultiplyFilter;
+	Inner MultiplyInner;
 
 	// NOTE: Equivalent to Scale<Inner>
 	constexpr T operator() (T t) const noexcept
 	{
-		const T tprime = MultiplyFilter(t);
+		const T tprime = MultiplyInner(t);
 
 		return T(N) * tprime;
 	}

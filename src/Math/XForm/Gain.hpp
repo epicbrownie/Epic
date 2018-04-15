@@ -41,12 +41,12 @@ private:
 
 public:
 	T Gain;
-	Inner GainFilter;
+	Inner GainInner;
 
 public:
 	inline T operator() (T t) const noexcept
 	{
-		const T tprime = GainFilter(t);
+		const T tprime = GainInner(t);
 		const T thalf = T(0.5);
 		const T tone = T(1);
 		const T ttwo = T(2);

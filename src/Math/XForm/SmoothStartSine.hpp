@@ -36,12 +36,12 @@ namespace Epic::Math::XForm
 template<class T, size_t N, class Inner>
 struct Epic::Math::XForm::detail::SmoothStartSineImpl
 {
-	Inner SineFilter;
+	Inner SmoothInner;
 
 	// NOTE: Equivalent to Flip<Cosine<Angle<Divide<2, SmoothStart<N, Inner>>>>>
 	constexpr T operator() (T t) const noexcept
 	{
-		const T tprime = SineFilter(t);
+		const T tprime = SmoothInner(t);
 		
 		return T(1) - std::cos(HalfPi<T> * Power<N>(tprime));
 	}

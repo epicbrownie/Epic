@@ -41,12 +41,12 @@ private:
 	detail::MagnifyImpl<T, detail::LinearImpl<T>> m_Magnify;
 
 public:
-	Inner SmoothArchInner;
+	Inner SmoothInner;
 
 public:
 	constexpr T operator() (T t) const noexcept
 	{
-		const T tprime = T(1) - SmoothArchInner(t);
+		const T tprime = T(1) - SmoothInner(t);
 
 		return m_Arch(m_Magnify(tprime));
 	}

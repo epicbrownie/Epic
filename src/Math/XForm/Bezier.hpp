@@ -41,7 +41,7 @@ private:
 	using Coefficients = BezierCoefficients<N>;
 
 public:
-	Inner BezierFilter;
+	Inner BezierInner;
 	std::array<T, N - 1> Controls;
 
 private:
@@ -66,7 +66,7 @@ public:
 		std::array<T, N - 1> Ts;
 		std::array<T, N - 1> TIs;
 
-		const T tprime = BezierFilter(t);
+		const T tprime = BezierInner(t);
 		const T ti = T(1) - tprime;
 
 		Ts[0] = tprime;
@@ -86,12 +86,12 @@ template<class T, class Inner>
 class Epic::Math::XForm::detail::BezierImpl<T, 1, Inner>
 {
 public:
-	Inner BezierFilter;
+	Inner BezierInner;
 
 public:
 	inline T operator() (T t) const noexcept
 	{
-		return BezierFilter(t);
+		return BezierInner(t);
 	}
 };
 

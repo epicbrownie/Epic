@@ -40,12 +40,12 @@ private:
 	detail::MinifyImpl<T, detail::LinearImpl<T>> m_Minify;
 	
 public:
-	Inner SmoothArchInner;
+	Inner SmoothInner;
 
 public:
 	constexpr T operator() (T t) const noexcept
 	{
-		const T tprime = SmoothArchInner(t);
+		const T tprime = SmoothInner(t);
 
 		return m_Arch(m_Minify(tprime));
 	}

@@ -36,11 +36,11 @@ namespace Epic::Math::XForm
 template<class T, class Inner>
 struct Epic::Math::XForm::detail::CosineImpl
 {
-	Inner CosFilter;
+	Inner CosInner;
 
 	constexpr T operator() (T t) const noexcept
 	{
-		const T tprime = CosFilter(t);
+		const T tprime = CosInner(t);
 
 		return std::cos(tprime);
 	}

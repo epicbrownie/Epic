@@ -37,11 +37,11 @@ template<class T, class Inner>
 struct Epic::Math::XForm::detail::BiasImpl
 {
 	T Bias;
-	Inner BiasFilter;
+	Inner BiasInner;
 
 	constexpr T operator() (T t) const noexcept
 	{
-		const T tprime = BiasFilter(t);
+		const T tprime = BiasInner(t);
 		const T exp = T(std::log(Bias) / std::log(T(0.5)));
 
 		return std::pow(tprime, exp);

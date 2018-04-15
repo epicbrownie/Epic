@@ -37,11 +37,12 @@ template<class T, class Inner>
 struct Epic::Math::XForm::detail::GammaImpl
 {
 	T Gamma;
-	Inner GammaFilter;
+
+	Inner GammaInner;
 
 	constexpr T operator() (T t) const noexcept
 	{
-		const T tprime = GammaFilter(t);
+		const T tprime = GammaInner(t);
 
 		return std::pow(tprime, (T)1 / Gamma);
 	}

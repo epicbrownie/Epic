@@ -35,13 +35,13 @@ namespace Epic::Math::XForm
 template<class T, class Inner>
 struct Epic::Math::XForm::detail::ClampImpl
 {
-	Inner ClampFilter;
+	Inner ClampInner;
 	T Min = T(0);
 	T Max = T(1);
 	
 	constexpr T operator() (T t) const noexcept
 	{
-		const T tprime = ClampFilter(t);
+		const T tprime = ClampInner(t);
 
 		return std::min(Max, std::max(Min, tprime));
 	}

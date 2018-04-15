@@ -36,11 +36,11 @@ namespace Epic::Math::XForm
 template<class T, class Inner>
 struct Epic::Math::XForm::detail::MirrorBottomImpl
 {
-	Inner MirrorFilter;
+	Inner MirrorInner;
 
 	constexpr T operator() (T t) const noexcept
 	{
-		const T tprime = MirrorFilter(t);
+		const T tprime = MirrorInner(t);
 		
 		if constexpr (std::is_arithmetic_v<T>)
 			return abs(tprime);

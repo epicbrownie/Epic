@@ -42,12 +42,12 @@ private:
 	detail::MirrorBottomImpl<T, detail::LinearImpl<T>> m_MirrorBottom;
 
 public:
-	Inner MirrorFilter;
+	Inner MirrorInner;
 
 public:
 	constexpr T operator() (T t) const noexcept
 	{
-		const T tprime = MirrorFilter(t);
+		const T tprime = MirrorInner(t);
 
 		return m_MirrorBottom(m_MirrorTop(tprime));
 	}

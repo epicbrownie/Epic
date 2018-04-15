@@ -43,12 +43,12 @@ private:
 	detail::FadeImpl<T, decltype(m_SmoothStart), decltype(m_SmoothStop)> m_Fade;
 
 public:
-	Inner SmoothFilter;
+	Inner SmoothInner;
 
 public:
 	constexpr T operator() (T t) const noexcept
 	{
-		const T tprime = SmoothFilter(t);
+		const T tprime = SmoothInner(t);
 
 		return m_Fade(tprime);
 	}

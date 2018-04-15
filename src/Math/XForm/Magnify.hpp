@@ -35,12 +35,12 @@ namespace Epic::Math::XForm
 template<class T, class Inner>
 struct Epic::Math::XForm::detail::MagnifyImpl
 {
-	Inner MagFilter;
+	Inner MagnifyInner;
 	
 	// NOTE: Equivalent to Modulate<Inverse, Inner>
 	constexpr T operator() (T t) const noexcept
 	{
-		const T tprime = MagFilter(t);
+		const T tprime = MagnifyInner(t);
 
 		return (T(1) - t) * tprime;
 	}
