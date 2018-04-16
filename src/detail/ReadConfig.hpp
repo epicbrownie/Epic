@@ -23,11 +23,19 @@ namespace Epic::detail
 	enum class eConfigProperty
 	{
 		DefaultAllocator,
-		AudioAllocator
+		AudioAllocator,
+	};
+
+	enum class eConfigFactory
+	{
+		DynamicFilterPtr
 	};
 
 	template<eConfigProperty P, class D, class C>
 	struct ConfigProperty;
+
+	template<eConfigFactory F, template<class...> class D, class C, class... Args>
+	struct ConfigFactory;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -39,15 +47,12 @@ namespace Epic::detail
 
 	template<class T>
 	using HasAudioAllocator = typename T::AudioAllocator;
+
+	template<class T>
+	using HasDynamicFilterPtr = typename T::DynamicFilterPtr;
 }
 
 //////////////////////////////////////////////////////////////////////////////
-
-template<Epic::detail::eConfigProperty P, class D, class C>
-struct Epic::detail::ConfigProperty
-{
-	using Type = D;
-};
 
 template<class D, class C>
 struct Epic::detail::ConfigProperty<Epic::detail::eConfigProperty::DefaultAllocator, D, C>
@@ -63,11 +68,35 @@ struct Epic::detail::ConfigProperty<Epic::detail::eConfigProperty::AudioAllocato
 
 //////////////////////////////////////////////////////////////////////////////
 
+template<template<class...> class D, class C, class... Args>
+struct Epic::detail::ConfigFactory<Epic::detail::eConfigFactory::DynamicFilterPtr, D, C, Args...>
+{
+	struct DefaultFactory { template<class...> using Type = D<Args...>; };
+
+	template<template<class...> class F>
+	using Factory = F<Args...>;
+
+	using Type = Factory<Epic::TMP::DetectedOrT<DefaultFactory, HasDynamicFilterPtr, C>::Type>;
+};
+
+//////////////////////////////////////////////////////////////////////////////
+
 namespace Epic::detail
 {
-	template<eConfigProperty Prop, class C = Epic::Config<true>>
-	using GetConfigProperty = ConfigProperty<Prop, Epic::TMP::detail::InvalidType, C>;
+	template<eConfigProperty Prop>
+	using GetConfigProperty = ConfigProperty<Prop, Epic::TMP::detail::InvalidType, Epic::Config<true>>;
 
-	template<eConfigProperty Prop, class Default, class C = Epic::Config<true>>
-	using GetConfigPropertyOr = ConfigProperty<Prop, Default, C>;
+	template<eConfigProperty Prop, class Default>
+	using GetConfigPropertyOr = ConfigProperty<Prop, Default, Epic::Config<true>>;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+namespace Epic::detail
+{
+	template<eConfigFactory Factory, class... Args>
+	using GetConfigFactory = ConfigFactory<Factory, Epic::TMP::detail::InvalidTType, Epic::Config<true>, Args...>;
+
+	template<eConfigFactory Factory, template<class...> class Default, class... Args>
+	using GetConfigFactoryOr = ConfigFactory<Factory, Default, Epic::Config<true>, Args...>;
 }

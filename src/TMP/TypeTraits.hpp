@@ -50,6 +50,9 @@ namespace Epic::TMP
 			void operator = (const InvalidType&) = delete;
 		};
 
+		template<class...>
+		struct InvalidTType : InvalidType { };
+
 		template<class Default, class Void, template<class...> class Op, class... Args>
 		struct Detector : std::false_type
 		{
