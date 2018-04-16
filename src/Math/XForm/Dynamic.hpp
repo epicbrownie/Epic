@@ -16,6 +16,7 @@
 #include <Epic/Math/XForm/detail/Implementation.hpp>
 #include <Epic/Math/XForm/Filter.hpp>
 #include <Epic/STL/UniquePtr.hpp>
+#include <Epic/detail/ReadConfig.hpp>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -35,18 +36,16 @@ namespace Epic::Math::XForm
 template<class T>
 class Epic::Math::XForm::detail::DynamicImpl
 {
-public:
-	Epic::UniquePtr<IFilter<T>> pFilter;
-
 private:
-	struct NullFilter : public IFilter<T>
-	{
-		T Apply(T t) const noexcept override { return t; }
-	};
+	using DynamicFilterPtr = typename Epic::detail::GetConfigFactoryOr<
+		Epic::detail::eConfigFactory::DynamicFilterPtr,
+		Epic::UniquePtr,
+		IFilter<T>
+	>::Type;
 
 public:
-	DynamicImpl() : pFilter(Epic::MakeUnique<NullFilter>()) { }
-	
+	DynamicFilterPtr pFilter;
+
 public:
 	constexpr T operator() (T t) const noexcept
 	{
