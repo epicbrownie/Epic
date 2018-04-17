@@ -145,13 +145,13 @@ public:
 template<class A, class Tag>
 struct Epic::detail::GlobalAllocatorAdaptor
 {
-	using Type = detail::GlobalAllocatorImpl<A, Tag>;
+	using type = detail::GlobalAllocatorImpl<A, Tag>;
 };
 
 template<class A, class Tag, class OldTag>
 struct Epic::detail::GlobalAllocatorAdaptor<Epic::detail::GlobalAllocatorImpl<A, OldTag>, Tag>
 {
-	using Type = Epic::GlobalAllocatorImpl<typename detail::UnwrapGlobal<A>::Type, OldTag>;
+	using type = Epic::GlobalAllocatorImpl<typename detail::UnwrapGlobal<A>::type, OldTag>;
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -164,5 +164,5 @@ namespace Epic
 	}
 
 	template<class Allocator, class Tag = Epic::detail::GlobalAllocatorTag>
-	using GlobalAllocator = typename detail::GlobalAllocatorAdaptor<Allocator, Tag>::Type;
+	using GlobalAllocator = typename detail::GlobalAllocatorAdaptor<Allocator, Tag>::type;
 }

@@ -41,7 +41,7 @@ namespace Epic::detail
 
 struct Epic::detail::AudPre
 {
-	Epic::MemoryBlock::SizeType Size;
+	Epic::MemoryBlock::size_type Size;
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -52,25 +52,25 @@ struct Epic::detail::AudA
 	using _aligned = Epic::ForceAlignAllocator<A, AudioAlignment>;
 	using _affixed = Epic::AffixAllocator<_aligned, Epic::detail::AudPre>;
 
-	using Type = Epic::GlobalAllocator<_affixed, Tag>;
+	using type = Epic::GlobalAllocator<_affixed, Tag>;
 };
 
 template<class A, class Tag, class OldTag>
 struct Epic::detail::AudA<Epic::detail::GlobalAllocatorImpl<A, OldTag>, Tag>
 {
-	using _unwrapped = typename detail::UnwrapGlobal<A>::Type;
+	using _unwrapped = typename detail::UnwrapGlobal<A>::type;
 	using _aligned = Epic::ForceAlignAllocator<_unwrapped, AudioAlignment>;
 	using _affixed = Epic::AffixAllocator<_aligned, Epic::detail::AudPre>;
 
-	using Type = Epic::GlobalAllocator<_affixed, OldTag>;
+	using type = Epic::GlobalAllocator<_affixed, OldTag>;
 };
 
 //////////////////////////////////////////////////////////////////////////////
 
 template<class A, class Tag>
-struct Epic::detail::AllocAdapted : public Epic::detail::AudA<A, Tag>::Type
+struct Epic::detail::AllocAdapted : public Epic::detail::AudA<A, Tag>::type
 {
-	using Base = typename Epic::detail::AudA<A, Tag>::Type;
+	using Base = typename Epic::detail::AudA<A, Tag>::type;
 
 	using Base::Base;
 };
@@ -86,8 +86,8 @@ namespace Epic
 		template<class Tag = Epic::detail::GlobalAllocatorTag>
 		using AudioAllocator =
 			std::conditional_t<
-				std::is_same<void, typename detail::GetConfigProperty<detail::eConfigProperty::AudioAllocator>::Type>::value,
+				std::is_same<void, typename detail::GetConfigProperty<detail::eConfigProperty::AudioAllocator>::type>::value,
 				Epic::detail::AllocAdapted<Epic::AlignedMallocator, Tag>,
-				Epic::detail::AllocAdapted<typename detail::GetConfigProperty<detail::eConfigProperty::DefaultAllocator>::Type, Tag>>;
+				Epic::detail::AllocAdapted<typename detail::GetConfigProperty<detail::eConfigProperty::DefaultAllocator>::type, Tag>>;
 	}
 }

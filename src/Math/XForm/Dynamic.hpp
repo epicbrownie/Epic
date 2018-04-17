@@ -41,7 +41,7 @@ private:
 		Epic::detail::eConfigFactory::DynamicFilterPtr,
 		Epic::UniquePtr,
 		IFilter<T>
-	>::Type;
+	>::type;
 
 public:
 	DynamicFilterPtr pFilter;

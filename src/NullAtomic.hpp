@@ -256,7 +256,7 @@ public:
 template<class T>
 struct Epic::detail::NullAtomicBaseFor
 {
-	using Type = std::conditional_t<
+	using type = std::conditional_t<
 		std::is_integral<T>::value,
 		Epic::detail::NullAtomicIntegralBase<T>,
 		Epic::detail::NullAtomicBase<T>>;
@@ -265,18 +265,18 @@ struct Epic::detail::NullAtomicBaseFor
 template<class T>
 struct Epic::detail::NullAtomicBaseFor<T*>
 {
-	using Type = Epic::detail::NullAtomicPointerBase<T*>;
+	using type = Epic::detail::NullAtomicPointerBase<T*>;
 };
 
 //////////////////////////////////////////////////////////////////////////////
 
 /// AtomicBase<T>
 template<class T>
-class Epic::NullAtomic : public Epic::detail::NullAtomicBaseFor<T>::Type
+class Epic::NullAtomic : public Epic::detail::NullAtomicBaseFor<T>::type
 {
 public:
 	using Type = Epic::NullAtomic<T>;
-	using Base = typename Epic::detail::NullAtomicBaseFor<T>::Type;
+	using Base = typename Epic::detail::NullAtomicBaseFor<T>::type;
 
 public:
 	using Base::Base;

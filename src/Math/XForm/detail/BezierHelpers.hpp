@@ -33,7 +33,7 @@ namespace Epic::Math::XForm::detail
 	struct BezierCoefficientList;
 	
 	template<size_t N>
-	using BezierCoefficients = typename Epic::TMP::ListToTuple<typename BezierCoefficientList<N>::Type>::Type;
+	using BezierCoefficients = Epic::TMP::ListToTupleT<typename BezierCoefficientList<N>::type>;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -41,28 +41,27 @@ namespace Epic::Math::XForm::detail
 template<class A, class B, class... Rest>
 struct Epic::Math::XForm::detail::_LSum<Epic::TMP::List<A, B, Rest...>>
 {
-	using Type = typename Epic::TMP::Concat<
+	using type = Epic::TMP::ConcatT<
 		Epic::TMP::List<_CSum<A, B>>,
-		typename _LSum<Epic::TMP::List<B, Rest...>>::Type
-	>::Type;
+		typename _LSum<Epic::TMP::List<B, Rest...>>::type>;
 };
 
 template<class A, class B>
 struct Epic::Math::XForm::detail::_LSum<Epic::TMP::List<A, B>>
 {
-	using Type = Epic::TMP::List<_CSum<A, B>>;
+	using type = Epic::TMP::List<_CSum<A, B>>;
 };
 
 template<class A>
 struct Epic::Math::XForm::detail::_LSum<Epic::TMP::List<A>>
 {
-	using Type = Epic::TMP::List<>;
+	using type = Epic::TMP::List<>;
 };
 
 template<>
 struct Epic::Math::XForm::detail::_LSum<Epic::TMP::List<>>
 {
-	using Type = Epic::TMP::List<>;
+	using type = Epic::TMP::List<>;
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -70,15 +69,14 @@ struct Epic::Math::XForm::detail::_LSum<Epic::TMP::List<>>
 template<size_t N>
 struct Epic::Math::XForm::detail::BezierCoefficientList
 {
-	using Type = typename Epic::TMP::Concat<
+	using type = Epic::TMP::ConcatT<
 		Epic::TMP::List<_C<1>>,
-		typename _LSum<typename BezierCoefficientList<N - 1>::Type>::Type,
-		Epic::TMP::List<_C<1>>
-	>::Type;
+		typename _LSum<typename BezierCoefficientList<N - 1>::type>::type,
+		Epic::TMP::List<_C<1>>>;
 };
 
 template<> 
 struct Epic::Math::XForm::detail::BezierCoefficientList<0>
 { 
-	using Type = Epic::TMP::List<>; 
+	using type = Epic::TMP::List<>;
 };

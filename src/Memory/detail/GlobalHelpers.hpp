@@ -53,11 +53,11 @@ public:
 template<class A>
 struct Epic::detail::UnwrapGlobal
 {
-	using Type = A;
+	using type = A;
 };
 
 template<class A, class Tag>
 struct Epic::detail::UnwrapGlobal<Epic::GlobalAllocatorImpl<A, Tag>>
 {
-	using Type = typename UnwrapGlobal<A>::Type;
+	using type = typename UnwrapGlobal<A>::type;
 };

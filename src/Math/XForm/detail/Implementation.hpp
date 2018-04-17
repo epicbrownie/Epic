@@ -41,13 +41,13 @@ namespace Epic::Math::XForm::detail
 template<template<class> class Impl, class T>
 struct Epic::Math::XForm::detail::ImplOf2
 {
-	using Type = Impl<T>;
+	using type = Impl<T>;
 };
 
 template<class Desc, class T>
 struct Epic::Math::XForm::detail::ImplOf
 {
-	using Type = typename ImplOf2<Desc::Impl, T>::Type;
+	using type = typename ImplOf2<Desc::Impl, T>::type;
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -63,7 +63,7 @@ template<class Inner, template<class, class> class ImplType>
 struct Epic::Math::XForm::detail::XFormImpl1
 {
 	template<class T>
-	using InnerImpl = typename ImplOf<Inner, T>::Type;
+	using InnerImpl = typename ImplOf<Inner, T>::type;
 
 	template<class T>
 	using Impl = ImplType<T, InnerImpl<T>>;
@@ -73,10 +73,10 @@ template<class Inner1, class Inner2, template<class, class, class> class ImplTyp
 struct Epic::Math::XForm::detail::XFormImpl2
 {
 	template<class T>
-	using Inner1Impl = typename ImplOf<Inner1, T>::Type;
+	using Inner1Impl = typename ImplOf<Inner1, T>::type;
 
 	template<class T>
-	using Inner2Impl = typename ImplOf<Inner2, T>::Type;
+	using Inner2Impl = typename ImplOf<Inner2, T>::type;
 
 	template<class T>
 	using Impl = ImplType<T, Inner1Impl<T>, Inner2Impl<T>>;
@@ -88,7 +88,7 @@ template<size_t N, class Inner, template<class, size_t, class> class ImplType>
 struct Epic::Math::XForm::detail::XFormNImpl1
 {
 	template<class T>
-	using InnerImpl = typename ImplOf<Inner, T>::Type;
+	using InnerImpl = typename ImplOf<Inner, T>::type;
 
 	template<class T>
 	using Impl = ImplType<T, N, InnerImpl<T>>;

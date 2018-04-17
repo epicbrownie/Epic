@@ -27,7 +27,7 @@ namespace Epic::detail
 {
 	// Bucket List Filter
 	template<template<typename> class Pred, typename T, typename U>
-	using SegBucketListFilterHelper = typename std::conditional<Pred<U>::value, TMP::List<T>, TMP::List<>>::type;
+	using SegBucketListFilterHelper = std::conditional_t<Pred<U>::value, TMP::List<T>, TMP::List<>>;
 
 	template<template<typename> class Pred, typename Is, typename... Ts>
 	struct SegBucketListFilter;
@@ -35,7 +35,7 @@ namespace Epic::detail
 	template<template<typename> class Pred, typename... Is, typename... Ts>
 	struct SegBucketListFilter<Pred, TMP::List<Is...>, Ts...>
 	{
-		using Type = typename TMP::Concat<SegBucketListFilterHelper<Pred, Ts, Is>...>::Type;
+		using type = TMP::ConcatT<SegBucketListFilterHelper<Pred, Ts, Is>...>;
 	};
 
 
@@ -65,6 +65,9 @@ namespace Epic::detail
 	template<typename... Args>
 	struct BinarySegregatorAllocatorBuilder;
 
+	template<typename... Args>
+	using BinarySegregatorAllocatorBuilderT = typename BinarySegregatorAllocatorBuilder<Args...>::type;
+
 	template<typename... Buckets>
 	struct BinarySegregatorAllocatorBuilder<TMP::List<Buckets...>>
 	{
@@ -75,34 +78,34 @@ namespace Epic::detail
 		using Left = typename SegBucketListFilter<
 			SegBucketIndexLess<N>::Predicate, 
 			TMP::IndexListFor<Buckets...>, 
-			Buckets...>::Type;
+			Buckets...>::type;
 		
 		using Right = typename SegBucketListFilter<
 			SegBucketIndexGreater<N>::Predicate, 
 			TMP::IndexListFor<Buckets...>, 
-			Buckets...>::Type;
+			Buckets...>::type;
 
-		using Type = typename BinarySegregatorAllocatorBuilder<Center, Left, Right, Buckets...>::Type;
+		using type = BinarySegregatorAllocatorBuilderT<Center, Left, Right, Buckets...>;
 	};
 
 	template<size_t T, class A, typename... Ls, typename... Rs, typename... Buckets>
 	struct BinarySegregatorAllocatorBuilder<SegBucket<T, A>, TMP::List<Ls...>, TMP::List<Rs...>, Buckets...>
 	{
-		using Type = Epic::SegregatorAllocator<T,
-			typename BinarySegregatorAllocatorBuilder<typename TMP::Concat<TMP::List<Ls...>, TMP::List<A>>::Type>::Type,
-			typename BinarySegregatorAllocatorBuilder<TMP::List<Rs...>>::Type>;
+		using type = Epic::SegregatorAllocator<T,
+			BinarySegregatorAllocatorBuilderT<TMP::ConcatT<TMP::List<Ls...>, TMP::List<A>>>,
+			BinarySegregatorAllocatorBuilderT<TMP::List<Rs...>>>;
 	};
 
 	template<class A>
 	struct BinarySegregatorAllocatorBuilder<TMP::List<A>>
 	{
-		using Type = A;
+		using type = A;
 	};
 
 	template<size_t T, class A, class B>
 	struct BinarySegregatorAllocatorBuilder<TMP::List<SegBucket<T, A>, B>>
 	{
-		using Type = Epic::SegregatorAllocator<T, A, B>;
+		using type = Epic::SegregatorAllocator<T, A, B>;
 	};
 
 
@@ -113,30 +116,30 @@ namespace Epic::detail
 	template<size_t T, class A, typename... Args>
 	struct MakeSegBucketList<SegBucket<T, A>, Args...>
 	{
-		using Type = typename TMP::Concat<
+		using type = TMP::ConcatT<
 			TMP::List<SegBucket<T, A>>, 
-			typename MakeSegBucketList<Args...>::Type>::Type;
+			typename MakeSegBucketList<Args...>::type>;
 	};
 
 	template<size_t T, class A, typename... Args>
 	struct MakeSegBucketList<TMP::Literal<size_t, T>, A, Args...>
 	{
-		using Type = typename TMP::Concat<
+		using type = TMP::ConcatT<
 			TMP::List<SegBucket<T, A>>, 
-			typename MakeSegBucketList<Args...>::Type>::Type;
+			typename MakeSegBucketList<Args...>::type>;
 	};
 
 	template<class A>
 	struct MakeSegBucketList<A>
 	{
-		using Type = TMP::List<A>;
+		using type = TMP::List<A>;
 	};
 
 
 	// BinarySegregatorAllocatorBuilder Invoker
 	template<typename... Args>
 	using BinarySegregatorAllocatorBuilderInvoker =
-		typename BinarySegregatorAllocatorBuilder<typename MakeSegBucketList<Args...>::Type>::Type;
+		BinarySegregatorAllocatorBuilderT<typename MakeSegBucketList<Args...>::type>;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -144,5 +147,5 @@ namespace Epic::detail
 namespace Epic
 {
 	template<typename... Args>
-	using BinarySegregatorAllocator = typename Epic::detail::BinarySegregatorAllocatorBuilderInvoker<Args...>::Type;
+	using BinarySegregatorAllocator = typename Epic::detail::BinarySegregatorAllocatorBuilderInvoker<Args...>::type;
 }

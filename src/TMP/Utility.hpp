@@ -34,18 +34,21 @@ namespace Epic::TMP
 	template<size_t I>
 	struct GenIndexList
 	{
-		using Type = typename Concat<typename GenIndexList<I - 1>::Type, List<TMP::Literal<size_t, I>>>::Type;
+		using Type = typename Concat<
+			typename GenIndexList<I - 1>::type, 
+			List<TMP::Literal<size_t, I>>
+		>::type;
 	};
 
 	template<> 
 	struct GenIndexList<0>
 	{
-		using Type = List<TMP::Literal<size_t, 0>>;
+		using type = List<TMP::Literal<size_t, 0>>;
 	};
 	
 	// IndexListFor<Ts...> - Invokes GenIndexList on the sizeof... Ts
 	template<typename... Ts>
-	using IndexListFor = typename GenIndexList<sizeof...(Ts) - 1>::Type;
+	using IndexListFor = typename GenIndexList<sizeof...(Ts) - 1>::type;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -60,13 +63,13 @@ namespace Epic::TMP
 	template<class, class R>
 	struct DebugSwitch
 	{
-		using Type = R;
+		using type = R;
 	};
 #else
 	template<class D, class> 
 	struct DebugSwitch
 	{
-		using Type = D;
+		using type = D;
 	};
 #endif
 }

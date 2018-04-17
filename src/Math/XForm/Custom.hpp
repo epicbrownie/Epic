@@ -63,7 +63,7 @@ template<template<class> class CustomType, class Inner>
 struct Epic::Math::XForm::Custom
 {
 	template<class T>
-	using InnerImpl = typename detail::ImplOf<Inner, T>::Type;
+	using InnerImpl = typename detail::ImplOf<Inner, T>::type;
 
 	template<class T>
 	using Impl = detail::CustomImpl<T, CustomType<T>, InnerImpl<T>>;
@@ -73,7 +73,7 @@ template<template<class> class CustomType, template<class...> class Inner, class
 struct Epic::Math::XForm::Custom<CustomType, Inner<InnerArgs...>>
 {
 	template<class T>
-	using InnerImpl = typename detail::ImplOf<Inner<InnerArgs...>, T>::Type;
+	using InnerImpl = typename detail::ImplOf<Inner<InnerArgs...>, T>::type;
 
 	template<class T>
 	using Impl = detail::CustomImpl<T, CustomType<T>, InnerImpl<T>>;

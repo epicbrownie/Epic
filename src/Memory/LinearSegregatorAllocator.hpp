@@ -25,28 +25,31 @@ namespace Epic::detail
 	template<typename...>
 	struct LinearSegregatorAllocatorBuilder;
 
+	template<typename... Args>
+	using LinearSegregatorAllocatorBuilderT = typename LinearSegregatorAllocatorBuilder<Args...>::type;
+
 	template<size_t T, class S, class L>
 	struct LinearSegregatorAllocatorBuilder<TMP::Literal<size_t, T>, S, L>
 	{
-		using Type = typename Epic::SegregatorAllocator<T, S, L>;
+		using type = Epic::SegregatorAllocator<T, S, L>;
 	};
 
 	template<size_t T, class S, typename... Args>
 	struct LinearSegregatorAllocatorBuilder<TMP::Literal<size_t, T>, S, Args...>
 	{
-		using Type = typename Epic::SegregatorAllocator<T, S, typename LinearSegregatorAllocatorBuilder<Args...>::Type>;
+		using type = Epic::SegregatorAllocator<T, S, LinearSegregatorAllocatorBuilderT<Args...>>;
 	};
 
 	template<size_t T, class S, class L>
 	struct LinearSegregatorAllocatorBuilder<Epic::SegBucket<T, S>, L>
 	{
-		using Type = typename Epic::SegregatorAllocator<T, S, L>;
+		using type = Epic::SegregatorAllocator<T, S, L>;
 	};
 
 	template<size_t T, class S, typename... Args>
 	struct LinearSegregatorAllocatorBuilder<Epic::SegBucket<T, S>, Args...>
 	{
-		using Type = typename Epic::SegregatorAllocator<T, S, typename LinearSegregatorAllocatorBuilder<Args...>::Type>;
+		using type = Epic::SegregatorAllocator<T, S, LinearSegregatorAllocatorBuilderT<Args...>>;
 	};
 }
 
@@ -55,5 +58,5 @@ namespace Epic::detail
 namespace Epic
 {
 	template<typename... Args>
-	using LinearSegregatorAllocator = typename Epic::detail::LinearSegregatorAllocatorBuilder<Args...>::Type;
+	using LinearSegregatorAllocator = Epic::detail::LinearSegregatorAllocatorBuilderT<Args...>;
 }

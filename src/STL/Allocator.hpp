@@ -326,7 +326,7 @@ struct std::allocator_traits<Epic::detail::AllocI<T, A>>
 
 struct Epic::detail::AllocPre
 {
-	Epic::MemoryBlock::SizeType Size;
+	Epic::MemoryBlock::size_type Size;
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -336,30 +336,30 @@ struct Epic::detail::AllocA
 {
 	using _affixed = Epic::AffixAllocator<A, Epic::detail::AllocPre>;
 
-	using Type = Epic::GlobalAllocator<_affixed, Tag>;
+	using type = Epic::GlobalAllocator<_affixed, Tag>;
 };
 
 template<class A, class Tag, class OldTag>
 struct Epic::detail::AllocA<Epic::detail::GlobalAllocatorImpl<A, OldTag>, Tag>
 {
-	using _unwrapped = typename detail::UnwrapGlobal<A>::Type;
+	using _unwrapped = typename detail::UnwrapGlobal<A>::type;
 	using _affixed = Epic::AffixAllocator<_unwrapped, Epic::detail::AllocPre>;
 
-	using Type = Epic::GlobalAllocator<_affixed, OldTag>;
+	using type = Epic::GlobalAllocator<_affixed, OldTag>;
 };
 
 template<class A, class Tag, class T>
 struct Epic::detail::AllocA<Epic::detail::AllocI<T, A>, Tag>
 {
-	using Type = Epic::GlobalAllocator<typename A::AllocatorType, typename A::Tag>;
+	using type = Epic::GlobalAllocator<typename A::AllocatorType, typename A::Tag>;
 };
 
 //////////////////////////////////////////////////////////////////////////////
 
 template<class A, class Tag>
-struct Epic::AllocAdapted : public Epic::detail::AllocA<A, Tag>::Type
+struct Epic::AllocAdapted : public Epic::detail::AllocA<A, Tag>::type
 {
-	using Base = typename Epic::detail::AllocA<A, Tag>::Type;
+	using Base = typename Epic::detail::AllocA<A, Tag>::type;
 
 	using Base::Base;
 };
