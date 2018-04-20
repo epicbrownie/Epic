@@ -57,13 +57,13 @@ namespace Epic::detail
 template<class D, class C>
 struct Epic::detail::ConfigProperty<Epic::detail::eConfigProperty::DefaultAllocator, D, C>
 {
-	using Type = Epic::TMP::DetectedOrT<D, Epic::detail::HasDefaultAllocator, C>;
+	using type = Epic::TMP::DetectedOrT<D, Epic::detail::HasDefaultAllocator, C>;
 };
 
 template<class D, class C>
 struct Epic::detail::ConfigProperty<Epic::detail::eConfigProperty::AudioAllocator, D, C>
 {
-	using Type = Epic::TMP::DetectedOrT<D, Epic::detail::HasAudioAllocator, C>;
+	using type = Epic::TMP::DetectedOrT<D, Epic::detail::HasAudioAllocator, C>;
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -71,12 +71,12 @@ struct Epic::detail::ConfigProperty<Epic::detail::eConfigProperty::AudioAllocato
 template<template<class...> class D, class C, class... Args>
 struct Epic::detail::ConfigFactory<Epic::detail::eConfigFactory::DynamicFilterPtr, D, C, Args...>
 {
-	struct DefaultFactory { template<class...> using Type = D<Args...>; };
+	struct DefaultFactory { template<class...> using type = D<Args...>; };
 
 	template<template<class...> class F>
 	using Factory = F<Args...>;
 
-	using Type = Factory<Epic::TMP::DetectedOrT<DefaultFactory, HasDynamicFilterPtr, C>::Type>;
+	using type = Factory<typename Epic::TMP::DetectedOrT<DefaultFactory, HasDynamicFilterPtr, C>::type>;
 };
 
 //////////////////////////////////////////////////////////////////////////////

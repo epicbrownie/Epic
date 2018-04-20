@@ -175,7 +175,7 @@ struct Epic::EON::detail::NullConvert
 template<class F, class T>
 struct Epic::EON::detail::AutoConvert
 {
-	using Type =
+	using type =
 		std::conditional_t<std::is_same_v<F, T>, Assign<F, T>,
 		std::conditional_t<std::is_enum_v<F> || std::is_enum_v<T>, EnumConvert<F, T>,
 		std::conditional_t<std::is_convertible_v<F, T>, CastConvert<F, T>,
@@ -204,7 +204,7 @@ private:
 
 	bool DoConversion(T& to, F from, AutoTag)
 	{
-		return AutoConvert<F, T>::Type() (to, std::move(from));
+		return AutoConvert<F, T>::type() (to, std::move(from));
 	}
 
 	bool DoConversion(T& to, F from, ArrayTag)

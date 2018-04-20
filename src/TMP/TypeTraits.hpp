@@ -21,22 +21,6 @@
 // Detection Idiom
 namespace Epic::TMP
 {
-	/*	MSVC 15.2 has an issue with decltype bug with std::void_t.
-		The following is a temporary workaround until 15.3 is released.
-		UPDATE: Implementation switched back to std::void_t */
-
-	namespace detail
-	{
-		template<class...>
-		struct Voided
-		{
-			using type = void;
-		};
-
-		template<class... Args>
-		using VoidedT = typename Voided<Args...>::type;
-	}
-
 	/*	An implementation of the 'Detection Idiom' as seen in Marshall Clow's talk:
 		C++Now 2017: Marshall Clow "The 'Detection Idiom:' A Better Way to SFINAE" */
 
@@ -89,17 +73,16 @@ namespace Epic::TMP
 // IsExplicitlyConvertible
 namespace Epic::TMP
 {
-	/*	Value is true if From type is explicitly convertible to To type.
+	/*	value is true if From type is explicitly convertible to To type.
 		That is, if To(From&) is valid, but an implicit conversion to To from From is not. */
 
 	template<class From, class To>
 	struct IsExplicitlyConvertible
-	{
-		static constexpr bool Value = std::is_constructible_v<To, From> && !std::is_convertible_v<From, To>;
-	};
+		: std::bool_constant<std::is_constructible_v<To, From> && !std::is_convertible_v<From, To>>
+	{ };
 
 	template<class From, class To>
-	static constexpr bool IsExplicitlyConvertibleV = IsExplicitlyConvertible<From, To>::Value;
+	static constexpr bool IsExplicitlyConvertibleV = IsExplicitlyConvertible<From, To>::value;
 }
 
 //////////////////////////////////////////////////////////////////////////////

@@ -81,7 +81,7 @@ public:
 public:
 	bool HasAction(Epic::StringHash actionName) const noexcept
 	{
-		std::find(begin(), end(), actionName) != end();
+		return std::find(begin(), end(), actionName) != end();
 	}
 
 	bool AddAction(Epic::StringHash actionName) noexcept

@@ -207,5 +207,5 @@ namespace Epic
 		class DebugResponsePolicy = Epic::GuardResponseAssert, 
 		class ReleaseResponsePolicy = Epic::GuardResponseCErr>
 	using PatternGuard = 
-		detail::PGuardImpl<Pattern, typename TMP::DebugSwitch<DebugResponsePolicy, ReleaseResponsePolicy>::Type>;
+		detail::PGuardImpl<Pattern, typename TMP::DebugSwitch<DebugResponsePolicy, ReleaseResponsePolicy>::type>;
 }

@@ -22,7 +22,7 @@
 namespace Epic::Math::XForm
 {
 	template<class Descriptor, class T = float>
-	using XForm = typename detail::ImplOf<Descriptor, T>::Type;
+	using XForm = typename detail::ImplOf<Descriptor, T>::type;
 
 	template<class Descriptor, class T = float>
 	class XFormFilter;
