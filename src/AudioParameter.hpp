@@ -37,17 +37,23 @@ private:
 
 public:
 	constexpr AudioParameter() noexcept
-		: m_pInstance{ nullptr }, m_Index{ -1 }, m_MinValue{ 0.0f }, m_MaxValue{ 0.0f }
+		: m_pInstance{ nullptr }, m_Index{ -1 }, 
+		  m_MinValue{ 0.0f }, m_MaxValue{ 0.0f }
 	{ }
 
 	constexpr AudioParameter(FMOD::Studio::EventInstance* pInstance, int index, float minValue, float maxValue) noexcept
-		: m_pInstance{ pInstance }, m_Index{ index }, m_MinValue{ minValue }, m_MaxValue{ maxValue }
+		: m_pInstance{ pInstance }, m_Index{ index }, 
+		  m_MinValue{ minValue }, m_MaxValue{ maxValue }
 	{ }
 
-	constexpr AudioParameter(const Type& other) noexcept = default;
+	~AudioParameter() noexcept = default;
+
+	constexpr AudioParameter(const Type&) noexcept = default;
+	constexpr AudioParameter(Type&&) noexcept = default;
 
 public:
-	inline Type& operator = (const Type& other) noexcept = default;
+	Type& operator = (const Type&) noexcept = default;
+	Type& operator = (Type&&) noexcept = default;
 
 	inline Type& operator = (float value) noexcept
 	{

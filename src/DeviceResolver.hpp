@@ -37,12 +37,17 @@ private:
 
 public:
 	DeviceResolver() noexcept = delete;
+	DeviceResolver(Type&) noexcept = delete;
+	DeviceResolver(Type&&) noexcept = delete;
 
-	explicit DeviceResolver(Epic::StringHash device)
+	Type& operator = (const Type&) = delete;
+	Type& operator = (Type&&) = delete;
+
+	explicit DeviceResolver(Epic::StringHash device) noexcept
 		: m_DeviceName{ device }
 	{ }
 
-	virtual ~DeviceResolver() noexcept = default;
+	~DeviceResolver() noexcept = default;
 
 public:
 	inline Epic::StringHash GetDeviceName() const noexcept
@@ -51,7 +56,7 @@ public:
 	}
 
 public:
-	bool Resolve(const InputData& data) const noexcept
+	bool Resolve(const InputData& data) const noexcept override
 	{
 		return data.Device == m_DeviceName;
 	}

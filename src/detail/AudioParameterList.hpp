@@ -19,6 +19,7 @@
 #include <Epic/STL/Map.hpp>
 #include <Epic/STL/UniquePtr.hpp>
 #include <memory>
+#include <gsl/gsl>
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -53,12 +54,13 @@ private:
 	static AudioParameter s_NullParameter;
 
 protected:
-	AudioParameterList() noexcept { };
-	AudioParameterList(const Type&) = default;
-	Type& operator = (const Type&) = default;
+	AudioParameterList() = default;
+	AudioParameterList(const AudioParameterList&) = default;
+	AudioParameterList& operator = (const AudioParameterList&) = default;
 
 protected:
-	void Initialize(FMOD::Studio::EventDescription* pDesc, FMOD::Studio::EventInstance* pInstance) noexcept
+	void Initialize(gsl::not_null<FMOD::Studio::EventDescription*> pDesc, 
+					gsl::not_null<FMOD::Studio::EventInstance*> pInstance) noexcept
 	{
 		m_Params.clear();
 

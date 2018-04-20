@@ -88,11 +88,11 @@ protected:
 			UnsubscribeAll 
 		};
 
-		MutateQueueEntry(eMutateCommand cmd)
+		MutateQueueEntry(eMutateCommand cmd) noexcept
 			: command{ cmd }, handler{ 0, 0 }, delegate{} 
 		{ }
 
-		MutateQueueEntry(eMutateCommand cmd, const EventHandler& hand, const DelegateType fn)
+		MutateQueueEntry(eMutateCommand cmd, const EventHandler& hand, const DelegateType fn) noexcept
 			: command{ cmd }, handler{ hand }, delegate{ fn } 
 		{ }
 
@@ -109,24 +109,20 @@ protected:
 protected:
 	ListenerList m_Listeners;
 	MutateQueue m_MutateQueue;
-	bool m_IsSuspended;
+	bool m_IsSuspended = false;
 
 public:
-	inline EventBase() noexcept
-		: m_IsSuspended(false)
-	{ }
-
-	inline EventBase(Type& other) noexcept
+	constexpr EventBase() noexcept = default;
+	
+	EventBase(const Type& other)
 		: m_IsSuspended(false),
 		  m_Listeners(other.m_Listeners),
 		  m_MutateQueue(other.m_MutateQueue)
 	{ }
 
-	inline EventBase(Type&& other) noexcept
-		: m_IsSuspended(std::move(other.m_IsSuspended)),
-		  m_Listeners(std::move(other.m_Listeners)),
-		  m_MutateQueue(std::move(other.m_MutateQueue))
-	{ }
+	EventBase(Type&& other) noexcept = default;
+
+	~EventBase() noexcept = default;
 
 public:
 	Type& operator = (const Type& other) = delete;
@@ -187,11 +183,11 @@ protected:
 		if (!m_IsSuspended)
 		{
 			// Multiple listeners can match this handle; unsubscribe all of them.
-			m_Listeners.erase(std::remove_if(
-				std::begin(m_Listeners),
-				std::end(m_Listeners),
+			[[maybe_unused]] auto itEnd = m_Listeners.erase(std::remove_if(
+				m_Listeners.begin(),
+				m_Listeners.end(),
 				[&](const auto& o) { return o.first.handle == handle; }
-			), std::end(m_Listeners));
+			), m_Listeners.end());
 		}
 		else
 		{
@@ -210,7 +206,7 @@ protected:
 				[&](const auto& o) { return o.first.instance == instance && o.first.handle == handle; });
 
 			if (it != std::end(m_Listeners))
-				m_Listeners.erase(it);
+				[[maybe_unused]] auto itEnd = m_Listeners.erase(it);
 		}
 		else
 		{
@@ -225,7 +221,7 @@ protected:
 		if (!m_IsSuspended)
 		{
 			// Unsubscribe all listeners that match this instance
-			m_Listeners.erase(std::remove_if(
+			[[maybe_unused]] auto itEnd = m_Listeners.erase(std::remove_if(
 				std::begin(m_Listeners),
 				std::end(m_Listeners),
 				[&](const auto& o) { return o.first.instance == instance; }

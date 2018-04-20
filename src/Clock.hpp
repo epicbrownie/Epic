@@ -47,9 +47,13 @@ public:
 	static constexpr bool IsSteady = ClockType::is_steady;
 
 public:
-	inline Clock() noexcept
+	constexpr Clock() noexcept
+		: m_FrameTime(Unit{ 0 }), m_DeltaTime(Unit{ 0 })
 	{
-		Reset();
+		m_PrevFrameTimePoint 
+			= m_FrameTimePoint 
+			= m_Epoch 
+			= ClockType::now();
 	}
 
 public:
